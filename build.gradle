@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'its'
+version = '0.1.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+application {
+    mainClass = 'its.Main'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
