@@ -6,7 +6,7 @@ import java.util.List;
 
 
 public class Issue {
-    
+
     private String issueId;
     private String title;
     private String description;
@@ -27,5 +27,62 @@ public class Issue {
         this.priority = Priority.MAJOR; 
         this.status = Status.NEW; 
     }
+
+    public String getIssueId() {
+        return issueId;
+    }
+    
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public User getReporter() {
+        return reporter;
+    }
+
+    public LocalDateTime getReportedDate() {
+        return reportedDate;
+    }   
+
+    public User getAssignee() {
+        return assignee;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public User getFixer() {
+        return fixer;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+    
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public void setAssignee(User assignee) {
+        this.assignee = assignee;
+    }
+
+    public void addComment(Comment comment) {
+        comments.add(comment);
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
 
 }
