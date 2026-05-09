@@ -25,7 +25,7 @@ public class IssueController {
         this.issueRepository = issueRepository;
     }
 
-    public Issue reportIssue(String title, String description, User reporter, Priority priority, Comment comment) {
+    public Issue reportIssue(String title, String description, User reporter, Priority priority, String commentContent) {
         
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("Title must not be empty.");
@@ -39,20 +39,9 @@ public class IssueController {
         if (priority == null) {
             throw new IllegalArgumentException("Priority must not be null.");
         }
-        if (comment != null) {
-            if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
-                throw new IllegalArgumentException("Comment content must not be empty.");
-            }
-            if (comment.getAuthor() == null) {
-                throw new IllegalArgumentException("Comment author must not be null.");
-            }
-            if (comment.getWrittenDate() == null) {
-                throw new IllegalArgumentException("Comment written date must not be null.");
-            }
-        }
 
         Issue newIssue = new Issue(
-                "issue1", // todo: ID 자동 생성
+                1, // todo: ID 자동 생성
                 title,
                 description,
                 reporter,
@@ -60,9 +49,17 @@ public class IssueController {
         );
 
         newIssue.setPriority(priority);
-        if (comment != null) {
+        if (commentContent != null && !commentContent.trim().isEmpty()) {
+            Comment comment = new Comment(
+                    1, // todo: ID 자동 생성
+                    commentContent,
+                    reporter,
+                    LocalDateTime.now()
+            );
             newIssue.addComment(comment);
         }
+
+
 
         newIssue.setStatus(Status.NEW);
 
@@ -83,4 +80,5 @@ public class IssueController {
         });
         */
     }
+    // 
 }
