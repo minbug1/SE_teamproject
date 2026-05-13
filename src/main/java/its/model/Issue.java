@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Issue {
 
-    private int issueId;
+    private Long issueId;
     private String title;
     private String description;
     private User reporter;
@@ -18,7 +18,7 @@ public class Issue {
     private Status status;
     private List<Comment> comments = new ArrayList<>();
 
-    public Issue(int issueId, String title, String description, User reporter, LocalDateTime reportedDate) {
+    public Issue(Long issueId, String title, String description, User reporter, LocalDateTime reportedDate) {
         this.issueId = issueId;
         this.title = title;
         this.description = description;
@@ -28,7 +28,7 @@ public class Issue {
         this.status = Status.NEW; 
     }
 
-    public int getIssueId() {
+    public Long getIssueId() {
         return issueId;
     }
     

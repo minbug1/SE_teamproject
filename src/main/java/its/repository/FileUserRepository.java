@@ -86,6 +86,25 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public void update(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User must not be null.");
+        }
+
+        List<User> users = findAll();
+
+        for (int i = 0; i < users.size(); i++) {
+            if (users.get(i).getUserId().equals(user.getUserId())) {
+                users.set(i, user);
+                writeAll(users);
+                return;
+            }
+        }
+
+        throw new IllegalArgumentException("User not found.");
+    }
+
+    @Override
     public User findByUserId(long userId) {
         if (userId <= 0) {
             return null;
@@ -112,6 +131,36 @@ public class FileUserRepository implements UserRepository {
 
         for (User user : users) {
             if (user.getLoginId().equals(loginId)) {
+                return user;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public User findByAccountStatus(AccountStatus accountStatus) {
+        if (accountStatus == null) {
+            return null;
+        }
+
+        for (User user : findAll()) {
+            if (user.getAccountStatus() == accountStatus) {
+                return user;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public User findByRole(Role role) {
+        if (role == null) {
+            return null;
+        }
+
+        for (User user : findAll()) {
+            if (user.getRole() == role) {
                 return user;
             }
         }
@@ -160,6 +209,19 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public List<User> findPendingUsers() {
+        List<User> pendingUsers = new ArrayList<>();
+
+        for (User user : findAll()) {
+            if (user.getAccountStatus() == AccountStatus.PENDING) {
+                pendingUsers.add(user);
+            }
+        }
+
+        return pendingUsers;
+    }
+
+    @Override
     public long generateUserId() {
         List<User> users = findAll();
 
@@ -182,7 +244,7 @@ public class FileUserRepository implements UserRepository {
         }
 
         try {
-            long userId = long.parselong(tokens[0]);
+            long userId = Long.parseLong(tokens[0]);
             String loginId = tokens[1];
             String password = tokens[2];
             AccountStatus accountStatus = AccountStatus.valueOf(tokens[3]);
