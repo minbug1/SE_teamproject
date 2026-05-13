@@ -105,6 +105,7 @@ public class UserController {
     // find // login 요구
     public User findUserByUserId(User currentUser, long userId) {
         validateLogin(currentUser);
+        
         return getUserByUserId(userId);
     }
 
@@ -143,10 +144,6 @@ public class UserController {
 
     public List<User> findAllUsers(User currentUser) {
         validateLogin(currentUser);
-
-        if (!currentUser.isAdmin() && !currentUser.isPL()) {
-            throw new IllegalArgumentException("Only admin or PL can view users.");
-        }
 
         return userRepository.findAll();
     }
