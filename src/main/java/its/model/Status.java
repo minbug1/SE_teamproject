@@ -6,4 +6,5 @@ public enum Status {
     RESOLVED,
     CLOSED,
     REOPENED,
+    FIXED
 }
