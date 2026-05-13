@@ -41,7 +41,7 @@ public class IssueController {
         }
 
         Issue newIssue = new Issue(
-                1, // todo: ID 자동 생성
+                1L, // todo: ID 자동 생성
                 title,
                 description,
                 reporter,
@@ -49,6 +49,7 @@ public class IssueController {
         );
 
         newIssue.setPriority(priority);
+        newIssue.setStatus(Status.NEW);
         if (commentContent != null && !commentContent.trim().isEmpty()) {
             Comment comment = new Comment(
                     1, // todo: ID 자동 생성
@@ -58,12 +59,6 @@ public class IssueController {
             );
             newIssue.addComment(comment);
         }
-
-
-
-        newIssue.setStatus(Status.NEW);
-
-        // db에 이슈 저장
         issueRepository.save(newIssue);
 
         return newIssue;
@@ -80,5 +75,73 @@ public class IssueController {
         });
         */
     }
-    // 
+    //
+
+    //Fix Issue
+    // public Issue updateState(int issueId, String commentContent, User DEVELOPER){
+    //     Issue issue = issueRepository.findById(issueId);
+
+    //     //조건 Assigned된 이슈
+    //     if (issue == null || issue.getStatus() != Status.ASSIGNED) {
+    //         return false;
+    //     }
+
+    //     // 코멘트 객체 생성 및 이슈에 추가
+    //     if (commentContent != null && !commentContent.isEmpty()) {
+    //         Comment comment = new Comment(commentContent, DEVELOPER, LocalDateTime.now());
+    //         issue.addComment(comment);
+    //     }
+
+    //     // 상태 변경
+    //     issue.setStatus(Status.FIXED);
+        
+    //     return issue;
+    // }
+
+    // //Verify Issue
+    // public Issue updateState(int issueId, String commentContent, User Tester){
+    //     Issue issue = issueRepository.findById(issueId);
+
+    //     //조건 FIXED된 이슈
+    //     if (issue == null || issue.getStatus() != Status.FIXED) {
+    //         return false;
+    //     }
+
+    //     if (isResolved) {
+    //         // 해결 성공
+    //         issue.setStatus(Status.RESOLVED);
+    //     } else {
+    //         // 해결 실패 
+    //         issue.setStatus(Status.REOPENED);
+    //     }
+
+    //     // 코멘트 객체 생성 및 이슈에 추가
+    //     if (commentContent != null && !commentContent.isEmpty()) {
+    //         Comment comment = new Comment(commentContent, tester, LocalDateTime.now());
+    //         issue.addComment(comment);
+    //     }
+
+    //     return issue;
+    // }
+
+    // //Close Issue
+    // public Issue updateState(int issueId, String commentContent, User PL){
+    //     Issue issue = issueRepository.findById(issueId);
+
+    //     //조건 Resolved된 이슈
+    //     if (issue == null || issue.getStatus() != Status.RESOLVED) {
+    //         return false;
+    //     }
+
+    //     // 코멘트 객체 생성 및 이슈에 추가
+    //     if (commentContent != null && !commentContent.isEmpty()) {
+    //         Comment comment = new Comment(commentContent, PL, LocalDateTime.now());
+    //         issue.addComment(comment);
+    //     }
+
+    //     // 상태 변경
+    //     issue.setStatus(Status.CLOSED);
+        
+    //     return issue;
+    // }
 }

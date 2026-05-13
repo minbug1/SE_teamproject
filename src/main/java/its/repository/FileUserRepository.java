@@ -352,4 +352,28 @@ public class FileUserRepository implements UserRepository {
             return record;
         }
     }
+
+    @Override
+    public void update(User user) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    }
+
+    @Override
+    public User findByAccountStatus(AccountStatus accountStatus) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByAccountStatus'");
+    }
+
+    @Override
+    public User findByRole(Role role) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByRole'");
+    }
+
+    @Override
+    public List<User> findPendingUsers() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findPendingUsers'");
+    }
 }
