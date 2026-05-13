@@ -86,25 +86,6 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public void update(User user) {
-        if (user == null) {
-            throw new IllegalArgumentException("User must not be null.");
-        }
-
-        List<User> users = findAll();
-
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getUserId().equals(user.getUserId())) {
-                users.set(i, user);
-                writeAll(users);
-                return;
-            }
-        }
-
-        throw new IllegalArgumentException("User not found.");
-    }
-
-    @Override
     public User findByUserId(long userId) {
         if (userId <= 0) {
             return null;
@@ -131,36 +112,6 @@ public class FileUserRepository implements UserRepository {
 
         for (User user : users) {
             if (user.getLoginId().equals(loginId)) {
-                return user;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public User findByAccountStatus(AccountStatus accountStatus) {
-        if (accountStatus == null) {
-            return null;
-        }
-
-        for (User user : findAll()) {
-            if (user.getAccountStatus() == accountStatus) {
-                return user;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public User findByRole(Role role) {
-        if (role == null) {
-            return null;
-        }
-
-        for (User user : findAll()) {
-            if (user.getRole() == role) {
                 return user;
             }
         }
@@ -206,19 +157,6 @@ public class FileUserRepository implements UserRepository {
         }
 
         writeAll(remainingUsers);
-    }
-
-    @Override
-    public List<User> findPendingUsers() {
-        List<User> pendingUsers = new ArrayList<>();
-
-        for (User user : findAll()) {
-            if (user.getAccountStatus() == AccountStatus.PENDING) {
-                pendingUsers.add(user);
-            }
-        }
-
-        return pendingUsers;
     }
 
     @Override
@@ -275,5 +213,29 @@ public class FileUserRepository implements UserRepository {
                user.getPassword() + "," +
                user.getAccountStatus().name() + "," +
                user.getRole().name();
+    }
+
+    @Override
+    public void update(User user) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    }
+
+    @Override
+    public User findByAccountStatus(AccountStatus accountStatus) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByAccountStatus'");
+    }
+
+    @Override
+    public User findByRole(Role role) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByRole'");
+    }
+
+    @Override
+    public List<User> findPendingUsers() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findPendingUsers'");
     }
 }
