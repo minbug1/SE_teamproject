@@ -1,13 +1,13 @@
-package its.model;
+// package its.model;
 
-public class Tester extends User {
+// public class Tester extends User {
 
-    public Tester(String id, String name, String password) {
-        super(id, name, password);
-    }
+//     public Tester(String id, String name, String password) {
+//         super(id, name, password);
+//     }
     
-    @Override
-    public Role getRole() {
-        return Role.TESTER;
-    }
-}
+//     @Override
+//     public Role getRole() {
+//         return Role.TESTER;
+//     }
+// }
