@@ -10,18 +10,18 @@ package its.model;
 
 public class User {
 
-    private final Long userId;
+    private final long userId;
     private String loginId;
     private String password;
     private AccountStatus accountStatus;
     private Role role;
 
     // constructor
-    public User(Long userId, String loginId, String password) {
+    public User(long userId, String loginId, String password) {
         this(userId, loginId, password, AccountStatus.PENDING, Role.UNASSIGNED);
     }
 
-    public User(Long userId, String loginId, String password, AccountStatus accountStatus, Role role) {
+    public User(long userId, String loginId, String password, AccountStatus accountStatus, Role role) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID must not be empty.");
         }
@@ -50,7 +50,7 @@ public class User {
     }
 
     // get
-    public Long getUserId() {
+    public long getUserId() {
         return userId;
     }
 
