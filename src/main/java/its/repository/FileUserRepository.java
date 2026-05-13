@@ -182,7 +182,7 @@ public class FileUserRepository implements UserRepository {
         }
 
         try {
-            long userId = long.parselong(tokens[0]);
+            long userId = Long.parseLong(tokens[0]);
             String loginId = tokens[1];
             String password = tokens[2];
             AccountStatus accountStatus = AccountStatus.valueOf(tokens[3]);
@@ -213,5 +213,29 @@ public class FileUserRepository implements UserRepository {
                user.getPassword() + "," +
                user.getAccountStatus().name() + "," +
                user.getRole().name();
+    }
+
+    @Override
+    public void update(User user) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    }
+
+    @Override
+    public User findByAccountStatus(AccountStatus accountStatus) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByAccountStatus'");
+    }
+
+    @Override
+    public User findByRole(Role role) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByRole'");
+    }
+
+    @Override
+    public List<User> findPendingUsers() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findPendingUsers'");
     }
 }

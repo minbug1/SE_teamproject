@@ -48,7 +48,7 @@ public class UserController {
     }
 
     if (accountStatus == null) {
-        throw new IllegalArgumentException("AccountStatus must not be null.")
+        throw new IllegalArgumentException("AccountStatus must not be null.");
     }
 
     if (role == null) {
@@ -79,21 +79,21 @@ public class UserController {
     }
 
     public void deleteUser(User currentUser, long userId) {
-        if (currentUser == null || !currentUser.isAdmin()) {
-            throw new IllegalArgumentException("Only admin can delete users.");
-        }
+        // if (currentUser == null || !currentUser.isAdmin()) {
+        //     throw new IllegalArgumentException("Only admin can delete users.");
+        // }
 
-        if (userId == null || userId.trim().isEmpty()) {
-            throw new IllegalArgumentException("User ID must not be empty.");
-        }
+        // if (userId == null || userId.trim().isEmpty()) {
+        //     throw new IllegalArgumentException("User ID must not be empty.");
+        // }
 
-        User user = userRepository.findById(userId);
+        // User user = userRepository.findByUserId(userId);
 
-        if (user == null) {
-            throw new IllegalArgumentException("User does not exist.");
-        }
+        // if (user == null) {
+        //     throw new IllegalArgumentException("User does not exist.");
+        // }
 
-        userRepository.deleteById(userId);
+        // userRepository.deleteByUserId(userId);
     }
 
     // find
@@ -103,7 +103,7 @@ public class UserController {
         User user = userRepository.findByUserId(userId);
 
         if (user == null) {
-            throw new IllegalArgumentException("User not found.")
+            throw new IllegalArgumentException("User not found.");
         }
 
         return user;
@@ -112,29 +112,31 @@ public class UserController {
     public User findUserByLoginId(String loginId) {
         validateLoginId(loginId);
 
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginId(loginId);
 
         if (user == null) {
-            throw new IllegalArgumentException("User not found.")
+            throw new IllegalArgumentException("User not found.");
         }
 
         return user;
     }
 
     public List<User> findUsersByAccountStatus(AccountStatus accountStatus) {
-        if (accountStatus == null) {
-            throw new IllegalArgumentException("Account Status must not be null")
-        }
+        // if (accountStatus == null) {
+        //     throw new IllegalArgumentException("Account Status must not be null")
+        // }
 
-        return userRepository.findByAccountStatus(accountStatus);
+        // return userRepository.findByAccountStatus(accountStatus);
+        return null;
     }
 
     public List<User> findUsersByRole(Role role) {
-        if (role == null) {
-            throw new IllegalArgumentException("Role must not be null.");
-        }
+        // if (role == null) {
+        //     throw new IllegalArgumentException("Role must not be null.");
+        // }
 
-        return userRepository.findByRole(role);
+        // return userRepository.findByRole(role);
+        return null;
     }
 
     public List<User> findAllUsers(User currentUser) {
@@ -244,9 +246,9 @@ public class UserController {
     }
 
     private void validateUserId(long userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("User ID must not be empty.");
-        }
+        // if (userId == null) {
+        //     throw new IllegalArgumentException("User ID must not be empty.");
+        // }
     }
 
     private void validateLoginId(String loginId) {

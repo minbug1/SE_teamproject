@@ -17,7 +17,7 @@ public interface UserRepository {
     
     void save(User user);
 
-    void update(User user)
+    void update(User user);
 
     void deleteByUserId(long userId);
 

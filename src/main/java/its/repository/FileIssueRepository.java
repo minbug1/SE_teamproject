@@ -12,7 +12,7 @@ public class FileIssueRepository implements IssueRepository {
     }
 
     @Override
-    public Issue findById(String issueId) {
+    public Issue findById(Long issueId) {
         // 파일에서 이슈 조회 로직 구현
         return null;
     }
@@ -29,7 +29,7 @@ public class FileIssueRepository implements IssueRepository {
     }
 
     @Override
-    public void delete(String issueId) {
+    public void delete(Long issueId) {
         // 파일에서 이슈 삭제 로직 구현
     }
 
