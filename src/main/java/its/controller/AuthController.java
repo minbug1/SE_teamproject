@@ -7,7 +7,7 @@ import its.repository.FileUserRepository;
 import its.repository.UserRepository;
 
 /**
- * controller for authentication
+ * controller for authentication (before login)
  * register, login, logout, getCurrentUser, isLoggedIn
  *
  * @author hanung
