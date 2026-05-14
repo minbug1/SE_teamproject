@@ -48,7 +48,7 @@ public class UserController {
     }
 
     if (accountStatus == null) {
-        throw new IllegalArgumentException("AccountStatus must not be null.")
+        throw new IllegalArgumentException("AccountStatus must not be null.");
     }
 
     if (role == null) {
@@ -103,7 +103,7 @@ public class UserController {
         User user = userRepository.findByUserId(userId);
 
         if (user == null) {
-            throw new IllegalArgumentException("User not found.")
+            throw new IllegalArgumentException("User not found.");
         }
 
         return user;
@@ -112,10 +112,10 @@ public class UserController {
     public User findUserByLoginId(String loginId) {
         validateLoginId(loginId);
 
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginId(loginId);
 
         if (user == null) {
-            throw new IllegalArgumentException("User not found.")
+            throw new IllegalArgumentException("User not found.");
         }
 
         return user;
@@ -123,7 +123,7 @@ public class UserController {
 
     public List<User> findUsersByAccountStatus(AccountStatus accountStatus) {
         if (accountStatus == null) {
-            throw new IllegalArgumentException("Account Status must not be null")
+            throw new IllegalArgumentException("Account Status must not be null");
         }
 
         return userRepository.findByAccountStatus(accountStatus);

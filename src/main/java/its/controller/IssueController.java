@@ -5,6 +5,9 @@ import its.model.Issue;
 import its.model.Priority;
 import its.model.Status;
 import its.model.User;
+import its.model.Tester;
+import its.model.PL;
+import its.model.Developer;
 import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
 
@@ -83,33 +86,36 @@ public class IssueController {
     //
 
     //Fix Issue
-    public Issue updateState(int issueId, String commentContent, User DEVELOPER){
+    public Issue updateState(int issueId, String commentContent, Developer dev){
         Issue issue = issueRepository.findById(issueId);
 
         //조건 Assigned된 이슈
         if (issue == null || issue.getStatus() != Status.ASSIGNED) {
-            return false;
+            return null;
         }
 
         // 코멘트 객체 생성 및 이슈에 추가
         if (commentContent != null && !commentContent.isEmpty()) {
-            Comment comment = new Comment(commentContent, DEVELOPER, LocalDateTime.now());
+            int nextCommentId = issue.getComments().size() + 1;
+            Comment comment = new Comment(nextCommentId, commentContent, dev, LocalDateTime.now());
             issue.addComment(comment);
         }
 
         // 상태 변경
         issue.setStatus(Status.FIXED);
+
+        issue.setFixer(dev)
         
         return issue;
     }
 
     //Verify Issue
-    public Issue updateState(int issueId, String commentContent, User Tester){
+    public Issue updateState(int issueId, String commentContent, Tester tester, boolean isResolved){
         Issue issue = issueRepository.findById(issueId);
 
         //조건 FIXED된 이슈
         if (issue == null || issue.getStatus() != Status.FIXED) {
-            return false;
+            return null;
         }
 
         if (isResolved) {
@@ -122,7 +128,8 @@ public class IssueController {
 
         // 코멘트 객체 생성 및 이슈에 추가
         if (commentContent != null && !commentContent.isEmpty()) {
-            Comment comment = new Comment(commentContent, tester, LocalDateTime.now());
+            int nextCommentId = issue.getComments().size() + 1;
+            Comment comment = new Comment(nextCommentId, commentContent, tester, LocalDateTime.now());
             issue.addComment(comment);
         }
 
@@ -130,23 +137,52 @@ public class IssueController {
     }
 
     //Close Issue
-    public Issue updateState(int issueId, String commentContent, User PL){
+    public Issue updateState(int issueId, String commentContent, PL pl){
         Issue issue = issueRepository.findById(issueId);
 
         //조건 Resolved된 이슈
         if (issue == null || issue.getStatus() != Status.RESOLVED) {
-            return false;
+            return null;
         }
 
         // 코멘트 객체 생성 및 이슈에 추가
         if (commentContent != null && !commentContent.isEmpty()) {
-            Comment comment = new Comment(commentContent, PL, LocalDateTime.now());
+            int nextCommentId = issue.getComments().size() + 1;
+            Comment comment = new Comment(nextCommentId, commentContent, pl, LocalDateTime.now());
             issue.addComment(comment);
         }
 
         // 상태 변경
         issue.setStatus(Status.CLOSED);
         
+        return issue;
+    }
+
+    //Assign Issue 이거 조금더 수정 필요함
+    public Issue assignIssue(int issueId, Developer assignee, PL pl, String commentContent) {
+        Issue issue = issueRepository.findById(issueId);
+
+        // NEW 또는 REOPENED 상태일 때 할당이 가능합니다.
+        if (issue == null || (issue.getStatus() != Status.NEW && issue.getStatus() != Status.REOPENED)) {
+            return null;
+        }
+
+        // PL 및 Assignee 유효성 검사
+        if (pl == null || assignee == null) {
+            throw new IllegalArgumentException("PL and Assignee must not be null.");
+        }
+
+        // 담당자 설정 및 상태 변경
+        issue.setAssignee(assignee);
+        issue.setStatus(Status.ASSIGNED); 
+
+        //코멘트 객체 생성 및 이슈에 추가
+        if (commentContent != null && !commentContent.trim().isEmpty()) {
+            int nextCommentId = issue.getComments().size() + 1;
+            Comment comment = new Comment(nextCommentId, commentContent, pl, LocalDateTime.now());
+            issue.addComment(comment); 
+        }
+
         return issue;
     }
 }

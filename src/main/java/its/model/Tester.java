@@ -2,8 +2,8 @@ package its.model;
 
 public class Tester extends User {
 
-    public Tester(String id, String name, String password) {
-        super(id, name, password);
+    public Tester(Long userId, String loginId, String password) {
+        super(userId, loginId, password);
     }
     
     @Override

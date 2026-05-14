@@ -63,7 +63,16 @@ public class Issue {
     public Priority getPriority() {
         return priority;
     }
+
+    //comment 새로 생성할때 commentid = 현재 comment개수+1
+    public int getNextCommentId() {
+        return this.comments.size() + 1;
+    }
     
+    public void setFixer(User fixer) {
+        this.fixer = fixer;
+    }
+
     public void setStatus(Status status) {
         this.status = status;
     }
@@ -81,7 +90,7 @@ public class Issue {
     }
 
     public List<Comment> getComments() {
-        return comments;
+        return new ArrayList<>(comments);
     }
 
 

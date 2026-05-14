@@ -182,7 +182,7 @@ public class FileUserRepository implements UserRepository {
         }
 
         try {
-            long userId = long.parselong(tokens[0]);
+            long userId = Long.parseLong(tokens[0]);
             String loginId = tokens[1];
             String password = tokens[2];
             AccountStatus accountStatus = AccountStatus.valueOf(tokens[3]);
