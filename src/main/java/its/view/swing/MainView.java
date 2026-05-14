@@ -100,7 +100,7 @@ public class MainView extends JFrame {
         return panel;
     }
 
-    // ── 더미 데이터 ────────────────────────────
+    // ── 더미 데이터 ──────────────────────────── (추후 FileIssueRepository 연결 후 제거)
     private void loadDummyData() {
         tableModel.addRow(new Object[]{
             1, "로그인 버튼 클릭 시 오류", "액션", "HIGH", "NEW", "tester1", "-"
@@ -113,12 +113,10 @@ public class MainView extends JFrame {
         });
     }
 
-    // ── 이벤트 핸들러 ──────────────────────────
+    // ── 이벤트 핸들러 ────────────────────────── 
     private void onReportIssue() {
-        // ReportIssueView 연결 (추후 구현)
-        JOptionPane.showMessageDialog(this, "이슈 등록 화면 (추후 구현)");
-        // ReportIssueView dialog = new ReportIssueView(this, issueController, currentUser);
-        // dialog.setVisible(true);
+        ReportIssueView dialog = new ReportIssueView(this, issueController, currentUser);
+        dialog.setVisible(true);
         // refreshTable(); // 등록 후 목록 갱신
     }
 
