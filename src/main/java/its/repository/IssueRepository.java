@@ -6,8 +6,10 @@ import its.model.Issue;
 
 public interface IssueRepository {
     void save(Issue issue);
-    Issue findById(Long issueId);
+    Issue findById(int issueId);
     List<Issue> findAll();
     void update(Issue issue);
-    void delete(Long issueId);
+    void delete(int issueId);
 }
+
+

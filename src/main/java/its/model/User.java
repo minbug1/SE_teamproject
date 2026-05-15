@@ -16,12 +16,14 @@ public class User {
     private AccountStatus accountStatus;
     private Role role;
 
-    // constructor
-    public User(long userId, String loginId, String password) {
-        this(userId, loginId, password, AccountStatus.PENDING, Role.UNASSIGNED);
+    // constructor 
+    public User(Long userId, String loginId, String password) {
+       this(userId, loginId, password, AccountStatus.PENDING, Role.UNASSIGNED);
     }
 
-    public User(long userId, String loginId, String password, AccountStatus accountStatus, Role role) {
+
+
+    public User(Long userId, String loginId, String password, AccountStatus accountStatus, Role role) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID must not be empty.");
         }

@@ -270,7 +270,12 @@ public class FileUserRepository implements UserRepository {
                 return new ArrayList<>();
             }
 
-            return records;
+        try {
+            long userId = Long.parseLong(tokens[0]);
+            String loginId = tokens[1];
+            String password = tokens[2];
+            AccountStatus accountStatus = AccountStatus.valueOf(tokens[3]);
+            Role role = Role.valueOf(tokens[4]);
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to read user storage file.", e);
