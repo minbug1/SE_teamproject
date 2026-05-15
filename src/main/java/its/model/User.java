@@ -10,7 +10,7 @@ package its.model;
 
 public class User {
 
-    private final Long userId;
+    private final long userId;
     private String loginId;
     private String password;
     private AccountStatus accountStatus;
@@ -52,7 +52,7 @@ public class User {
     }
 
     // get
-    public Long getUserId() {
+    public long getUserId() {
         return userId;
     }
 

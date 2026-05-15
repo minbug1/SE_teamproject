@@ -50,7 +50,7 @@ public class IssueController {
         }
 
         Issue newIssue = new Issue(
-                1, // todo: ID 자동 생성
+                1L, // todo: ID 자동 생성
                 title,
                 description,
                 reporter,
@@ -58,6 +58,7 @@ public class IssueController {
         );
 
         newIssue.setPriority(priority);
+        newIssue.setStatus(Status.NEW);
         if (commentContent != null && !commentContent.trim().isEmpty()) {
             Comment comment = new Comment(
                     1, // todo: ID 자동 생성

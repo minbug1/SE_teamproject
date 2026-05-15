@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * Repository interface for user
- * Defines operations for saving and finding users.
+ * save, update, delete, find, generateUserId
  *
  * @author hanung
  */
@@ -25,9 +25,9 @@ public interface UserRepository {
 
     User findByLoginId(String loginId);
 
-    User findByAccountStatus(AccountStatus accountStatus);
+    List<User> findByAccountStatus(AccountStatus accountStatus);
 
-    User findByRole(Role role);
+    List<User> findByRole(Role role);
 
     List<User> findAll();
 
