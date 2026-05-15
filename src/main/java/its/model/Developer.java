@@ -3,7 +3,7 @@ package its.model;
 public class Developer extends User {
 
     public Developer(Long userId, String loginId, String password) {
-        super(userId, loginId, password);
+        super(userId, loginId, password, AccountStatus.ACTIVE, Role.DEVELOPER);
     }
     
     @Override

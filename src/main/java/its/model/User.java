@@ -16,10 +16,12 @@ public class User {
     private AccountStatus accountStatus;
     private Role role;
 
-    // constructor
+    // constructor 
     public User(Long userId, String loginId, String password) {
-        this(userId, loginId, password, AccountStatus.PENDING, Role.UNASSIGNED);
+       this(userId, loginId, password, AccountStatus.PENDING, Role.UNASSIGNED);
     }
+
+
 
     public User(Long userId, String loginId, String password, AccountStatus accountStatus, Role role) {
         if (userId == null) {

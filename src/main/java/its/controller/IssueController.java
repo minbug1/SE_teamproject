@@ -3,6 +3,7 @@ package its.controller;
 import its.model.Comment;
 import its.model.Issue;
 import its.model.Priority;
+import its.model.Project;
 import its.model.Status;
 import its.model.User;
 import its.model.Tester;
@@ -12,6 +13,7 @@ import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class IssueController {
 
@@ -28,8 +30,12 @@ public class IssueController {
         this.issueRepository = issueRepository;
     }
 
-    public Issue reportIssue(String title, String description, User reporter, Priority priority, String commentContent) {
+    public Issue reportIssue(Project project, String title, String description, User reporter, Priority priority, String commentContent) {
         
+        if (project == null) {
+            throw new IllegalArgumentException("이슈가 속할 프로젝트 정보가 없습니다.");
+        }
+
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("Title must not be empty.");
         }
@@ -66,6 +72,8 @@ public class IssueController {
 
         newIssue.setStatus(Status.NEW);
 
+        project.addIssue(newIssue);
+
         // db에 이슈 저장
         issueRepository.save(newIssue);
 
@@ -86,9 +94,13 @@ public class IssueController {
     //
 
     //Fix Issue
-    public Issue updateState(int issueId, String commentContent, Developer dev){
+    public Issue updateState(Project project, int issueId, String commentContent, Developer dev){
         Issue issue = issueRepository.findById(issueId);
 
+        //user가 project 멤버인지
+        if (project == null || !project.getMembers().contains(dev)) {
+            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 수정할 권한이 없습니다.");
+        }
         //조건 Assigned된 이슈
         if (issue == null || issue.getStatus() != Status.ASSIGNED) {
             return null;
@@ -104,14 +116,20 @@ public class IssueController {
         // 상태 변경
         issue.setStatus(Status.FIXED);
 
-        issue.setFixer(dev)
+        issue.setFixer(dev);
         
         return issue;
     }
 
     //Verify Issue
-    public Issue updateState(int issueId, String commentContent, Tester tester, boolean isResolved){
+    public Issue updateState(Project project, int issueId, String commentContent, Tester tester, boolean isResolved){
         Issue issue = issueRepository.findById(issueId);
+
+        
+        //user가 project 멤버인지
+        if (project == null || !project.getMembers().contains(tester)) {
+            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 수정할 권한이 없습니다.");
+        }
 
         //조건 FIXED된 이슈
         if (issue == null || issue.getStatus() != Status.FIXED) {
@@ -137,8 +155,15 @@ public class IssueController {
     }
 
     //Close Issue
-    public Issue updateState(int issueId, String commentContent, PL pl){
+    public Issue updateState(Project project, int issueId, String commentContent, PL pl){
+
+        //user가 project 멤버인지
+        if (project == null || !project.getMembers().contains(pl)) {
+            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 수정할 권한이 없습니다.");
+        }
+
         Issue issue = issueRepository.findById(issueId);
+        
 
         //조건 Resolved된 이슈
         if (issue == null || issue.getStatus() != Status.RESOLVED) {
@@ -159,7 +184,19 @@ public class IssueController {
     }
 
     //Assign Issue 이거 조금더 수정 필요함
-    public Issue assignIssue(int issueId, Developer assignee, PL pl, String commentContent) {
+    public Issue assignIssue(Project project, int issueId, Developer assignee, PL pl, String commentContent) {
+
+        // 권한 및 유효성 검증
+        if (project == null) {
+         throw new IllegalArgumentException("프로젝트 정보가 없습니다.");
+        }
+        if (!project.getMembers().contains(pl)) {
+            throw new SecurityException("이 프로젝트의 PL이 아닙니다.");
+        }
+        if (!project.getMembers().contains(assignee)) {
+            throw new IllegalArgumentException("할당하려는 개발자가 프로젝트 멤버가 아닙니다.");
+        }
+
         Issue issue = issueRepository.findById(issueId);
 
         // NEW 또는 REOPENED 상태일 때 할당이 가능합니다.
@@ -185,4 +222,38 @@ public class IssueController {
 
         return issue;
     }
+
+
+    //이거 UI구현되면 수정필요
+    public void showIssues(Project project, Status filterStatus) {
+    if (project == null) {
+        System.out.println("❌ 프로젝트 정보가 없습니다.");
+        return;
+    }
+
+    String statusText = (filterStatus == null) ? "전체" : filterStatus.toString();
+    System.out.println("\n===== [" + project.getName() + "] 이슈 목록 (" + statusText + ") =====");
+
+    List<Issue> issues = project.getIssues();
+    
+    // 이슈가 하나도 없는 경우
+    if (issues.isEmpty()) {
+        System.out.println("   접수된 이슈가 없습니다.");
+        return;
+    }
+
+    boolean found = false;
+    for (Issue issue : issues) {
+        // filterStatus가 null이면 무조건 출력, 아니면 상태가 일치하는 것만 출력
+        if (filterStatus == null || issue.getStatus() == filterStatus) {
+            issue.printIssueInfo(); // 지난번에 만든 출력 메소드 활용
+            found = true;
+        }
+    }
+
+    if (!found) {
+        System.out.println("   해당 상태의 이슈가 없습니다.");
+    }
+    System.out.println("==========================================\n");
+}
 }

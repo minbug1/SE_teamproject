@@ -93,5 +93,24 @@ public class Issue {
         return new ArrayList<>(comments);
     }
 
+    // 여거 테스트용도
+    public void printIssueInfo() {
+        System.out.println("--------------------------------------------------");
+        System.out.println("🔹 [이슈 #" + this.issueId + "] " + this.title);
+        System.out.println("   - 현재 상태: " + this.status + " | 우선순위: " + this.priority);
+        System.out.println("   - 생성자(Reporter): " + (this.reporter != null ? this.reporter.getLoginId() : "없음"));
+        System.out.println("   - 담당자(Assignee): " + (this.assignee != null ? this.assignee.getLoginId() : "없음"));
+        System.out.println("   - 해결자(Fixer): " + (this.fixer != null ? this.fixer.getLoginId() : "없음"));
+        
+        // 코멘트가 있다면 모두 출력
+        if (this.comments != null && !this.comments.isEmpty()) {
+            System.out.println("   - 코멘트 내역:");
+            for (Comment c : this.comments) {
+                // Comment 클래스에 getter가 있다고 가정
+                System.out.println("      └ [" + c.getAuthor().getLoginId() + "] " + c.getContent());
+            }
+        }
+        System.out.println("--------------------------------------------------\n");
+    }
 
 }

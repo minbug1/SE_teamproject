@@ -1,12 +1,13 @@
 package its.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import its.model.Issue;
 
 public class FileIssueRepository implements IssueRepository {
 
-    private List<Issue> issues; 
+    private List<Issue> issues = new ArrayList<>();
 
     @Override
     public void save(Issue issue) {
