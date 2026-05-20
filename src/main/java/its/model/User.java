@@ -1,6 +1,8 @@
 
 package its.model;
 
+import java.util.Objects;
+
 /**
  * model for user
  * 
@@ -118,6 +120,18 @@ public class User {
         return accountStatus == AccountStatus.ACTIVE;
     }
 
+    public boolean isPending() {
+        return accountStatus == AccountStatus.PENDING;
+    }
+
+    public boolean isRejected() {
+        return accountStatus == AccountStatus.REJECTED;
+    }
+
+    public boolean isDisabled() {
+        return accountStatus == AccountStatus.DISABLED;
+    }
+
     public boolean isAdmin() {
         return role == Role.ADMIN;
     }
@@ -133,6 +147,30 @@ public class User {
     public boolean isTester() {
         return role == Role.TESTER;
     }
+
+    public boolean isUnassigned() {
+        return role == Role.UNASSIGNED;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof User)) {
+            return false;
+        }
+
+        User other = (User) obj;
+        return this.userId == other.userId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId);
+    }
+
 
     @Override
     public String toString() {

@@ -2,6 +2,7 @@ package its.repository;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import its.model.AccountStatus;
@@ -15,23 +16,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-/**
- * JSON file-based implementation of UserRepository. by GPT.
- *
- * Storage format:
- * [
- *   {
- *     "userId": 1,
- *     "loginId": "admin",
- *     "password": "1234",
- *     "accountStatus": "ACTIVE",
- *     "role": "ADMIN"
- *   }
- * ]
- *
- * @author hanung
- */
 public class FileUserRepository implements UserRepository {
 
     private static final String DEFAULT_FILE_PATH = "data/users.json";
@@ -43,7 +29,6 @@ public class FileUserRepository implements UserRepository {
         this(DEFAULT_FILE_PATH);
     }
 
-    // Constructor for testing or custom file path.
     public FileUserRepository(String filePath) {
         if (filePath == null || filePath.trim().isEmpty()) {
             throw new IllegalArgumentException("File path must not be empty.");
@@ -67,16 +52,14 @@ public class FileUserRepository implements UserRepository {
 
             if (!file.exists()) {
                 file.createNewFile();
-                writeAll(new ArrayList<User>());
             }
 
-            // Empty file protection
             if (file.length() == 0) {
                 writeAll(new ArrayList<User>());
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to initialize user storage file.", e);
+            throw new RuntimeException("Failed to initialize user data file", e);
         }
     }
 
@@ -88,11 +71,11 @@ public class FileUserRepository implements UserRepository {
 
         for (User existingUser : users) {
             if (existingUser.getUserId() == user.getUserId()) {
-                throw new IllegalArgumentException("User ID already exists.");
+                throw new IllegalArgumentException("Pre existing user with the same ID.");
             }
 
-            if (existingUser.getLoginId().equals(user.getLoginId())) {
-                throw new IllegalArgumentException("Login ID already exists.");
+            if (Objects.equals(existingUser.getLoginId(), user.getLoginId())) {
+                throw new IllegalArgumentException("Pre existing user with the same login ID.");
             }
         }
 
@@ -105,18 +88,18 @@ public class FileUserRepository implements UserRepository {
         validateUser(user);
 
         List<User> users = findAll();
-
         boolean updated = false;
 
         for (int i = 0; i < users.size(); i++) {
             User existingUser = users.get(i);
 
             if (existingUser.getUserId() == user.getUserId()) {
-                // loginId duplication check
+
+                // 본인을 제외한 다른 유저와 loginId가 겹치면 안 된다.
                 for (User otherUser : users) {
                     if (otherUser.getUserId() != user.getUserId()
-                            && otherUser.getLoginId().equals(user.getLoginId())) {
-                        throw new IllegalArgumentException("Login ID already exists.");
+                            && Objects.equals(otherUser.getLoginId(), user.getLoginId())) {
+                        throw new IllegalArgumentException("Pre existing user with the same login ID.");
                     }
                 }
 
@@ -127,7 +110,7 @@ public class FileUserRepository implements UserRepository {
         }
 
         if (!updated) {
-            throw new IllegalArgumentException("User does not exist.");
+            throw new IllegalArgumentException("There is no user with the specified ID.");
         }
 
         writeAll(users);
@@ -136,12 +119,11 @@ public class FileUserRepository implements UserRepository {
     @Override
     public void deleteByUserId(long userId) {
         if (userId <= 0) {
-            throw new IllegalArgumentException("User ID must be positive.");
+            throw new IllegalArgumentException("ID must be a positive number.");
         }
 
         List<User> users = findAll();
         List<User> remainingUsers = new ArrayList<>();
-
         boolean deleted = false;
 
         for (User user : users) {
@@ -153,7 +135,7 @@ public class FileUserRepository implements UserRepository {
         }
 
         if (!deleted) {
-            throw new IllegalArgumentException("User does not exist.");
+            throw new IllegalArgumentException("There is no user with the specified ID.");
         }
 
         writeAll(remainingUsers);
@@ -185,7 +167,7 @@ public class FileUserRepository implements UserRepository {
         List<User> users = findAll();
 
         for (User user : users) {
-            if (user.getLoginId().equals(loginId)) {
+            if (Objects.equals(user.getLoginId(), loginId)) {
                 return user;
             }
         }
@@ -270,15 +252,12 @@ public class FileUserRepository implements UserRepository {
                 return new ArrayList<>();
             }
 
-        try {
-            long userId = Long.parseLong(tokens[0]);
-            String loginId = tokens[1];
-            String password = tokens[2];
-            AccountStatus accountStatus = AccountStatus.valueOf(tokens[3]);
-            Role role = Role.valueOf(tokens[4]);
+            return records;
 
+        } catch (JsonSyntaxException e) {
+            throw new RuntimeException("Failed to parse user data file. The JSON format is invalid.", e);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read user storage file.", e);
+            throw new RuntimeException("Failed to read user data file.", e);
         }
     }
 
@@ -292,7 +271,7 @@ public class FileUserRepository implements UserRepository {
         try (FileWriter writer = new FileWriter(file, false)) {
             gson.toJson(records, writer);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to write user storage file.", e);
+            throw new RuntimeException("Failed to write user data file.", e);
         }
     }
 
@@ -302,7 +281,7 @@ public class FileUserRepository implements UserRepository {
         }
 
         if (user.getUserId() <= 0) {
-            throw new IllegalArgumentException("User ID must be positive.");
+            throw new IllegalArgumentException("Invalid user ID.");
         }
 
         if (user.getLoginId() == null || user.getLoginId().trim().isEmpty()) {
@@ -322,12 +301,8 @@ public class FileUserRepository implements UserRepository {
         }
     }
 
-    /**
-     * DTO for JSON storage.
-     *
-     * We use this instead of directly serializing User
-     * because User has private/final fields and domain methods.
-     */
+    // 데이터 교환용 DTO.
+    // User 객체를 직접 저장하지 않고 필요한 값만 JSON에 저장한다.
     private static class UserRecord {
         private long userId;
         private String loginId;
@@ -336,13 +311,37 @@ public class FileUserRepository implements UserRepository {
         private String role;
 
         private User toUser() {
-            return new User(
-                    userId,
-                    loginId,
-                    password,
-                    AccountStatus.valueOf(accountStatus),
-                    Role.valueOf(role)
-            );
+            if (userId <= 0) {
+                throw new IllegalArgumentException("Invalid user ID.");
+            }
+
+            if (loginId == null || loginId.trim().isEmpty()) {
+                throw new IllegalArgumentException("Login ID must not be empty.");
+            }
+
+            if (password == null || password.trim().isEmpty()) {
+                throw new IllegalArgumentException("Password must not be empty.");
+            }
+
+            if (accountStatus == null || accountStatus.trim().isEmpty()) {
+                throw new IllegalArgumentException("Account status must not be empty.");
+            }
+
+            if (role == null || role.trim().isEmpty()) {
+                throw new IllegalArgumentException("Role must not be empty.");
+            }
+
+            try {
+                return new User(
+                        userId,
+                        loginId,
+                        password,
+                        AccountStatus.valueOf(accountStatus),
+                        Role.valueOf(role)
+                );
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Saved account status or role value does not match the enum.", e);
+            }
         }
 
         private static UserRecord fromUser(User user) {
@@ -356,29 +355,5 @@ public class FileUserRepository implements UserRepository {
 
             return record;
         }
-    }
-
-    @Override
-    public void update(User user) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
-    }
-
-    @Override
-    public User findByAccountStatus(AccountStatus accountStatus) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByAccountStatus'");
-    }
-
-    @Override
-    public User findByRole(Role role) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByRole'");
-    }
-
-    @Override
-    public List<User> findPendingUsers() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findPendingUsers'");
     }
 }
