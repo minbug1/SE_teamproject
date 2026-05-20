@@ -25,7 +25,7 @@ public class Issue {
         this.reporter = reporter;
         this.reportedDate = reportedDate;
         this.priority = Priority.MAJOR; 
-        this.status = Status.NEW; 
+        this.status = Status.NEW;
     }
 
     public Long getIssueId() {
