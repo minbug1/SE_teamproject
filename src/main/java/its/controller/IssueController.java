@@ -5,10 +5,8 @@ import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
 import its.model.Status;
+import its.model.Role;
 import its.model.User;
-import its.model.Tester;
-import its.model.PL;
-import its.model.Developer;
 import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
 

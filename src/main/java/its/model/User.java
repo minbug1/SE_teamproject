@@ -1,6 +1,8 @@
 
 package its.model;
 
+import java.util.Objects;
+
 /**
  * model for user
  * 
