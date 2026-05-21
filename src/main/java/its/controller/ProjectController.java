@@ -1,9 +1,29 @@
 package its.controller;
 
+import java.util.List;
+
+import its.model.Issue;
 import its.model.Project;
 import its.model.User;
+import its.repository.FileProjectRepository;
+import its.repository.ProjectRepository;
 
 public class ProjectController {
+
+    private ProjectRepository projectRepository;
+
+    // 기본 생성자에서 FileProjectRepository를 사용하도록 설정
+    public ProjectController() {
+       this(new FileProjectRepository());
+    }
+
+    // 의존성 주입을 위한 생성자
+    public ProjectController(ProjectRepository projectRepository) {
+        if (projectRepository == null) {
+            throw new IllegalArgumentException("Project repository must not be null.");
+        }
+        this.projectRepository = projectRepository;
+    }
 
     //admin이 프로젝트 생성
     public Project createProject(String name, String description, User adminUser) {
@@ -19,11 +39,11 @@ public class ProjectController {
         }
 
         // 프로젝트 객체 생성
-        // projectId는 pojectrepository 만드록 수정 해야됨
-        int newProjectId = 1; 
+        int newProjectId = projectRepository.generateProjectId();
         Project newProject = new Project(newProjectId, name, description);
 
-        //아직 projectrepository 안 만듦 
+        // 프로젝트 저장 (파일 저장)
+        projectRepository.save(newProject); 
 
         return newProject;
     }
@@ -47,5 +67,63 @@ public class ProjectController {
         // 프로젝트에 멤버 추가
         project.addMember(newMember);
 
+        //프로젝트 업데이트 (파일 저장)
+        projectRepository.update(project);
+
+    }
+
+    //  프로젝트에 이슈 추가 및 파일 업데이트
+    public void addIssueToProject(Project project, Issue issue) {
+        // 유효성 검증
+        if (project == null) {
+            throw new IllegalArgumentException("대상 프로젝트 정보가 없습니다.");
+        }
+        if (issue == null) {
+            throw new IllegalArgumentException("추가할 이슈 정보가 없습니다.");
+        }
+
+        // 1. 프로젝트 객체에 이슈 추가
+        project.addIssue(issue);
+
+        // 2. 프로젝트 파일(JSON) 업데이트
+        projectRepository.update(project);
+    }
+
+    // 프로젝트 삭제 (Admin 전용)
+    public void deleteProject(int projectId, User adminUser) {
+        
+        // 1. 권한 검증: Admin만 프로젝트를 삭제할 수 있음
+        if (adminUser == null || !adminUser.isAdmin()) {
+            throw new SecurityException("프로젝트 삭제 권한이 없습니다. Admin만 가능합니다.");
+        }
+
+        // 2. Repository에서 삭제 수행 (Repository 내부에서 파일 saveToFile()이 호출되어야 함)
+        projectRepository.delete(projectId);
+        
+    }
+
+    //테스트용
+    // 전체 프로젝트 목록 출력
+    public void showProjects(List<Project> projects) {
+        if (projects == null || projects.isEmpty()) {
+            System.out.println("❌ 등록된 프로젝트가 없습니다.");
+            return;
+        }
+
+        System.out.println("\n===== [전체 프로젝트 목록] =====");
+
+        for (Project project : projects) {
+            // NullPointerException 방지를 위해 리스트 사이즈 체크
+            int memberCount = (project.getMembers() != null) ? project.getMembers().size() : 0;
+            int issueCount = (project.getIssues() != null) ? project.getIssues().size() : 0;
+
+            // 프로젝트 정보 출력
+            System.out.println("📌 [프로젝트 #" + project.getProjectId() + "] " + project.getName());
+            System.out.println("   - 설명: " + project.getDescription());
+            System.out.println("   - 참여 인원: " + memberCount + "명 | 등록된 이슈: " + issueCount + "개");
+            System.out.println("   ------------------------------------------");
+        }
+
+        System.out.println("==========================================\n");
     }
 }

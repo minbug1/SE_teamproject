@@ -1,0 +1,45 @@
+[
+  {
+    "issueId": 1,
+    "title": "결제 완료 후 영수증 출력 에러",
+    "description": "IE 환경에서 영수증 팝업이 뜨지 않습니다.",
+    "reportedDate": "2026-05-20T22:31:59.582582700",
+    "reporterId": 4,
+    "assigneeId": 3,
+    "fixerId": 3,
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "빠른 확인이 필요합니다.",
+        "authorId": 4,
+        "writtenDate": "2026-05-20T22:31:59.587400400"
+      },
+      {
+        "commentId": 2,
+        "content": "확인해주세요.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T22:31:59.603125200"
+      },
+      {
+        "commentId": 3,
+        "content": "팝업 차단 우회 처리 완료.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T22:31:59.604752800"
+      },
+      {
+        "commentId": 4,
+        "content": "정상 작동 확인.",
+        "authorId": 4,
+        "writtenDate": "2026-05-20T22:31:59.621436300"
+      },
+      {
+        "commentId": 5,
+        "content": "이슈 닫습니다.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T22:31:59.637849400"
+      }
+    ]
+  }
+]
