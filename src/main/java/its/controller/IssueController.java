@@ -5,10 +5,8 @@ import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
 import its.model.Status;
+import its.model.Role;
 import its.model.User;
-import its.model.Tester;
-import its.model.PL;
-import its.model.Developer;
 import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
 
@@ -63,9 +61,10 @@ public class IssueController {
         );
 
         newIssue.setPriority(priority);
+        newIssue.setStatus(Status.NEW);
         if (commentContent != null && !commentContent.trim().isEmpty()) {
             Comment comment = new Comment(
-                    1, // todo: ID 자동 생성
+                    newIssue.getNextCommentId(),
                     commentContent,
                     reporter,
                     LocalDateTime.now()
@@ -100,25 +99,17 @@ public class IssueController {
     public Issue fixIssue(Project project, int issueId, String commentContent, User dev){
         Issue issue = issueRepository.findById(issueId);
 
-        //user가 project 멤버인지
-        if (project == null || !project.getMembers().contains(dev)) {
-            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 수정할 권한이 없습니다.");
-        }
-        //조건 Assigned된 이슈
         if (issue == null || issue.getStatus() != Status.ASSIGNED) {
             return null;
         }
 
-        // 코멘트 객체 생성 및 이슈에 추가
-        if (commentContent != null && !commentContent.isEmpty()) {
-            int nextCommentId = issue.getComments().size() + 1;
-            Comment comment = new Comment(nextCommentId, commentContent, dev, LocalDateTime.now());
-            issue.addComment(comment);
+        if (issue.getAssignee() == null || !issue.getAssignee().equals(dev)) {
+            throw new SecurityException("Only assigned issues can be fixed.");
         }
 
-        // 상태 변경
-        issue.setStatus(Status.FIXED);
+        addCommentIfPresent(issue, commentContent, dev);
 
+        issue.setStatus(Status.FIXED);
         issue.setFixer(dev);
 
         issueRepository.update(issue);
@@ -130,31 +121,30 @@ public class IssueController {
     public Issue verifyIssue(Project project, int issueId, String commentContent, User tester, boolean isResolved){
         Issue issue = issueRepository.findById(issueId);
 
-        
-        //user가 project 멤버인지
-        if (project == null || !project.getMembers().contains(tester)) {
-            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 수정할 권한이 없습니다.");
-        }
+        validateProject(project);
+        validateUser(tester, "Tester must not be null.");
+        validateRole(tester, Role.TESTER, "Only testers can verify issues.");
+        validateProjectMember(project, tester, "Need to be a member of the project to verify the issue.");
 
-        //조건 FIXED된 이슈
+        Issue issue = getIssueOrNull(issueId);
+
         if (issue == null || issue.getStatus() != Status.FIXED) {
             return null;
         }
 
+        if (issue.getReporter() == null || !issue.getReporter().equals(tester)) {
+            throw new SecurityException("Only the reporter can verify the issue.");
+        }
+
         if (isResolved) {
-            // 해결 성공
             issue.setStatus(Status.RESOLVED);
         } else {
-            // 해결 실패 
             issue.setStatus(Status.REOPENED);
         }
 
-        // 코멘트 객체 생성 및 이슈에 추가
-        if (commentContent != null && !commentContent.isEmpty()) {
-            int nextCommentId = issue.getComments().size() + 1;
-            Comment comment = new Comment(nextCommentId, commentContent, tester, LocalDateTime.now());
-            issue.addComment(comment);
-        }
+        addCommentIfPresent(issue, commentContent, tester);
+
+        issueRepository.update(issue);
 
         issueRepository.update(issue);
         
@@ -164,27 +154,19 @@ public class IssueController {
     //Close Issue
     public Issue closeIssue(Project project, int issueId, String commentContent, User pl){
 
-        //user가 project 멤버인지
-        if (project == null || !project.getMembers().contains(pl)) {
-            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 수정할 권한이 없습니다.");
-        }
+        validateProject(project);
+        validateUser(pl, "PL must not be null.");
+        validateRole(pl, Role.PL, "Only PL can change the issue status to closed.");
+        validateProjectMember(project, pl, "Need to be a member of the project to close the issue.");
 
-        Issue issue = issueRepository.findById(issueId);
-        
+        Issue issue = getIssueOrNull(issueId);
 
-        //조건 Resolved된 이슈
         if (issue == null || issue.getStatus() != Status.RESOLVED) {
             return null;
         }
 
-        // 코멘트 객체 생성 및 이슈에 추가
-        if (commentContent != null && !commentContent.isEmpty()) {
-            int nextCommentId = issue.getComments().size() + 1;
-            Comment comment = new Comment(nextCommentId, commentContent, pl, LocalDateTime.now());
-            issue.addComment(comment);
-        }
+        addCommentIfPresent(issue, commentContent, pl);
 
-        // 상태 변경
         issue.setStatus(Status.CLOSED);
         
         issueRepository.update(issue);
@@ -195,38 +177,81 @@ public class IssueController {
     //Assign Issue 이거 조금더 수정 필요함
     public Issue assignIssue(Project project, int issueId, User assignee, User pl, String commentContent) {
 
-        // 권한 및 유효성 검증
-        if (project == null) {
-         throw new IllegalArgumentException("프로젝트 정보가 없습니다.");
-        }
-        if (!project.getMembers().contains(pl)) {
-            throw new SecurityException("이 프로젝트의 PL이 아닙니다.");
-        }
-        if (!project.getMembers().contains(assignee)) {
-            throw new IllegalArgumentException("할당하려는 개발자가 프로젝트 멤버가 아닙니다.");
-        }
+        validateProject(project);
+        validateUser(pl, "PL must not be null.");
+        validateUser(assignee, "Assignee must not be null.");
 
-        Issue issue = issueRepository.findById(issueId);
+        validateRole(pl, Role.PL, "Only PL can assign issues.");
+        validateRole(assignee, Role.DEVELOPER, "Only developers can be assigned to issues.");
 
-        // NEW 또는 REOPENED 상태일 때 할당이 가능합니다.
+        validateProjectMember(project, pl, "This user is not a PL member of the project.");
+        validateProjectMember(project, assignee, "The assignee is not a member of the project.");
+
+        Issue issue = getIssueOrNull(issueId);
+
         if (issue == null || (issue.getStatus() != Status.NEW && issue.getStatus() != Status.REOPENED)) {
             return null;
         }
 
-        // PL 및 Assignee 유효성 검사
-        if (pl == null || assignee == null) {
-            throw new IllegalArgumentException("PL and Assignee must not be null.");
+        issue.setAssignee(assignee);
+        issue.setStatus(Status.ASSIGNED);
+
+        addCommentIfPresent(issue, commentContent, pl);
+
+        issueRepository.update(issue);
+
+        return issue;
+    }
+
+    // helper
+    private Issue getIssueOrNull(int issueId) {
+        if (issueId <= 0) {
+            throw new IllegalArgumentException("Issue ID must be a positive number.");
         }
 
-        // 담당자 설정 및 상태 변경
-        issue.setAssignee(assignee);
-        issue.setStatus(Status.ASSIGNED); 
+        return issueRepository.findById(issueId);
+    }
 
-        //코멘트 객체 생성 및 이슈에 추가
-        if (commentContent != null && !commentContent.trim().isEmpty()) {
-            int nextCommentId = issue.getComments().size() + 1;
-            Comment comment = new Comment(nextCommentId, commentContent, pl, LocalDateTime.now());
-            issue.addComment(comment); 
+    private void addCommentIfPresent(Issue issue, String commentContent, User author) {
+        if (issue == null) {
+            throw new IllegalArgumentException("Issue must not be null.");
+        }
+
+        if (author == null) {
+            throw new IllegalArgumentException("Author must not be null.");
+        }
+
+        if (commentContent == null || commentContent.trim().isEmpty()) {
+            return;
+        }
+
+        Comment comment = new Comment(
+                issue.getNextCommentId(),
+                commentContent,
+                author,
+                LocalDateTime.now()
+        );
+
+        issue.addComment(comment);
+    }
+
+    private void validateProject(Project project) {
+        if (project == null) {
+            throw new IllegalArgumentException("프로젝트 정보가 없습니다.");
+        }
+    }
+
+    private void validateUser(User user, String message) {
+        if (user == null) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    private void validateRole(User user, Role requiredRole, String message) {
+        validateUser(user, "User must not be null.");
+
+        if (requiredRole == null) {
+            throw new IllegalArgumentException("Required role must not be null.");
         }
 
         issueRepository.update(issue);
