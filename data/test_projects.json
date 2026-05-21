@@ -1,0 +1,15 @@
+[
+  {
+    "projectId": 1,
+    "name": "테스트 프로젝트",
+    "description": "저장 테스트용",
+    "memberIds": [
+      2,
+      3,
+      4
+    ],
+    "issueIds": [
+      1
+    ]
+  }
+]

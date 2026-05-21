@@ -17,10 +17,12 @@ public class IssueController {
 
     private IssueRepository issueRepository;
 
+    // 기본 생성자에서 FileIssueRepository를 사용하도록 설정
     public IssueController() {
         this(new FileIssueRepository());
     }
 
+    // 의존성 주입을 위한 생성자
     public IssueController(IssueRepository issueRepository) {
         if (issueRepository == null) {
             throw new IllegalArgumentException("Issue repository must not be null.");
@@ -28,10 +30,12 @@ public class IssueController {
         this.issueRepository = issueRepository;
     }
 
+    //Report Issue
     public Issue reportIssue(Project project, String title, String description, User reporter, Priority priority, String commentContent) {
         
-        if (project == null) {
-            throw new IllegalArgumentException("이슈가 속할 프로젝트 정보가 없습니다.");
+        //user가 project 멤버인지
+        if (project == null || !project.getMembers().contains(reporter)) {
+            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 등록할 권한이 없습니다.");
         }
 
         if (title == null || title.trim().isEmpty()) {
@@ -47,8 +51,9 @@ public class IssueController {
             throw new IllegalArgumentException("Priority must not be null.");
         }
 
+        int newIssueId = issueRepository.findAll().size() + 1;
         Issue newIssue = new Issue(
-                issueRepository.generateIssueId(),
+                newIssueId,
                 title,
                 description,
                 reporter,
@@ -71,8 +76,6 @@ public class IssueController {
 
         newIssue.setStatus(Status.NEW);
 
-        project.addIssue(newIssue);
-
         // db에 이슈 저장
         issueRepository.save(newIssue);
 
@@ -92,15 +95,9 @@ public class IssueController {
     }
     //
 
-    // Fix Issue
-    public Issue fixIssue(Project project, int issueId, String commentContent, User dev) {
-
-        validateProject(project);
-        validateUser(dev, "Developer must not be null.");
-        validateRole(dev, Role.DEVELOPER, "Only developers can fix issues.");
-        validateProjectMember(project, dev, "Need to be a member of the project to fix the issue.");
-
-        Issue issue = getIssueOrNull(issueId);
+    //Fix Issue
+    public Issue fixIssue(Project project, int issueId, String commentContent, User dev){
+        Issue issue = issueRepository.findById(issueId);
 
         if (issue == null || issue.getStatus() != Status.ASSIGNED) {
             return null;
@@ -116,12 +113,13 @@ public class IssueController {
         issue.setFixer(dev);
 
         issueRepository.update(issue);
-
+        
         return issue;
     }
 
-    // Verify Issue
-    public Issue verifyIssue(Project project, int issueId, String commentContent, User tester, boolean isResolved) {
+    //Verify Issue
+    public Issue verifyIssue(Project project, int issueId, String commentContent, User tester, boolean isResolved){
+        Issue issue = issueRepository.findById(issueId);
 
         validateProject(project);
         validateUser(tester, "Tester must not be null.");
@@ -148,11 +146,13 @@ public class IssueController {
 
         issueRepository.update(issue);
 
+        issueRepository.update(issue);
+        
         return issue;
     }
 
-    // Close Issue
-    public Issue closeIssue(Project project,  int issueId, String commentContent, User pl) {
+    //Close Issue
+    public Issue closeIssue(Project project, int issueId, String commentContent, User pl){
 
         validateProject(project);
         validateUser(pl, "PL must not be null.");
@@ -168,13 +168,13 @@ public class IssueController {
         addCommentIfPresent(issue, commentContent, pl);
 
         issue.setStatus(Status.CLOSED);
-
+        
         issueRepository.update(issue);
 
         return issue;
     }
 
-    // Assign Issue
+    //Assign Issue 이거 조금더 수정 필요함
     public Issue assignIssue(Project project, int issueId, User assignee, User pl, String commentContent) {
 
         validateProject(project);
@@ -254,51 +254,59 @@ public class IssueController {
             throw new IllegalArgumentException("Required role must not be null.");
         }
 
-        if (user.getRole() != requiredRole) {
-            throw new SecurityException(message);
-        }
+        issueRepository.update(issue);
+
+        return issue;
     }
 
-    private void validateProjectMember(Project project, User user, String message) {
-        validateProject(project);
-        validateUser(user, "User must not be null.");
-
-        if (!project.getMembers().contains(user)) {
-            throw new SecurityException(message);
+    // 이슈 삭제
+    public void deleteIssue(Project project, int issueId, User user) {
+        
+        // 1. 권한 검증 (예: 프로젝트 멤버만 삭제 가능하다고 가정)
+        if (project == null || !project.getMembers().contains(user)) {
+            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 삭제할 수 없습니다.");
         }
-    }
 
+        // 2. Project 객체가 가진 이슈 리스트에서 해당 이슈 제거
+        project.getIssues().removeIf(issue -> issue.getIssueId() == issueId);
+
+        // 3. IssueRepository를 통해 이슈 데이터 완전히 삭제 (파일에서 지워짐)
+        issueRepository.delete(issueId);
+
+    }
 
     //이거 UI구현되면 수정필요
     public void showIssues(Project project, Status filterStatus) {
-    if (project == null) {
-        System.out.println("❌ 프로젝트 정보가 없습니다.");
-        return;
-    }
-
-    String statusText = (filterStatus == null) ? "전체" : filterStatus.toString();
-    System.out.println("\n===== [" + project.getName() + "] 이슈 목록 (" + statusText + ") =====");
-
-    List<Issue> issues = project.getIssues();
-    
-    // 이슈가 하나도 없는 경우
-    if (issues.isEmpty()) {
-        System.out.println("   접수된 이슈가 없습니다.");
-        return;
-    }
-
-    boolean found = false;
-    for (Issue issue : issues) {
-        // filterStatus가 null이면 무조건 출력, 아니면 상태가 일치하는 것만 출력
-        if (filterStatus == null || issue.getStatus() == filterStatus) {
-            issue.printIssueInfo(); // 지난번에 만든 출력 메소드 활용
-            found = true;
+        if (project == null) {
+            System.out.println("❌ 프로젝트 정보가 없습니다.");
+            return;
         }
-    }
+    
 
-    if (!found) {
-        System.out.println("   해당 상태의 이슈가 없습니다.");
+        String statusText = (filterStatus == null) ? "전체" : filterStatus.toString();
+        System.out.println("\n===== [" + project.getName() + "] 이슈 목록 (" + statusText + ") =====");
+
+        List<Issue> issues = project.getIssues();
+    
+        // 이슈가 하나도 없는 경우
+        if (issues.isEmpty()) {
+            System.out.println("   접수된 이슈가 없습니다.");
+            return;
+        }
+
+        boolean found = false;
+        for (Issue issue : issues) {
+            // filterStatus가 null이면 무조건 출력, 아니면 상태가 일치하는 것만 출력
+            if (filterStatus == null || issue.getStatus() == filterStatus) {
+                issue.printIssueInfo(); // 지난번에 만든 출력 메소드 활용
+                found = true;
+            }
+        }
+    
+
+        if (!found) {
+            System.out.println("   해당 상태의 이슈가 없습니다.");
+        }
+        System.out.println("==========================================\n");
     }
-    System.out.println("==========================================\n");
-}
 }

@@ -10,6 +10,8 @@ public class Project {
     private String description;
     private List<User> members = new ArrayList<>();
     private List<Issue> issues = new ArrayList<>();
+    private List<Integer> memberIds = new ArrayList<>();
+    private List<Integer> issueIds = new ArrayList<>();
 
     public Project(int projectId, String name, String description) {
         this.projectId = projectId;
@@ -54,11 +56,25 @@ public class Project {
     }
 
     public List<User> getMembers() {
-        return members;
+        // 만약 리스트가 null 상태라면 텅 빈 리스트를 새로 만들어줍니다.
+        if (this.members == null) {
+            this.members = new ArrayList<>();
+        }
+        return this.members;
     }
 
     public List<Issue> getIssues() {
-        return issues;
+        if (this.issues == null) {
+            this.issues = new ArrayList<>();
+        }
+        return this.issues;
+    }
+
+    public List<Integer> getMemberIds() { 
+        return memberIds; 
+    }
+    public List<Integer> getIssueIds() { 
+        return issueIds; 
     }
 }
 
