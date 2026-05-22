@@ -1,12 +1,15 @@
 package its;
 
+import javax.security.auth.login.LoginContext;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import its.controller.AuthController;
 import its.controller.IssueController;
 import its.model.AccountStatus;
 import its.model.Role;
 import its.model.User;
+import its.view.swing.LoginView;
 import its.view.swing.MainView;
 
 public class Main {
@@ -19,6 +22,7 @@ public class Main {
             }
 
             IssueController issueController = new IssueController();
+            AuthController authController = new AuthController();
             User debugUser = new User(
                     1L,
                     "debug-tester",
@@ -27,7 +31,7 @@ public class Main {
                     Role.TESTER
             );
 
-            new MainView(issueController, debugUser).setVisible(true);
+            new LoginView(authController, issueController).setVisible(true);
         });
     }
 }
