@@ -11,8 +11,30 @@ import its.model.Role;
 import its.model.User;
 import its.view.swing.LoginView;
 import its.view.swing.MainView;
+import its.controller.AuthController;
+import its.controller.IssueController;
+import its.controller.ProjectController;
+import its.controller.UserController;
+import its.model.AccountStatus;
+import its.model.Issue;
+import its.model.Priority;
+import its.model.Project;
+import its.model.Role;
+import its.model.User;
+import its.repository.FileIssueRepository;
+import its.repository.FileProjectRepository;
+import its.repository.FileUserRepository;
+
+import java.io.File;
+import java.nio.file.Files;
 
 public class Main {
+
+    // 테스트용 파일 경로 (실제 운영 데이터와 분리)
+    static final String USER_FILE    = "data/test_users.json";
+    static final String ISSUE_FILE   = "data/test_issues.json";
+    static final String PROJECT_FILE = "data/test_projects.json";
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {

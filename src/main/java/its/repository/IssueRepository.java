@@ -2,12 +2,22 @@ package its.repository;
 
 import java.util.List;
 
+import its.model.AccountStatus;
 import its.model.Issue;
+import its.model.User;
 
 public interface IssueRepository {
+
     void save(Issue issue);
-    Issue findById(Long issueId);
+    Issue findById(int issueId);   
     List<Issue> findAll();
+
     void update(Issue issue);
-    void delete(Long issueId);
+    void delete(int issueId);     
+    int generateIssueId();         
+}
+
+    void delete(long issueId);
+
+    long generateIssueId();
 }

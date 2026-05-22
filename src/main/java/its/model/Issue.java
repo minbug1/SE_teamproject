@@ -25,7 +25,7 @@ public class Issue {
         this.reporter = reporter;
         this.reportedDate = reportedDate;
         this.priority = Priority.MAJOR; 
-        this.status = Status.NEW; 
+        this.status = Status.NEW;
     }
 
     public Long getIssueId() {
@@ -63,7 +63,20 @@ public class Issue {
     public Priority getPriority() {
         return priority;
     }
+
+    //comment 새로 생성할때 commentid = 현재 comment개수+1
+    public int getNextCommentId() {
+        return this.comments.size() + 1;
+    }
+
+    public void setReporter(User reporter) {
+        this.reporter = reporter;
+    }
     
+    public void setFixer(User fixer) {
+        this.fixer = fixer;
+    }
+
     public void setStatus(Status status) {
         this.status = status;
     }
@@ -81,8 +94,32 @@ public class Issue {
     }
 
     public List<Comment> getComments() {
-        return comments;
+        if (this.comments == null) {
+            this.comments = new ArrayList<>();
+        }
+        return new ArrayList<>(this.comments);
     }
 
+    // 여거 테스트용도
+    public void printIssueInfo() {
+        System.out.println("--------------------------------------------------");
+        System.out.println("🔹 [이슈 #" + this.issueId + "] " + this.title);
+        System.out.println("   - 현재 상태: " + this.status + " | 우선순위: " + this.priority);
+        System.out.println("   - 생성자(Reporter): " + (this.reporter != null ? this.reporter.getLoginId() : "없음"));
+        System.out.println("   - 담당자(Assignee): " + (this.assignee != null ? this.assignee.getLoginId() : "없음"));
+        System.out.println("   - 해결자(Fixer): " + (this.fixer != null ? this.fixer.getLoginId() : "없음"));
+        System.out.println("   - 설명: " + this.description);
+        System.err.println("   - 보고된 날짜: " + this.reportedDate);
+
+        // 코멘트가 있다면 모두 출력
+        if (this.comments != null && !this.comments.isEmpty()) {
+            System.out.println("   - 코멘트 내역:");
+            for (Comment c : this.comments) {
+                // Comment 클래스에 getter가 있다고 가정
+                System.out.println("      └ [" + c.getAuthor().getLoginId() + "] " + c.getContent());
+            }
+        }
+        System.out.println("--------------------------------------------------\n");
+    }
 
 }
