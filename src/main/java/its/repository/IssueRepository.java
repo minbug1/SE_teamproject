@@ -16,8 +16,3 @@ public interface IssueRepository {
     void delete(int issueId);     
     int generateIssueId();         
 }
-
-    void delete(long issueId);
-
-    long generateIssueId();
-}
