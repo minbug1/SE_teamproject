@@ -138,10 +138,12 @@ public class MainView extends JFrame {
 
     private void loadDummyProjects() {
         Project authProject = new Project(1, "Auth", "Login and account issues");
+        authProject.addMember(currentUser);
         authProject.getIssueIds().add(1);
         authProject.getIssueIds().add(2);
 
         Project profileProject = new Project(2, "Profile", "User profile issues");
+        profileProject.addMember(currentUser);
         profileProject.getIssueIds().add(3);
 
         projects.clear();
@@ -187,7 +189,19 @@ public class MainView extends JFrame {
     }
 
     private void onReportIssue() {
-        ReportIssueView dialog = new ReportIssueView(this, issueController, currentUser);
+        ProjectFilterItem selectedItem = (ProjectFilterItem) projectFilterComboBox.getSelectedItem();
+        Project selectedProject = selectedItem == null ? null : selectedItem.getProject();
+        if (selectedProject == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Select a project before reporting an issue.",
+                    "Project Required",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        ReportIssueView dialog = new ReportIssueView(this, issueController, currentUser, selectedProject);
         dialog.setVisible(true);
     }
 

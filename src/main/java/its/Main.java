@@ -1,32 +1,14 @@
 package its;
 
-import javax.security.auth.login.LoginContext;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import its.controller.AuthController;
 import its.controller.IssueController;
-import its.model.AccountStatus;
-import its.model.Role;
-import its.model.User;
+// import its.model.AccountStatus;
+// import its.model.Role;
+// import its.model.User;
 import its.view.swing.LoginView;
-import its.view.swing.MainView;
-import its.controller.AuthController;
-import its.controller.IssueController;
-import its.controller.ProjectController;
-import its.controller.UserController;
-import its.model.AccountStatus;
-import its.model.Issue;
-import its.model.Priority;
-import its.model.Project;
-import its.model.Role;
-import its.model.User;
-import its.repository.FileIssueRepository;
-import its.repository.FileProjectRepository;
-import its.repository.FileUserRepository;
-
-import java.io.File;
-import java.nio.file.Files;
 
 public class Main {
 
@@ -45,13 +27,13 @@ public class Main {
 
             IssueController issueController = new IssueController();
             AuthController authController = new AuthController();
-            User debugUser = new User(
-                    1L,
-                    "debug-tester",
-                    "password",
-                    AccountStatus.ACTIVE,
-                    Role.TESTER
-            );
+            // User debugUser = new User(
+            //         1L,
+            //         "debug-tester",
+            //         "password",
+            //         AccountStatus.ACTIVE,
+            //         Role.TESTER
+            // );
 
             new LoginView(authController, issueController).setVisible(true);
         });

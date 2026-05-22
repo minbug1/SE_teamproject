@@ -221,7 +221,7 @@ public class FileProjectRepository implements ProjectRepository {
             // Issue 객체 → ID만 추출
             r.issueIds = new ArrayList<>();
             for (Issue issue : project.getIssues()) {
-                r.issueIds.add(issue.getIssueId());
+                r.issueIds.add(issue.getIssueId().intValue());
             }
 
             return r;

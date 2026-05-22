@@ -25,6 +25,7 @@ import javax.swing.KeyStroke;
 import its.controller.IssueController;
 import its.model.Issue;
 import its.model.Priority;
+import its.model.Project;
 import its.model.User;
 
 
@@ -34,6 +35,7 @@ public class ReportIssueView extends JDialog {
     private IssueController issueController;
     private User currentUser;
     private MainView mainView;
+    private final Project currentProject;
 
     // 기본 정보 탭 컴포넌트
     private JTextField titleField;
@@ -48,11 +50,13 @@ public class ReportIssueView extends JDialog {
 
     public ReportIssueView(MainView mainView,
                             IssueController issueController,
-                            User currentUser) {
+                            User currentUser,
+                            Project currentProject) {
         super(mainView, "새 이슈 등록", true);
         this.mainView = mainView;
         this.issueController = issueController;
         this.currentUser = currentUser;
+        this.currentProject = currentProject;
         initUI();
     }
 
@@ -189,7 +193,7 @@ public class ReportIssueView extends JDialog {
 
         try {
             Issue created = issueController.reportIssue(
-                title, desc, currentUser, priority, comment
+                currentProject, title, desc, currentUser, priority, comment
             );
 
             JOptionPane.showMessageDialog(

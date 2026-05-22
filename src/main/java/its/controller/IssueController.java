@@ -51,7 +51,7 @@ public class IssueController {
             throw new IllegalArgumentException("Priority must not be null.");
         }
 
-        int newIssueId = issueRepository.findAll().size() + 1;
+        long newIssueId = issueRepository.findAll().size() + 1;
         Issue newIssue = new Issue(
                 newIssueId,
                 title,
@@ -119,7 +119,6 @@ public class IssueController {
 
     //Verify Issue
     public Issue verifyIssue(Project project, int issueId, String commentContent, User tester, boolean isResolved){
-        Issue issue = issueRepository.findById(issueId);
 
         validateProject(project);
         validateUser(tester, "Tester must not be null.");
@@ -247,6 +246,16 @@ public class IssueController {
         }
     }
 
+    private void validateProjectMember(Project project, User user, String message) {
+        if (project == null || user == null) {
+            throw new IllegalArgumentException(message);
+        }
+
+        if (!project.getMembers().contains(user)) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
     private void validateRole(User user, Role requiredRole, String message) {
         validateUser(user, "User must not be null.");
 
@@ -254,9 +263,6 @@ public class IssueController {
             throw new IllegalArgumentException("Required role must not be null.");
         }
 
-        issueRepository.update(issue);
-
-        return issue;
     }
 
     // 이슈 삭제

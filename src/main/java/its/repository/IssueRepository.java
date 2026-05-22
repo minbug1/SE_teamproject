@@ -2,9 +2,7 @@ package its.repository;
 
 import java.util.List;
 
-import its.model.AccountStatus;
 import its.model.Issue;
-import its.model.User;
 
 public interface IssueRepository {
 

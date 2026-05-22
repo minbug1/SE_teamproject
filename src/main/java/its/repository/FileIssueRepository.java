@@ -140,7 +140,9 @@ public class FileIssueRepository implements IssueRepository {
     public int generateIssueId() {  
         int maxId = 0;
         for (Issue issue : findAll()) {
-            if (issue.getIssueId() > maxId) maxId = issue.getIssueId();
+            if (issue.getIssueId() != null && issue.getIssueId() > maxId) {
+                maxId = issue.getIssueId().intValue();
+            }
         }
         return maxId + 1;
     }
@@ -177,7 +179,7 @@ public class FileIssueRepository implements IssueRepository {
     }
 
     private static class IssueRecord {
-        private int issueId;
+        private long issueId;
         private String title;
         private String description;
         private String reportedDate;
