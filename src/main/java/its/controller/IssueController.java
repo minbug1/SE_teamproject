@@ -13,6 +13,7 @@ import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 public class IssueController {
@@ -36,9 +37,7 @@ public class IssueController {
     public Issue reportIssue(Project project, String title, String description, User reporter, Priority priority, String commentContent) {
         
         //user가 project 멤버인지
-        if (project == null || !project.getMembers().contains(reporter)) {
-            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 등록할 권한이 없습니다.");
-        }
+        validateMember(project, reporter);
 
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("Title must not be empty.");
@@ -98,16 +97,12 @@ public class IssueController {
 
     //Fix Issue
     public Issue fixIssue(Project project, int issueId, String commentContent, User dev){
-        Issue issue = issueRepository.findById(issueId);
 
-        //user가 project 멤버인지
-        if (project == null || !project.getMembers().contains(dev)) {
-            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 수정할 권한이 없습니다.");
-        }
-        //조건 Assigned된 이슈
-        if (issue == null || issue.getStatus() != Status.ASSIGNED) {
-            return null;
-        }
+        validateMember(project, dev);
+        validateIssueId(issueId);
+        
+        Issue issue = issueRepository.findById(issueId);
+        validateIssueStatus(issue, Status.ASSIGNED);
 
         // 코멘트 객체 생성 및 이슈에 추가
         if (commentContent != null && !commentContent.isEmpty()) {
@@ -128,26 +123,13 @@ public class IssueController {
 
     //Verify Issue
     public Issue verifyIssue(Project project, int issueId, String commentContent, User tester, boolean isResolved){
+        validateMember(project, tester);
+        validateIssueId(issueId);
+
         Issue issue = issueRepository.findById(issueId);
+        validateIssueStatus(issue, Status.FIXED);
 
-        
-        //user가 project 멤버인지
-        if (project == null || !project.getMembers().contains(tester)) {
-            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 수정할 권한이 없습니다.");
-        }
-
-        //조건 FIXED된 이슈
-        if (issue == null || issue.getStatus() != Status.FIXED) {
-            return null;
-        }
-
-        if (isResolved) {
-            // 해결 성공
-            issue.setStatus(Status.RESOLVED);
-        } else {
-            // 해결 실패 
-            issue.setStatus(Status.REOPENED);
-        }
+        issue.setStatus(isResolved ? Status.RESOLVED : Status.REOPENED);
 
         // 코멘트 객체 생성 및 이슈에 추가
         if (commentContent != null && !commentContent.isEmpty()) {
@@ -164,18 +146,11 @@ public class IssueController {
     //Close Issue
     public Issue closeIssue(Project project, int issueId, String commentContent, User pl){
 
-        //user가 project 멤버인지
-        if (project == null || !project.getMembers().contains(pl)) {
-            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 수정할 권한이 없습니다.");
-        }
+        validateMember(project, pl);
+        validateIssueId(issueId);
 
         Issue issue = issueRepository.findById(issueId);
-        
-
-        //조건 Resolved된 이슈
-        if (issue == null || issue.getStatus() != Status.RESOLVED) {
-            return null;
-        }
+        validateIssueStatus(issue, Status.RESOLVED);
 
         // 코멘트 객체 생성 및 이슈에 추가
         if (commentContent != null && !commentContent.isEmpty()) {
@@ -196,27 +171,16 @@ public class IssueController {
     public Issue assignIssue(Project project, int issueId, User assignee, User pl, String commentContent) {
 
         // 권한 및 유효성 검증
-        if (project == null) {
-         throw new IllegalArgumentException("프로젝트 정보가 없습니다.");
-        }
-        if (!project.getMembers().contains(pl)) {
-            throw new SecurityException("이 프로젝트의 PL이 아닙니다.");
-        }
-        if (!project.getMembers().contains(assignee)) {
+        validateProject(project);
+        validateMember(project, pl);
+        validateIssueId(issueId);
+
+        if (assignee == null || !project.getMembers().contains(assignee)) {
             throw new IllegalArgumentException("할당하려는 개발자가 프로젝트 멤버가 아닙니다.");
         }
 
         Issue issue = issueRepository.findById(issueId);
-
-        // NEW 또는 REOPENED 상태일 때 할당이 가능합니다.
-        if (issue == null || (issue.getStatus() != Status.NEW && issue.getStatus() != Status.REOPENED)) {
-            return null;
-        }
-
-        // PL 및 Assignee 유효성 검사
-        if (pl == null || assignee == null) {
-            throw new IllegalArgumentException("PL and Assignee must not be null.");
-        }
+        validateIssueStatus(issue, Status.NEW, Status.REOPENED);
 
         // 담당자 설정 및 상태 변경
         issue.setAssignee(assignee);
@@ -238,9 +202,8 @@ public class IssueController {
     public void deleteIssue(Project project, int issueId, User user) {
         
         // 1. 권한 검증 (예: 프로젝트 멤버만 삭제 가능하다고 가정)
-        if (project == null || !project.getMembers().contains(user)) {
-            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 삭제할 수 없습니다.");
-        }
+        validateMember(project, user);
+        validateIssueId(issueId);
 
         // 2. Project 객체가 가진 이슈 리스트에서 해당 이슈 제거
         project.getIssues().removeIf(issue -> issue.getIssueId() == issueId);
@@ -252,11 +215,7 @@ public class IssueController {
 
     //이거 UI구현되면 수정필요
     public void showIssues(Project project, Status filterStatus) {
-        if (project == null) {
-            System.out.println("❌ 프로젝트 정보가 없습니다.");
-            return;
-        }
-    
+        validateProject(project);
 
         String statusText = (filterStatus == null) ? "전체" : filterStatus.toString();
         System.out.println("\n===== [" + project.getName() + "] 이슈 목록 (" + statusText + ") =====");
@@ -284,4 +243,36 @@ public class IssueController {
         }
         System.out.println("==========================================\n");
     }
+
+    //helper
+    private void validateProject(Project project) {
+        if (project == null) {
+            throw new IllegalArgumentException("프로젝트 정보가 없습니다.");
+        }
+    }
+
+    private void validateMember(Project project, User user) {
+        validateProject(project);
+        if (user == null || !project.getMembers().contains(user)) {
+            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 권한이 없습니다.");
+        }
+    }
+
+    private void validateIssueId(int issueId) {
+        if (issueId <= 0) {
+            throw new IllegalArgumentException("Issue ID must be a positive number.");
+        }
+    }
+
+    private void validateIssueStatus(Issue issue, Status... validStatuses) {
+        if (issue == null) {
+            throw new IllegalArgumentException("Issue not found.");
+        }
+        if (!Arrays.asList(validStatuses).contains(issue.getStatus())) {
+            throw new IllegalStateException(
+                "이슈 상태가 올바르지 않습니다. 현재 상태: " + issue.getStatus()
+            );
+        }
+    }
+
 }

@@ -125,7 +125,7 @@ public class FileIssueRepository implements IssueRepository {
     }
 
     @Override
-    public void delete(int issueId) {  // long → int
+    public void delete(int issueId) { 
         if (issueId <= 0) throw new IllegalArgumentException("Issue ID must be positive.");
 
         List<Issue> issues = findAll();
