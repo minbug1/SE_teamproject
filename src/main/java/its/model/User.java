@@ -1,6 +1,8 @@
 
 package its.model;
 
+import java.util.Objects;
+
 /**
  * model for user
  * 
@@ -10,16 +12,18 @@ package its.model;
 
 public class User {
 
-    private final Long userId;
+    private final long userId;
     private String loginId;
     private String password;
     private AccountStatus accountStatus;
     private Role role;
 
-    // constructor
+    // constructor 
     public User(Long userId, String loginId, String password) {
-        this(userId, loginId, password, AccountStatus.PENDING, Role.UNASSIGNED);
+       this(userId, loginId, password, AccountStatus.PENDING, Role.UNASSIGNED);
     }
+
+
 
     public User(Long userId, String loginId, String password, AccountStatus accountStatus, Role role) {
         if (userId == null) {
@@ -50,7 +54,7 @@ public class User {
     }
 
     // get
-    public Long getUserId() {
+    public long getUserId() {
         return userId;
     }
 
@@ -116,6 +120,18 @@ public class User {
         return accountStatus == AccountStatus.ACTIVE;
     }
 
+    public boolean isPending() {
+        return accountStatus == AccountStatus.PENDING;
+    }
+
+    public boolean isRejected() {
+        return accountStatus == AccountStatus.REJECTED;
+    }
+
+    public boolean isDisabled() {
+        return accountStatus == AccountStatus.DISABLED;
+    }
+
     public boolean isAdmin() {
         return role == Role.ADMIN;
     }
@@ -131,6 +147,30 @@ public class User {
     public boolean isTester() {
         return role == Role.TESTER;
     }
+
+    public boolean isUnassigned() {
+        return role == Role.UNASSIGNED;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof User)) {
+            return false;
+        }
+
+        User other = (User) obj;
+        return this.userId == other.userId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId);
+    }
+
 
     @Override
     public String toString() {

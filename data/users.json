@@ -1,0 +1,30 @@
+[
+  {
+    "userId": 1,
+    "loginId": "admin",
+    "password": "admin",
+    "accountStatus": "ACTIVE",
+    "role": "ADMIN"
+  },
+  {
+    "userId": 2,
+    "loginId": "iampl",
+    "password": "erwe",
+    "accountStatus": "ACTIVE",
+    "role": "PL"
+  },
+  {
+    "userId": 3,
+    "loginId": "iamdev",
+    "password": "erwe",
+    "accountStatus": "ACTIVE",
+    "role": "DEVELOPER"
+  },
+  {
+    "userId": 4,
+    "loginId": "iamtester",
+    "password": "erwe",
+    "accountStatus": "ACTIVE",
+    "role": "TESTER"
+  }
+]
