@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -15,24 +16,31 @@ import javax.swing.SwingConstants;
 
 import its.controller.AuthController;
 import its.controller.IssueController;
+import its.controller.ProjectController;
+import its.controller.UserController;
+import its.model.Project;
 import its.model.User;
 
 public class LoginView extends JFrame {
 
     private final AuthController authController;
     private final IssueController issueController;
+    private final ProjectController projectController;
+    private final UserController userController;
 
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel errorLabel;
 
     public LoginView() {
-        this(new AuthController(), new IssueController());
+        this(new AuthController(), new IssueController(), new UserController(), new ProjectController());
     }
 
-    public LoginView(AuthController authController, IssueController issueController) {
+    public LoginView(AuthController authController, IssueController issueController, UserController userController, ProjectController projectController) {
         this.authController = authController;
         this.issueController = issueController;
+        this.userController = userController;
+        this.projectController = projectController;
         initUI();
     }
 
@@ -83,12 +91,17 @@ public class LoginView extends JFrame {
     private void onLogin() {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
-
         try {
             User user = authController.login(username, password);
+            List<Project> projects = projectController.getAllProjects();
+            List<User> allUsers = userController.findAllUsers(user);
             errorLabel.setText(" ");
             dispose();
-            new MainView(issueController, user).setVisible(true);
+            if (user.isAdmin()) {
+                new AdminView(issueController, user, projects, allUsers).setVisible(true);
+            } else {
+                new MainView(issueController, projectController, user).setVisible(true);
+            }
         } catch (IllegalArgumentException e) {
             errorLabel.setText(e.getMessage());
             passwordField.setText("");

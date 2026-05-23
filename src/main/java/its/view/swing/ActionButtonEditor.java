@@ -23,13 +23,14 @@ public class ActionButtonEditor implements TableCellEditor {
 
     private static final int COL_ID = 0;
     private static final int COL_NAME = 1;
-    private static final int COL_PRIORITY = 3;
-    private static final int COL_STATUS = 4;
-    private static final int COL_REPORTER = 5;
-    private static final int COL_ASSIGNEE = 6;
+    private static final int COL_PRIORITY = 2;
+    private static final int COL_STATUS = 3;
+    private static final int COL_REPORTER = 4;
+    private static final int COL_ASSIGNEE = 5;
+    private static final String ACTION_MENU_TEXT = "\u22EF";
 
     private final User currentUser;
-    private final JButton button = new JButton("Action");
+    private final JButton button = new JButton(ACTION_MENU_TEXT);
     private final EventListenerList listenerList = new EventListenerList();
 
     private JTable table;
@@ -47,7 +48,7 @@ public class ActionButtonEditor implements TableCellEditor {
         this.table = table;
         this.currentValue = value;
         this.modelRow = table.convertRowIndexToModel(row);
-        button.setText(value == null ? "Action" : value.toString());
+        button.setText(ACTION_MENU_TEXT);
         return button;
     }
 

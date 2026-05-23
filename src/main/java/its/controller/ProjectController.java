@@ -102,6 +102,10 @@ public class ProjectController {
         
     }
 
+    public List<Project> getAllProjects() {
+        return projectRepository.findAll();
+    }
+
     //테스트용
     // 전체 프로젝트 목록 출력
     public void showProjects(List<Project> projects) {

@@ -30,6 +30,10 @@ public class IssueController {
         this.issueRepository = issueRepository;
     }
 
+    public List<Issue> getAllIssues() {
+        return issueRepository.findAll();
+    }
+
     //Report Issue
     public Issue reportIssue(Project project, String title, String description, User reporter, Priority priority, String commentContent) {
         

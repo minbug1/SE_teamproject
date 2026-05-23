@@ -8,12 +8,14 @@ import javax.swing.table.TableCellRenderer;
 
 public class ActionButtonRenderer implements TableCellRenderer {
 
-    private final JButton button = new JButton("Action");
+    private static final String ACTION_MENU_TEXT = "\u22EF";
+
+    private final JButton button = new JButton(ACTION_MENU_TEXT);
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) {
-        button.setText(value == null ? "Action" : value.toString());
+        button.setText(ACTION_MENU_TEXT);
         return button;
     }
 }

@@ -19,6 +19,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
 import its.controller.IssueController;
+import its.controller.ProjectController;
+import its.model.Issue;
 import its.model.Project;
 import its.model.User;
 
@@ -30,24 +32,25 @@ public class MainView extends JFrame {
     private JComboBox<ProjectFilterItem> projectFilterComboBox;
 
     private IssueController issueController;
+    private ProjectController projectController;
     private User currentUser;
     private final List<Project> projects = new ArrayList<>();
 
     private static final int COL_ID = 0;
     private static final int COL_NAME = 1;
-    private static final int COL_ACTION = 2;
-    private static final int COL_PRIORITY = 3;
-    private static final int COL_STATUS = 4;
-    private static final int COL_REPORTER = 5;
-    private static final int COL_ASSIGNEE = 6;
+    private static final int COL_PRIORITY = 2;
+    private static final int COL_STATUS = 3;
+    private static final int COL_REPORTER = 4;
+    private static final int COL_ASSIGNEE = 5;
+    private static final int COL_ACTION = 6;
 
     private static final String[] COLUMNS = {
-        "ID", "Issue Name", "Action",
-        "Priority", "Status", "Reporter", "Assignee"
+        "ID", "Issue Name", "Priority", "Status", "Reporter", "Assignee", ""
     };
 
-    public MainView(IssueController controller, User currentUser) {
-        this.issueController = controller;
+    public MainView(IssueController issueController, ProjectController projectController, User currentUser) {
+        this.issueController = issueController;
+        this.projectController = projectController;
         this.currentUser = currentUser;
         initUI();
     }
@@ -105,50 +108,48 @@ public class MainView extends JFrame {
         issueTable.setRowHeight(36);
         issueTable.getTableHeader().setReorderingAllowed(false);
 
-        issueTable.getColumn("Action").setCellRenderer(new ActionButtonRenderer());
-        issueTable.getColumn("Action").setCellEditor(new ActionButtonEditor(currentUser));
+        issueTable.getColumn("").setCellRenderer(new ActionButtonRenderer());
+        issueTable.getColumn("").setCellEditor(new ActionButtonEditor(currentUser));
 
         issueTable.getColumnModel().getColumn(COL_ID).setPreferredWidth(40);
         issueTable.getColumnModel().getColumn(COL_NAME).setPreferredWidth(200);
-        issueTable.getColumnModel().getColumn(COL_ACTION).setPreferredWidth(100);
         issueTable.getColumnModel().getColumn(COL_PRIORITY).setPreferredWidth(80);
         issueTable.getColumnModel().getColumn(COL_STATUS).setPreferredWidth(90);
         issueTable.getColumnModel().getColumn(COL_REPORTER).setPreferredWidth(90);
         issueTable.getColumnModel().getColumn(COL_ASSIGNEE).setPreferredWidth(90);
+        issueTable.getColumnModel().getColumn(COL_ACTION).setPreferredWidth(48);
+        issueTable.getColumnModel().getColumn(COL_ACTION).setMaxWidth(56);
 
-        loadDummyData();
-        loadDummyProjects();
+        loadIssues();
+        loadProjects();
         refreshProjectFilter();
 
         panel.add(new JScrollPane(issueTable), BorderLayout.CENTER);
         return panel;
     }
 
-    private void loadDummyData() {
-        tableModel.addRow(new Object[]{
-            1, "Login button click error", "Action", "CRITICAL", "NEW", "tester1", "-"
-        });
-        tableModel.addRow(new Object[]{
-            2, "Duplicate email check missing", "Action", "MAJOR", "ASSIGNED", "tester2", "dev1"
-        });
-        tableModel.addRow(new Object[]{
-            3, "Profile image upload failed", "Action", "MINOR", "FIXED", "tester1", "dev3"
-        });
+    private void loadIssues() {
+        tableModel.setRowCount(0);
+        for (Issue issue : issueController.getAllIssues()) {
+            tableModel.addRow(new Object[]{
+                issue.getIssueId(),
+                issue.getTitle(),
+                issue.getPriority(),
+                issue.getStatus(),
+                getLoginIdOrDash(issue.getReporter()),
+                getLoginIdOrDash(issue.getAssignee()),
+                ""
+            });
+        }
     }
 
-    private void loadDummyProjects() {
-        Project authProject = new Project(1, "Auth", "Login and account issues");
-        authProject.addMember(currentUser);
-        authProject.getIssueIds().add(1);
-        authProject.getIssueIds().add(2);
-
-        Project profileProject = new Project(2, "Profile", "User profile issues");
-        profileProject.addMember(currentUser);
-        profileProject.getIssueIds().add(3);
-
+    private void loadProjects() {
         projects.clear();
-        projects.add(authProject);
-        projects.add(profileProject);
+        projects.addAll(projectController.getAllProjects());
+    }
+
+    private String getLoginIdOrDash(User user) {
+        return user == null ? "-" : user.getLoginId();
     }
 
     private void refreshProjectFilter() {
@@ -171,7 +172,7 @@ public class MainView extends JFrame {
             return;
         }
 
-        Set<Integer> issueIds = new HashSet<>(selectedItem.getProject().getIssueIds());
+        Set<Integer> issueIds = getIssueIds(selectedItem.getProject());
         tableSorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
             @Override
             public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
@@ -186,6 +187,17 @@ public class MainView extends JFrame {
                 }
             }
         });
+    }
+
+    private Set<Integer> getIssueIds(Project project) {
+        Set<Integer> issueIds = new HashSet<>();
+        for (Issue issue : project.getIssues()) {
+            if (issue.getIssueId() != null) {
+                issueIds.add(issue.getIssueId().intValue());
+            }
+        }
+        issueIds.addAll(project.getIssueIds());
+        return issueIds;
     }
 
     private void onReportIssue() {
@@ -216,8 +228,9 @@ public class MainView extends JFrame {
     }
 
     public void refreshTable() {
-        tableModel.setRowCount(0);
-        loadDummyData();
+        loadIssues();
+        loadProjects();
+        refreshProjectFilter();
         applyProjectFilter();
     }
 
