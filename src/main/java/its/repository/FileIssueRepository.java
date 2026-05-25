@@ -72,8 +72,8 @@ public class FileIssueRepository implements IssueRepository {
         List<Issue> issues = findAll();
 
         for (Issue existing : issues) {
-            if (existing.getIssueId() == issue.getIssueId()) {
-                throw new IllegalArgumentException("Issue ID already exists.");
+            if (isSameIssue(existing, issue)) {
+                throw new IllegalArgumentException("Issue ID already exists in this project.");
             }
         }
 
@@ -82,11 +82,25 @@ public class FileIssueRepository implements IssueRepository {
     }
 
     @Override
-    public Issue findById(int issueId) { 
+    public Issue findById(long issueId) { 
         if (issueId <= 0) return null;
 
         for (Issue issue : findAll()) {
-            if (issue.getIssueId() == issueId) return issue;
+            if (issue.getIssueId() != 0 && issue.getIssueId() == issueId) return issue;
+        }
+        return null;
+    }
+
+    @Override
+    public Issue findByProjectIdAndIssueId(int projectId, long issueId) {
+        if (projectId <= 0 || issueId <= 0) return null;
+
+        for (Issue issue : findAll()) {
+            if ((issue.getProjectId() == projectId || issue.getProjectId() == 0)
+                    && issue.getIssueId() != 0
+                    && issue.getIssueId() == issueId) {
+                return issue;
+            }
         }
         return null;
     }
@@ -103,6 +117,21 @@ public class FileIssueRepository implements IssueRepository {
     }
 
     @Override
+    public List<Issue> findByProjectId(int projectId) {
+        List<Issue> result = new ArrayList<>();
+        if (projectId <= 0) {
+            return result;
+        }
+
+        for (Issue issue : findAll()) {
+            if (issue.getProjectId() == projectId) {
+                result.add(issue);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public void update(Issue issue) {
         validateIssue(issue);
 
@@ -110,7 +139,7 @@ public class FileIssueRepository implements IssueRepository {
         boolean updated = false;
 
         for (int i = 0; i < issues.size(); i++) {
-            if (issues.get(i).getIssueId() == issue.getIssueId()) {
+            if (isSameIssue(issues.get(i), issue)) {
                 issues.set(i, issue);
                 updated = true;
                 break;
@@ -125,7 +154,7 @@ public class FileIssueRepository implements IssueRepository {
     }
 
     @Override
-    public void delete(int issueId) { 
+    public void delete(long issueId) { 
         if (issueId <= 0) throw new IllegalArgumentException("Issue ID must be positive.");
 
         List<Issue> issues = findAll();
@@ -137,12 +166,51 @@ public class FileIssueRepository implements IssueRepository {
     }
 
     @Override
-    public int generateIssueId() {  
-        int maxId = 0;
+    public void delete(int projectId, long issueId) {
+        if (projectId <= 0) throw new IllegalArgumentException("Project ID must be positive.");
+        if (issueId <= 0) throw new IllegalArgumentException("Issue ID must be positive.");
+
+        List<Issue> issues = findAll();
+        boolean deleted = issues.removeIf(i -> (i.getProjectId() == projectId || i.getProjectId() == 0)
+                && i.getIssueId() != 0
+                && i.getIssueId() == issueId);
+
+        if (!deleted) throw new IllegalArgumentException("Issue does not exist.");
+
+        writeAll(issues);
+    }
+
+    @Override
+    public long generateIssueId() {  
+        long maxId = 0;
         for (Issue issue : findAll()) {
-            if (issue.getIssueId() > maxId) maxId = issue.getIssueId();
+            if (issue.getIssueId() != 0 && issue.getIssueId() > maxId) {
+                maxId = issue.getIssueId();
+            }
         }
         return maxId + 1;
+    }
+
+    @Override
+    public long generateIssueId(int projectId) {
+        long maxId = 0;
+        for (Issue issue : findAll()) {
+            if (issue.getProjectId() == projectId
+                    && issue.getIssueId() != 0
+                    && issue.getIssueId() > maxId) {
+                maxId = issue.getIssueId();
+            }
+        }
+        return maxId + 1;
+    }
+
+    private boolean isSameIssue(Issue left, Issue right) {
+        return left.getIssueId() != 0
+                && right.getIssueId() != 0
+                && left.getIssueId() == right.getIssueId()
+                && (left.getProjectId() == right.getProjectId()
+                        || left.getProjectId() == 0
+                        || right.getProjectId() == 0);
     }
 
     private List<IssueRecord> readAllRecords() {
@@ -177,7 +245,8 @@ public class FileIssueRepository implements IssueRepository {
     }
 
     private static class IssueRecord {
-        private int issueId;
+        private long issueId;
+        private int projectId;
         private String title;
         private String description;
         private String reportedDate;
@@ -195,7 +264,8 @@ public class FileIssueRepository implements IssueRepository {
             LocalDateTime date = (reportedDate != null)
                     ? LocalDateTime.parse(reportedDate) : LocalDateTime.now();
 
-            Issue issue = new Issue(issueId, title, description, reporter, date);
+            Issue issue = new Issue(issueId, projectId, title, description, reporter, date);
+            issue.setProjectId(projectId);
 
             if (priority != null) issue.setPriority(Priority.valueOf(priority));
             if (status != null)   issue.setStatus(Status.valueOf(status));
@@ -217,6 +287,7 @@ public class FileIssueRepository implements IssueRepository {
         private static IssueRecord fromIssue(Issue issue) {
             IssueRecord r = new IssueRecord();
             r.issueId     = issue.getIssueId();
+            r.projectId   = issue.getProjectId();
             r.title       = issue.getTitle();
             r.description = issue.getDescription();
             r.reportedDate = issue.getReportedDate() != null

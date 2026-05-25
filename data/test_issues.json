@@ -1,6 +1,7 @@
 [
   {
     "issueId": 1,
+    "projectId": 1,
     "title": "결제 완료 후 영수증 출력 에러",
     "description": "IE 환경에서 영수증 팝업이 뜨지 않습니다.",
     "reportedDate": "2026-05-23T19:25:24.591650700",
@@ -39,6 +40,24 @@
         "content": "이슈 닫습니다.",
         "authorId": 2,
         "writtenDate": "2026-05-23T19:25:24.659880"
+      }
+    ]
+  },
+  {
+    "issueId": 2,
+    "projectId": 1,
+    "title": "dfdf",
+    "description": "dfdf",
+    "reportedDate": "2026-05-25T16:36:04.081870400",
+    "reporterId": 4,
+    "priority": "MAJOR",
+    "status": "NEW",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "dfdf",
+        "authorId": 4,
+        "writtenDate": "2026-05-25T16:36:04.081870400"
       }
     ]
   }

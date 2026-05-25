@@ -7,7 +7,8 @@ import java.util.List;
 
 public class Issue {
 
-    private int issueId;
+    private long issueId;
+    private int projectId;
     private String title;
     private String description;
     private User reporter;
@@ -18,18 +19,27 @@ public class Issue {
     private Status status;
     private List<Comment> comments = new ArrayList<>();
 
-    public Issue(int issueId, String title, String description, User reporter, LocalDateTime reportedDate) {
+    public Issue(long issueId,int projectId, String title, String description, User reporter, LocalDateTime reportedDate) {
         this.issueId = issueId;
+        this.projectId = projectId;
         this.title = title;
         this.description = description;
         this.reporter = reporter;
         this.reportedDate = reportedDate;
         this.priority = Priority.MAJOR; 
-        this.status = Status.NEW; 
+        this.status = Status.NEW;
     }
 
-    public int getIssueId() {
+    public long getIssueId() {
         return issueId;
+    }
+
+    public int getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(int projectId) {
+        this.projectId = projectId;
     }
     
     public String getTitle() {

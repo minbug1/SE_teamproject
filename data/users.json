@@ -1,23 +1,30 @@
 [
   {
     "userId": 1,
-    "loginId": "iampl",
-    "password": "erwe",
+    "loginId": "admin",
+    "password": "admin",
     "accountStatus": "ACTIVE",
-    "role": "PL"
+    "role": "ADMIN"
   },
   {
     "userId": 2,
-    "loginId": "iamdev",
+    "loginId": "iampl",
     "password": "erwe",
-    "accountStatus": "ACTIVE",
-    "role": "DEVELOPER"
+    "accountStatus": "PENDING",
+    "role": "UNASSIGNED"
   },
   {
     "userId": 3,
+    "loginId": "iamdev",
+    "password": "erwe",
+    "accountStatus": "PENDING",
+    "role": "UNASSIGNED"
+  },
+  {
+    "userId": 4,
     "loginId": "iamtester",
     "password": "erwe",
-    "accountStatus": "ACTIVE",
-    "role": "TESTER"
+    "accountStatus": "PENDING",
+    "role": "UNASSIGNED"
   }
 ]
