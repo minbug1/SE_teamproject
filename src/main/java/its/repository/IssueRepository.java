@@ -7,14 +7,14 @@ import its.model.Issue;
 public interface IssueRepository {
 
     void save(Issue issue);
-    Issue findById(int issueId);
-    Issue findByProjectIdAndIssueId(int projectId, int issueId);
+    Issue findById(long issueId);
+    Issue findByProjectIdAndIssueId(int projectId, long issueId);
     List<Issue> findAll();
     List<Issue> findByProjectId(int projectId);
 
     void update(Issue issue);
-    void delete(int issueId);
-    void delete(int projectId, int issueId);
-    int generateIssueId();
-    int generateIssueId(int projectId);
+    void delete(long issueId);
+    void delete(int projectId, long issueId);
+    long generateIssueId();
+    long generateIssueId(int projectId);
 }

@@ -28,10 +28,8 @@ public class ProjectController {
     //admin이 프로젝트 생성
     public Project createProject(String name, String description, User adminUser) {
         
-        // Admin 권한 검증 (User 클래스의 isAdmin() 활용)
-        if (adminUser == null || !adminUser.isAdmin()) {
-            throw new SecurityException("프로젝트 생성 권한이 없습니다. Admin만 생성 가능합니다.");
-        }
+        // Admin 권한 검증
+        validateAdmin(adminUser);
 
         // 유효성 검증
         if (name == null || name.trim().isEmpty()) {
@@ -65,15 +63,9 @@ public class ProjectController {
     //멤버 추가
     public void addMemberToProject(Project project, User newMember, User adminUser) {
         
-        // Admin 권한 검증
-        if (adminUser == null || !adminUser.isAdmin()) {
-            throw new SecurityException("멤버 추가 권한이 없습니다. Admin만 추가 가능합니다.");
-        }
+        validateAdmin(adminUser);
+        validateProject(project);
 
-        // 유효성 검증
-        if (project == null) {
-            throw new IllegalArgumentException("대상 프로젝트 정보가 없습니다.");
-        }
         if (newMember == null) {
             throw new IllegalArgumentException("추가할 유저 정보가 없습니다.");
         }
@@ -104,9 +96,8 @@ public class ProjectController {
     //  프로젝트에 이슈 추가 및 파일 업데이트
     public void addIssueToProject(Project project, Issue issue) {
         // 유효성 검증
-        if (project == null) {
-            throw new IllegalArgumentException("대상 프로젝트 정보가 없습니다.");
-        }
+        validateProject(project);
+
         if (issue == null) {
             throw new IllegalArgumentException("추가할 이슈 정보가 없습니다.");
         }
@@ -122,9 +113,8 @@ public class ProjectController {
     public void deleteProject(int projectId, User adminUser) {
         
         // 1. 권한 검증: Admin만 프로젝트를 삭제할 수 있음
-        if (adminUser == null || !adminUser.isAdmin()) {
-            throw new SecurityException("프로젝트 삭제 권한이 없습니다. Admin만 가능합니다.");
-        }
+        validateAdmin(adminUser);
+        validateProjectId(projectId);
 
         // 2. Repository에서 삭제 수행 (Repository 내부에서 파일 saveToFile()이 호출되어야 함)
         projectRepository.delete(projectId);
@@ -159,4 +149,30 @@ public class ProjectController {
 
         System.out.println("==========================================\n");
     }
+
+    //helper
+    private void validateAdmin(User user) {
+        if (user == null || !user.isAdmin()) {
+            throw new SecurityException("Admin 권한이 필요합니다.");
+        }
+    }
+
+    private void validateProject(Project project) {
+        if (project == null) {
+            throw new IllegalArgumentException("프로젝트 정보가 없습니다.");
+        }
+    }
+
+    private void validateProjectId(int projectId) {
+        if (projectId <= 0) {
+            throw new IllegalArgumentException("Project ID must be a positive number.");
+        }
+    }
+
+    private void validateMember(Project project, User user) {
+        validateProject(project);
+        if (user == null || !project.getMembers().contains(user)) {
+            throw new SecurityException("해당 프로젝트의 멤버가 아닙니다.");
+        }
+    }   
 }

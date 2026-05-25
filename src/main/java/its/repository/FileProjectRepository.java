@@ -182,7 +182,7 @@ public class FileProjectRepository implements ProjectRepository {
         private String name;
         private String description;
         private List<Long> memberIds;   // User ID 목록만 저장
-        private List<Integer> issueIds; // Issue ID 목록만 저장
+        private List<Long> issueIds; // Issue ID 목록만 저장
 
         private Project toProject(UserRepository userRepo, IssueRepository issueRepo) {
             Project project = new Project(projectId, name, description);
@@ -197,8 +197,8 @@ public class FileProjectRepository implements ProjectRepository {
 
             // issueIds -> Issue 객체 복원
             if (issueIds != null) {
-                for (Integer issueId : issueIds) {
-                    if (issueId == null) {
+                for (long issueId : issueIds) {
+                    if (issueId == 0) {
                         continue;
                     }
 
@@ -234,11 +234,11 @@ public class FileProjectRepository implements ProjectRepository {
             // Issue 객체 → ID만 추출
             r.issueIds = new ArrayList<>();
             for (Issue issue : project.getIssues()) {
-                if (issue.getIssueId() != null) {
-                    r.issueIds.add(issue.getIssueId().intValue());
+                if (issue.getIssueId() != 0) {
+                    r.issueIds.add(issue.getIssueId());
                 }
             }
-            for (Integer issueId : project.getIssueIds()) {
+            for (Long issueId : project.getIssueIds()) {
                 if (issueId != null && !r.issueIds.contains(issueId)) {
                     r.issueIds.add(issueId);
                 }

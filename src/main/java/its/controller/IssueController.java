@@ -12,6 +12,7 @@ import its.repository.IssueRepository;
 import its.repository.ProjectRepository;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 public class IssueController {
@@ -51,9 +52,7 @@ public class IssueController {
         }
 
         //user가 project 멤버인지
-        if (project == null || !project.getMembers().contains(reporter)) {
-            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 등록할 권한이 없습니다.");
-        }
+        validateMember(project, reporter);
 
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("Title must not be empty.");
@@ -69,8 +68,9 @@ public class IssueController {
         }
 
         long newIssueId = generateIssueIdInProject(project);
+        int projectId = project.getProjectId();
 
-        Issue newIssue = new Issue(newIssueId, title, description, reporter, LocalDateTime.now());
+        Issue newIssue = new Issue(newIssueId, projectId, title, description, reporter, LocalDateTime.now());
 
         newIssue.setProjectId(project.getProjectId());
 
@@ -86,7 +86,7 @@ public class IssueController {
         issueRepository.save(newIssue);
 
         project.addIssue(newIssue);
-
+        updateProjectIfAvailable(project);
         return newIssue;
         /*
         View 에서
@@ -104,12 +104,13 @@ public class IssueController {
     //
 
     //Fix Issue
-    public Issue fixIssue(Project project, int issueId, String commentContent, User dev){
-        Issue issue = getProjectIssueOrNull(project, issueId);
+    public Issue fixIssue(Project project, long issueId, String commentContent, User dev){
 
-        if (issue == null || issue.getStatus() != Status.ASSIGNED) {
-            return null;
-        }
+        validateMember(project, dev);
+        validateIssueId(issueId);
+        
+        Issue issue = getProjectIssueOrNull(project, issueId);
+        validateIssueStatus(issue, Status.ASSIGNED);
 
         if (issue.getAssignee() == null || !issue.getAssignee().equals(dev)) {
             throw new SecurityException("Only assigned issues can be fixed.");
@@ -126,7 +127,7 @@ public class IssueController {
     }
 
     //Verify Issue
-    public Issue verifyIssue(Project project, int issueId, String commentContent, User tester, boolean isResolved){
+    public Issue verifyIssue(Project project, long issueId, String commentContent, User tester, boolean isResolved){
 
         validateProject(project);
         validateUser(tester, "Tester must not be null.");
@@ -152,14 +153,12 @@ public class IssueController {
         addCommentIfPresent(issue, commentContent, tester);
 
         issueRepository.update(issue);
-
-        issueRepository.update(issue);
         
         return issue;
     }
 
     //Close Issue
-    public Issue closeIssue(Project project, int issueId, String commentContent, User pl){
+    public Issue closeIssue(Project project, long issueId, String commentContent, User pl){
 
         validateProject(project);
         validateUser(pl, "PL must not be null.");
@@ -182,7 +181,7 @@ public class IssueController {
     }
 
     //Assign Issue 이거 조금더 수정 필요함
-    public Issue assignIssue(Project project, int issueId, User assignee, User pl, String commentContent) {
+    public Issue assignIssue(Project project, long issueId, User assignee, User pl, String commentContent) {
 
         validateProject(project);
         validateUser(pl, "PL must not be null.");
@@ -211,30 +210,22 @@ public class IssueController {
     }
 
     // helper
-    private Issue getIssueOrNull(int issueId) {
-        if (issueId <= 0) {
-            throw new IllegalArgumentException("Issue ID must be a positive number.");
-        }
-
-        return issueRepository.findById(issueId);
-    }
-
-    private int generateIssueIdInProject(Project project) {
-        int maxId = 0;
-        for (Integer issueId : project.getIssueIds()) {
+    private long generateIssueIdInProject(Project project) {
+        long maxId = 0;
+        for (Long issueId : project.getIssueIds()) {
             if (issueId != null && issueId > maxId) {
                 maxId = issueId;
             }
         }
         for (Issue issue : project.getIssues()) {
-            if (issue.getIssueId() != null && issue.getIssueId() > maxId) {
-                maxId = issue.getIssueId().intValue();
+            if (issue.getIssueId() != 0 && issue.getIssueId() > maxId) {
+                maxId = issue.getIssueId();
             }
         }
         return maxId + 1;
     }
 
-    private Issue getProjectIssueOrNull(Project project, int issueId) {
+    private Issue getProjectIssueOrNull(Project project, long issueId) {
         validateProject(project);
         if (issueId <= 0) {
             throw new IllegalArgumentException("Issue ID must be a positive number.");
@@ -288,22 +279,22 @@ public class IssueController {
         }
     }
 
-    private void validateRole(User user, Role requiredRole, String message) {
+   private void validateRole(User user, Role requiredRole, String message) {
         validateUser(user, "User must not be null.");
-
         if (requiredRole == null) {
             throw new IllegalArgumentException("Required role must not be null.");
         }
-
+        if (user.getRole() != requiredRole) {  
+            throw new SecurityException(message);
+        }
     }
 
     // 이슈 삭제
-    public void deleteIssue(Project project, int issueId, User user) {
+    public void deleteIssue(Project project, long issueId, User user) {
         
         // 1. 권한 검증 (예: 프로젝트 멤버만 삭제 가능하다고 가정)
-        if (project == null || !project.getMembers().contains(user)) {
-            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 삭제할 수 없습니다.");
-        }
+        validateMember(project, user);
+        validateIssueId(issueId);
 
         // 2. Project 객체가 가진 이슈 리스트에서 해당 이슈 제거
         project.removeIssueById(issueId);
@@ -322,11 +313,7 @@ public class IssueController {
 
     //이거 UI구현되면 수정필요
     public void showIssues(Project project, Status filterStatus) {
-        if (project == null) {
-            System.out.println("❌ 프로젝트 정보가 없습니다.");
-            return;
-        }
-    
+        validateProject(project);
 
         String statusText = (filterStatus == null) ? "전체" : filterStatus.toString();
         System.out.println("\n===== [" + project.getName() + "] 이슈 목록 (" + statusText + ") =====");
@@ -354,4 +341,29 @@ public class IssueController {
         }
         System.out.println("==========================================\n");
     }
+
+    private void validateMember(Project project, User user) {
+        validateProject(project);
+        if (user == null || !project.getMembers().contains(user)) {
+            throw new SecurityException("해당 프로젝트의 멤버가 아니므로 권한이 없습니다.");
+        }
+    }
+
+    private void validateIssueId(long issueId) {
+        if (issueId <= 0) {
+            throw new IllegalArgumentException("Issue ID must be a positive number.");
+        }
+    }
+
+    private void validateIssueStatus(Issue issue, Status... validStatuses) {
+        if (issue == null) {
+            throw new IllegalArgumentException("Issue not found.");
+        }
+        if (!Arrays.asList(validStatuses).contains(issue.getStatus())) {
+            throw new IllegalStateException(
+                "이슈 상태가 올바르지 않습니다. 현재 상태: " + issue.getStatus()
+            );
+        }
+    }
+
 }

@@ -161,7 +161,7 @@ public class MainView extends JFrame {
         // projectId 기준으로 이슈를 프로젝트에 주입
         for (Project project : projects) {
             project.getIssues().clear();
-            for (int issueId : project.getIssueIds()) {
+            for (long issueId : project.getIssueIds()) {
                 allIssues.stream()
                         .filter(i -> i.getIssueId() == issueId)
                         .findFirst()

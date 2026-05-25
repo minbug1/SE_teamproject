@@ -10,8 +10,8 @@ public class Project {
     private String description;
     private List<User> members = new ArrayList<>();
     private List<Issue> issues = new ArrayList<>();
-    private List<Integer> memberIds = new ArrayList<>();
-    private List<Integer> issueIds = new ArrayList<>();
+    private List<Long> memberIds = new ArrayList<>();
+    private List<Long> issueIds = new ArrayList<>();
 
     public Project(int projectId, String name, String description) {
         this.projectId = projectId;
@@ -26,11 +26,11 @@ public class Project {
     }
 
     public void addIssue(Issue issue) {
-        if (issue != null && issue.getIssueId() != null) {
-            int issueId = issue.getIssueId().intValue();
+        if (issue != null && issue.getIssueId() != 0) {
+            long issueId = issue.getIssueId();
             boolean alreadyExists = getIssues().stream()
-                    .anyMatch(existing -> existing.getIssueId() != null
-                            && existing.getIssueId().intValue() == issueId);
+                    .anyMatch(existing -> existing.getIssueId() != 0
+                            && existing.getIssueId() == issueId);
 
             if (!alreadyExists) {
                 this.issues.add(issue);
@@ -39,16 +39,16 @@ public class Project {
         }
     }
 
-    public void addIssueId(int issueId) {
+    public void addIssueId(long issueId) {
         if (issueId > 0 && !getIssueIds().contains(issueId)) {
             getIssueIds().add(issueId);
         }
     }
 
-    public void removeIssueById(int issueId) {
-        getIssues().removeIf(issue -> issue.getIssueId() != null
-                && issue.getIssueId().intValue() == issueId);
-        getIssueIds().removeIf(id -> id != null && id == issueId);
+    public void removeIssueById(long issueId) {
+        getIssues().removeIf(issue -> issue.getIssueId() != 0
+                && issue.getIssueId() == issueId);
+        getIssueIds().removeIf(id -> id != 0 && id == issueId);
     }
 
     public int getProjectId() {
@@ -90,10 +90,10 @@ public class Project {
         return this.issues;
     }
 
-    public List<Integer> getMemberIds() { 
+    public List<Long> getMemberIds() { 
         return memberIds; 
     }
-    public List<Integer> getIssueIds() { 
+    public List<Long> getIssueIds() { 
         if (this.issueIds == null) {
             this.issueIds = new ArrayList<>();
         }
