@@ -293,7 +293,7 @@ public class UserController {
 
     private void validateAdmin(User currentUser) {
         if (currentUser == null || !currentUser.isAdmin()) {
-            throw new IllegalArgumentException("Admin permission is required.");
+            throw new SecurityException("Admin permission is required.");
         }
     }
 

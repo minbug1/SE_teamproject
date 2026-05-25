@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -59,6 +60,7 @@ public class LoginView extends JFrame {
         usernameField = new JTextField(18);
         passwordField = new JPasswordField(18);
         JButton loginButton = new JButton("Login");
+        JButton registerButton = new JButton("Register");
         errorLabel = new JLabel(" ");
         errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -79,29 +81,70 @@ public class LoginView extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
-        formPanel.add(loginButton, gbc);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(loginButton);
+        buttonPanel.add(registerButton);
+        formPanel.add(buttonPanel, gbc);
 
         add(formPanel, BorderLayout.CENTER);
         add(errorLabel, BorderLayout.SOUTH);
 
         loginButton.addActionListener(e -> onLogin());
+        registerButton.addActionListener(e -> onRegister());
         getRootPane().setDefaultButton(loginButton);
     }
 
     private void onLogin() {
+    String username = usernameField.getText().trim();
+    String password = new String(passwordField.getPassword());
+
+    // View 단 빈칸 선검증
+    if (username.isEmpty()) {
+        errorLabel.setText("Username을 입력해주세요.");
+        return;
+    }
+    if (password.isEmpty()) {
+        errorLabel.setText("Password를 입력해주세요.");
+        passwordField.requestFocusInWindow();
+        return;
+    }
+
+    try {
+        User user = authController.login(username, password);
+        List<Project> projects = projectController.getAllProjects();
+        List<User> allUsers = userController.findAllUsers(user);
+        errorLabel.setText(" ");
+        dispose();
+        if (user.isAdmin()) {
+            new AdminView(authController, projectController, issueController,
+                          user, projects, allUsers).setVisible(true);
+        } else {
+            new MainView(issueController, projectController, user).setVisible(true);
+        }
+    } catch (IllegalArgumentException | IllegalStateException e) {
+        String msg = e.getMessage();
+        if ("Account is not active.".equals(msg)) {
+            errorLabel.setText("계정이 활성화되지 않았습니다. 관리자에게 문의하세요.");
+        } else {
+            errorLabel.setText(msg);
+        }
+        passwordField.setText("");
+        passwordField.requestFocusInWindow();
+    }
+}
+
+    private void onRegister() {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
         try {
-            User user = authController.login(username, password);
-            List<Project> projects = projectController.getAllProjects();
-            List<User> allUsers = userController.findAllUsers(user);
+            authController.register(username, password);
             errorLabel.setText(" ");
-            dispose();
-            if (user.isAdmin()) {
-                new AdminView(issueController, user, projects, allUsers).setVisible(true);
-            } else {
-                new MainView(issueController, projectController, user).setVisible(true);
-            }
+            passwordField.setText("");
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Registration submitted. Please wait for admin approval.",
+                    "Register",
+                    JOptionPane.INFORMATION_MESSAGE);
         } catch (IllegalArgumentException e) {
             errorLabel.setText(e.getMessage());
             passwordField.setText("");

@@ -41,5 +41,18 @@
         "writtenDate": "2026-05-20T22:31:59.637849400"
       }
     ]
+  },
+  {
+    "issueId": 2,
+    "title": "asdf",
+    "description": "IE 환경에서adf지 않습니다.",
+    "reportedDate": "2026-05-20T22:31:59.582582700",
+    "reporterId": 4,
+    "assigneeId": 3,
+    "fixerId": 3,
+    "priority": "MAJOR",
+    "status": "NEW",
+    "comments": []
   }
+
 ]

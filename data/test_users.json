@@ -10,7 +10,7 @@
     "userId": 2,
     "loginId": "iampl",
     "password": "pass1234",
-    "accountStatus": "ACTIVE",
+    "accountStatus": "REJECTED",
     "role": "PL"
   },
   {
@@ -25,6 +25,27 @@
     "loginId": "iamtester",
     "password": "pass1234",
     "accountStatus": "ACTIVE",
+    "role": "TESTER"
+  },
+  {
+    "userId": 5,
+    "loginId": "testpl",
+    "password": "testpl",
+    "accountStatus": "REJECTED",
+    "role": "PL"
+  },
+  {
+    "userId": 6,
+    "loginId": "testDisabled",
+    "password": "testDisabled",
+    "accountStatus": "ACTIVE",
+    "role": "DEVELOPER"
+  },
+  {
+    "userId": 7,
+    "loginId": "testRejected",
+    "password": "testRejected",
+    "accountStatus": "REJECTED",
     "role": "TESTER"
   }
 ]

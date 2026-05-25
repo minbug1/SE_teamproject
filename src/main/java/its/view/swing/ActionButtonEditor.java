@@ -21,12 +21,13 @@ import its.model.User;
 
 public class ActionButtonEditor implements TableCellEditor {
 
-    private static final int COL_ID = 0;
-    private static final int COL_NAME = 1;
-    private static final int COL_PRIORITY = 2;
-    private static final int COL_STATUS = 3;
-    private static final int COL_REPORTER = 4;
-    private static final int COL_ASSIGNEE = 5;
+    private static final int COL_PROJECT = 1;
+    private static final int COL_ID = 2;
+    private static final int COL_NAME = 3;
+    private static final int COL_PRIORITY = 4;
+    private static final int COL_STATUS = 5;
+    private static final int COL_REPORTER = 6;
+    private static final int COL_ASSIGNEE = 7;
     private static final String ACTION_MENU_TEXT = "\u22EF";
 
     private final User currentUser;
@@ -139,7 +140,8 @@ public class ActionButtonEditor implements TableCellEditor {
 
     private void showIssueDetail() {
         JOptionPane.showMessageDialog(button,
-                "ID: " + getValue(COL_ID)
+                "Project: " + getValue(COL_PROJECT)
+                        + "\nID: " + getValue(COL_ID)
                         + "\nTitle: " + getValue(COL_NAME)
                         + "\nPriority: " + getValue(COL_PRIORITY)
                         + "\nStatus: " + getValue(COL_STATUS)

@@ -173,7 +173,7 @@ public class ReportIssueView extends JDialog {
         return panel;
     }
 
-    // ── 이벤트 핸들러 ──────────────────────────
+    // 이벤트 핸들러 
     private void onSubmit() {
         String title    = titleField.getText().trim();
         String desc     = descArea.getText().trim();

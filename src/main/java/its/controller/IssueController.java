@@ -9,6 +9,7 @@ import its.model.Role;
 import its.model.User;
 import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
+import its.repository.ProjectRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 public class IssueController {
 
     private IssueRepository issueRepository;
+    private ProjectRepository projectRepository;
 
     // 기본 생성자에서 FileIssueRepository를 사용하도록 설정
     public IssueController() {
@@ -24,10 +26,15 @@ public class IssueController {
 
     // 의존성 주입을 위한 생성자
     public IssueController(IssueRepository issueRepository) {
+        this(issueRepository, null);
+    }
+
+    public IssueController(IssueRepository issueRepository, ProjectRepository projectRepository) {
         if (issueRepository == null) {
             throw new IllegalArgumentException("Issue repository must not be null.");
         }
         this.issueRepository = issueRepository;
+        this.projectRepository = projectRepository;
     }
 
     public List<Issue> getAllIssues() {
@@ -37,6 +44,12 @@ public class IssueController {
     //Report Issue
     public Issue reportIssue(Project project, String title, String description, User reporter, Priority priority, String commentContent) {
         
+        
+        // 기존 이슈 ID 목록
+        for (Issue i : issueRepository.findAll()) {
+            System.out.println("  기존 이슈 id=" + i.getIssueId() + " projectId=" + i.getProjectId());
+        }
+
         //user가 project 멤버인지
         if (project == null || !project.getMembers().contains(reporter)) {
             throw new SecurityException("해당 프로젝트의 멤버가 아니므로 이슈를 등록할 권한이 없습니다.");
@@ -55,33 +68,24 @@ public class IssueController {
             throw new IllegalArgumentException("Priority must not be null.");
         }
 
-        long newIssueId = issueRepository.findAll().size() + 1;
-        Issue newIssue = new Issue(
-                newIssueId,
-                title,
-                description,
-                reporter,
-                LocalDateTime.now()
-        );
+        long newIssueId = generateIssueIdInProject(project);
+
+        Issue newIssue = new Issue(newIssueId, title, description, reporter, LocalDateTime.now());
+
+        newIssue.setProjectId(project.getProjectId());
 
         newIssue.setPriority(priority);
         newIssue.setStatus(Status.NEW);
+
         if (commentContent != null && !commentContent.trim().isEmpty()) {
             Comment comment = new Comment(
-                    newIssue.getNextCommentId(),
-                    commentContent,
-                    reporter,
-                    LocalDateTime.now()
-            );
+                    newIssue.getNextCommentId(), commentContent, reporter, LocalDateTime.now());
             newIssue.addComment(comment);
         }
 
-
-
-        newIssue.setStatus(Status.NEW);
-
-        // db에 이슈 저장
         issueRepository.save(newIssue);
+
+        project.addIssue(newIssue);
 
         return newIssue;
         /*
@@ -101,7 +105,7 @@ public class IssueController {
 
     //Fix Issue
     public Issue fixIssue(Project project, int issueId, String commentContent, User dev){
-        Issue issue = issueRepository.findById(issueId);
+        Issue issue = getProjectIssueOrNull(project, issueId);
 
         if (issue == null || issue.getStatus() != Status.ASSIGNED) {
             return null;
@@ -129,7 +133,7 @@ public class IssueController {
         validateRole(tester, Role.TESTER, "Only testers can verify issues.");
         validateProjectMember(project, tester, "Need to be a member of the project to verify the issue.");
 
-        Issue issue = getIssueOrNull(issueId);
+        Issue issue = getProjectIssueOrNull(project, issueId);
 
         if (issue == null || issue.getStatus() != Status.FIXED) {
             return null;
@@ -162,7 +166,7 @@ public class IssueController {
         validateRole(pl, Role.PL, "Only PL can change the issue status to closed.");
         validateProjectMember(project, pl, "Need to be a member of the project to close the issue.");
 
-        Issue issue = getIssueOrNull(issueId);
+        Issue issue = getProjectIssueOrNull(project, issueId);
 
         if (issue == null || issue.getStatus() != Status.RESOLVED) {
             return null;
@@ -190,7 +194,7 @@ public class IssueController {
         validateProjectMember(project, pl, "This user is not a PL member of the project.");
         validateProjectMember(project, assignee, "The assignee is not a member of the project.");
 
-        Issue issue = getIssueOrNull(issueId);
+        Issue issue = getProjectIssueOrNull(project, issueId);
 
         if (issue == null || (issue.getStatus() != Status.NEW && issue.getStatus() != Status.REOPENED)) {
             return null;
@@ -213,6 +217,30 @@ public class IssueController {
         }
 
         return issueRepository.findById(issueId);
+    }
+
+    private int generateIssueIdInProject(Project project) {
+        int maxId = 0;
+        for (Integer issueId : project.getIssueIds()) {
+            if (issueId != null && issueId > maxId) {
+                maxId = issueId;
+            }
+        }
+        for (Issue issue : project.getIssues()) {
+            if (issue.getIssueId() != null && issue.getIssueId() > maxId) {
+                maxId = issue.getIssueId().intValue();
+            }
+        }
+        return maxId + 1;
+    }
+
+    private Issue getProjectIssueOrNull(Project project, int issueId) {
+        validateProject(project);
+        if (issueId <= 0) {
+            throw new IllegalArgumentException("Issue ID must be a positive number.");
+        }
+
+        return issueRepository.findByProjectIdAndIssueId(project.getProjectId(), issueId);
     }
 
     private void addCommentIfPresent(Issue issue, String commentContent, User author) {
@@ -278,11 +306,18 @@ public class IssueController {
         }
 
         // 2. Project 객체가 가진 이슈 리스트에서 해당 이슈 제거
-        project.getIssues().removeIf(issue -> issue.getIssueId() == issueId);
+        project.removeIssueById(issueId);
 
         // 3. IssueRepository를 통해 이슈 데이터 완전히 삭제 (파일에서 지워짐)
-        issueRepository.delete(issueId);
+        issueRepository.delete(project.getProjectId(), issueId);
+        updateProjectIfAvailable(project);
 
+    }
+
+    private void updateProjectIfAvailable(Project project) {
+        if (projectRepository != null) {
+            projectRepository.update(project);
+        }
     }
 
     //이거 UI구현되면 수정필요

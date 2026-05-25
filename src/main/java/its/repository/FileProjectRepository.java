@@ -195,11 +195,24 @@ public class FileProjectRepository implements ProjectRepository {
                 }
             }
 
-            // issueIds → Issue 객체 복원
-            if (issueIds != null && issueRepo != null) {
+            // issueIds -> Issue 객체 복원
+            if (issueIds != null) {
                 for (Integer issueId : issueIds) {
-                    Issue issue = issueRepo.findById(issueId);
-                    if (issue != null) project.addIssue(issue);
+                    if (issueId == null) {
+                        continue;
+                    }
+
+                    project.addIssueId(issueId);
+                    if (issueRepo != null) {
+                        Issue issue = issueRepo.findByProjectIdAndIssueId(projectId, issueId);
+                        if (issue == null) {
+                            issue = issueRepo.findById(issueId);
+                            if (issue != null && issue.getProjectId() == 0) {
+                                issue.setProjectId(projectId);
+                            }
+                        }
+                        if (issue != null) project.addIssue(issue);
+                    }
                 }
             }
 
@@ -221,7 +234,14 @@ public class FileProjectRepository implements ProjectRepository {
             // Issue 객체 → ID만 추출
             r.issueIds = new ArrayList<>();
             for (Issue issue : project.getIssues()) {
-                r.issueIds.add(issue.getIssueId().intValue());
+                if (issue.getIssueId() != null) {
+                    r.issueIds.add(issue.getIssueId().intValue());
+                }
+            }
+            for (Integer issueId : project.getIssueIds()) {
+                if (issueId != null && !r.issueIds.contains(issueId)) {
+                    r.issueIds.add(issueId);
+                }
             }
 
             return r;

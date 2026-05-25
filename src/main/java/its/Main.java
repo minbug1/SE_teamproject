@@ -42,7 +42,7 @@ public class Main {
             IssueRepository issueRepository = new FileIssueRepository(ISSUE_FILE, userRepository);
             ProjectRepository projectRepository = new FileProjectRepository(PROJECT_FILE, userRepository, issueRepository);
 
-            IssueController issueController = new IssueController(issueRepository);
+            IssueController issueController = new IssueController(issueRepository, projectRepository);
             AuthController authController = new AuthController(userRepository);
             UserController userController = new UserController(userRepository);
             ProjectController projectController = new ProjectController(projectRepository);

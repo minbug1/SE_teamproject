@@ -48,6 +48,20 @@ public class ProjectController {
         return newProject;
     }
 
+    public void updateProject(Project project, User adminUser) {
+        if (adminUser == null || !adminUser.isAdmin()) {
+            throw new SecurityException("Project update permission is required.");
+        }
+        if (project == null) {
+            throw new IllegalArgumentException("Project must not be null.");
+        }
+        if (project.getName() == null || project.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Project name is required.");
+        }
+
+        projectRepository.update(project);
+    }
+
     //멤버 추가
     public void addMemberToProject(Project project, User newMember, User adminUser) {
         
@@ -70,6 +84,21 @@ public class ProjectController {
         //프로젝트 업데이트 (파일 저장)
         projectRepository.update(project);
 
+    }
+
+    public void removeMemberFromProject(Project project, User member, User adminUser) {
+        if (adminUser == null || !adminUser.isAdmin()) {
+            throw new SecurityException("Member removal permission is required.");
+        }
+        if (project == null) {
+            throw new IllegalArgumentException("Project must not be null.");
+        }
+        if (member == null) {
+            throw new IllegalArgumentException("Member must not be null.");
+        }
+
+        project.getMembers().remove(member);
+        projectRepository.update(project);
     }
 
     //  프로젝트에 이슈 추가 및 파일 업데이트
