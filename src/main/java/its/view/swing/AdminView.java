@@ -1,762 +1,710 @@
 package its.view.swing;
 
+import its.controller.AuthController;
 import its.controller.IssueController;
+import its.controller.ProjectController;
 import its.model.AccountStatus;
 import its.model.Project;
 import its.model.Role;
 import its.model.User;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * AdminView — 프로젝트/멤버/Unassigned 관리 화면
- *
- * 진입: LoginView 에서 user.isAdmin() == true 일 때
- *       new AdminView(issueController, adminUser, projects).setVisible(true);
- *
- * 레이아웃:
- *   [툴바]
- *   [사이드바 | 우측 카드 패널]
- *        프로젝트 목록          PROJECT  카드: 멤버 테이블 + 추가/제거
- *        ── Unassigned ──       UNASSIGNED 카드: 미배정 유저 테이블
- *   [+ 프로젝트 추가]
- */
 public class AdminView extends JFrame {
 
-    // ── 색상 팔레트 ───────────────────────────────────────
-    private static final Color BG_DARK     = new Color(0x111827);
-    private static final Color BG_PANEL    = new Color(0x1F2937);
-    private static final Color BG_SIDEBAR  = new Color(0x0D1117);
-    private static final Color BG_INPUT    = new Color(0x374151);
-    private static final Color ACCENT      = new Color(0xE94560);
-    private static final Color FG_WHITE    = new Color(0xF9FAFB);
-    private static final Color FG_LABEL    = new Color(0x9CA3AF);
-    private static final Color FG_HINT     = new Color(0x6B7280);
-    private static final Color SEL_BG      = new Color(0x374151);
-    private static final Color DIVIDER     = new Color(0x374151);
-    private static final Color C_ADMIN     = new Color(0xE94560);
-    private static final Color C_PL        = new Color(0x8B5CF6);
-    private static final Color C_DEV       = new Color(0x3B82F6);
-    private static final Color C_TESTER    = new Color(0x10B981);
-    private static final Color C_UNASSIGN  = new Color(0xF59E0B);
-    private static final Color C_PENDING   = new Color(0xF59E0B);
-    private static final Color C_ACTIVE    = new Color(0x10B981);
-    private static final Color C_REJECTED  = new Color(0xEF4444);
-    private static final Color C_DISABLED  = new Color(0x6B7280);
+    private static final String USERS_LABEL = "Users";
 
-    private final User             adminUser;
-    private final IssueController  issueController;
-    private final List<Project>    projects;
-    private final List<User>       allUsers;
+    private final AuthController authController;
+    private final ProjectController projectController;
+    private final User adminUser;
+    private final List<Project> projects;
+    private final List<User> allUsers;
 
-    // ── 사이드바 ─────────────────────────────────────────
-    private DefaultListModel<String> sidebarModel;
-    private JList<String>            sidebarList;
+    private DefaultListModel<String> projectListModel;
+    private JList<String> projectList;
 
-    // ── 우측 카드 ─────────────────────────────────────────
-    private JPanel    rightCards;
-    private CardLayout cardLayout;
-
-    // PROJECT 카드
-    private JLabel            lblProjectTitle;
-    private JLabel            lblProjectDesc;
+    private JLabel projectTitleLabel;
+    private JLabel projectDescriptionLabel;
     private DefaultTableModel memberTableModel;
-    private JTable            memberTable;
-
-    // UNASSIGNED 카드
+    private JTable memberTable;
     private DefaultTableModel unassignedTableModel;
-    private JTable            unassignedTable;
+    private JTable unassignedTable;
 
-    // 현재 선택된 프로젝트
-    private Project selectedProject = null;
+    private Project selectedProject;
+    private boolean refreshingTables;
 
-    // ── 사이드바 항목 구분 상수 ───────────────────────────
-    private static final String UNASSIGNED_KEY = "__UNASSIGNED__";
-
-    // ════════════════════════════════════════════════════════
-    //  생성자
-    // ════════════════════════════════════════════════════════
-    /**
-     * @param issueController  공유 컨트롤러
-     * @param adminUser        로그인한 Admin User 객체
-     * @param projects         앱 전체에서 공유되는 프로젝트 리스트 (가변)
-     * @param allUsers         앱 전체에서 공유되는 유저 리스트   (가변)
-     */
-    public AdminView(IssueController issueController,
+    public AdminView(AuthController authController,
+                     ProjectController projectController,
+                     IssueController issueController,
                      User adminUser,
                      List<Project> projects,
                      List<User> allUsers) {
-        this.issueController = issueController;
-        this.adminUser       = adminUser;
-        this.projects        = projects;
-        this.allUsers        = allUsers;
+        this.authController = authController;
+        this.projectController = projectController;
+        this.adminUser = adminUser;
+        this.projects = projects;
+        this.allUsers = allUsers;
 
-        setTitle("Issue Tracker — Admin Panel");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(940, 620);
-        setLocationRelativeTo(null);
-        buildUI();
+        initUI();
     }
 
-    // ════════════════════════════════════════════════════════
-    //  UI 조립
-    // ════════════════════════════════════════════════════════
-    private void buildUI() {
-        JPanel root = new JPanel(new BorderLayout(0, 0));
-        root.setBackground(BG_DARK);
-        setContentPane(root);
+    private void initUI() {
+        setTitle("Issue Tracker Admin");
+        setSize(940, 620);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
 
-        root.add(buildToolbar(),   BorderLayout.NORTH);
-        root.add(buildSidebar(),   BorderLayout.WEST);
-        root.add(buildRightArea(), BorderLayout.CENTER);
+        add(createTopPanel(), BorderLayout.NORTH);
+        add(createProjectListPanel(), BorderLayout.WEST);
+        add(createMainPanel(), BorderLayout.CENTER);
 
-        refreshSidebar();
-
-        // 첫 번째 프로젝트 자동 선택
+        refreshProjectList();
         if (!projects.isEmpty()) {
-            sidebarList.setSelectedIndex(0);
+            projectList.setSelectedIndex(0);
+        } else {
+            showUsers();
         }
     }
 
-    // ── 툴바 ─────────────────────────────────────────────
-    private JPanel buildToolbar() {
-        JPanel bar = new JPanel(new BorderLayout());
-        bar.setBackground(BG_SIDEBAR);
-        bar.setBorder(new EmptyBorder(10, 16, 10, 16));
+    private JPanel createTopPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
 
-        JLabel title = new JLabel("🐛  Issue Tracker  —  Admin Panel");
-        title.setFont(new Font("Monospaced", Font.BOLD, 16));
-        title.setForeground(ACCENT);
-        bar.add(title, BorderLayout.WEST);
+        JLabel title = new JLabel("Issue Tracker Admin");
+        JButton logoutButton = new JButton("Logout");
+        logoutButton.addActionListener(e -> onLogout());
 
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        right.setOpaque(false);
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightPanel.add(new JLabel(adminUser.getLoginId()));
+        rightPanel.add(logoutButton);
 
-        // 로그인 유저 배지
-        JLabel badge = new JLabel("  " + adminUser.getLoginId() + "  ");
-        badge.setFont(new Font("Monospaced", Font.BOLD, 11));
-        badge.setForeground(Color.WHITE);
-        badge.setBackground(C_ADMIN);
-        badge.setOpaque(true);
-        badge.setBorder(new EmptyBorder(3, 8, 3, 8));
-        right.add(badge);
-
-        JButton btnLogout = makeBtn("로그아웃", BG_INPUT);
-        btnLogout.addActionListener(e -> onLogout());
-        right.add(btnLogout);
-
-        bar.add(right, BorderLayout.EAST);
-        return bar;
+        panel.add(title, BorderLayout.WEST);
+        panel.add(rightPanel, BorderLayout.EAST);
+        return panel;
     }
 
-    // ── 사이드바 ─────────────────────────────────────────
-    private JComponent buildSidebar() {
-        sidebarModel = new DefaultListModel<>();
-        sidebarList  = new JList<>(sidebarModel);
-        sidebarList.setBackground(BG_SIDEBAR);
-        sidebarList.setForeground(FG_WHITE);
-        sidebarList.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        sidebarList.setSelectionBackground(SEL_BG);
-        sidebarList.setSelectionForeground(FG_WHITE);
-        sidebarList.setFixedCellHeight(42);
-        sidebarList.setBorder(BorderFactory.createEmptyBorder());
-        sidebarList.setCellRenderer(new SidebarRenderer());
-        sidebarList.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) onSidebarSelect(sidebarList.getSelectedIndex());
+    private JComponent createProjectListPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Projects"));
+
+        projectListModel = new DefaultListModel<>();
+        projectList = new JList<>(projectListModel);
+        projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        projectList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                onProjectSelectionChanged();
+            }
         });
 
-        // 사이드바 외부 패널
+        JButton addProjectButton = new JButton("+ Project");
+        addProjectButton.addActionListener(e -> doAddProject());
+
+        panel.add(new JScrollPane(projectList), BorderLayout.CENTER);
+        panel.add(addProjectButton, BorderLayout.SOUTH);
+        panel.setPreferredSize(new java.awt.Dimension(220, 0));
+        return panel;
+    }
+
+    private JPanel createMainPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(BG_SIDEBAR);
-        panel.setPreferredSize(new Dimension(210, 0));
 
-        // 헤더
-        JLabel header = new JLabel("  📁  Projects");
-        header.setFont(new Font("SansSerif", Font.BOLD, 12));
-        header.setForeground(FG_LABEL);
-        header.setBorder(new EmptyBorder(12, 8, 8, 8));
-        header.setOpaque(true);
-        header.setBackground(BG_SIDEBAR);
-        panel.add(header, BorderLayout.NORTH);
+        panel.add(createProjectHeaderPanel(), BorderLayout.NORTH);
+        panel.add(createTablesPanel(), BorderLayout.CENTER);
 
-        // 목록 스크롤
-        JScrollPane sp = new JScrollPane(sidebarList);
-        sp.setBorder(BorderFactory.createEmptyBorder());
-        sp.setBackground(BG_SIDEBAR);
-        sp.getViewport().setBackground(BG_SIDEBAR);
-        panel.add(sp, BorderLayout.CENTER);
-
-        // + 프로젝트 추가 버튼
-        JButton btnAdd = makeBtn("+ 프로젝트 추가", new Color(0x1E3A5F));
-        btnAdd.setPreferredSize(new Dimension(0, 38));
-        btnAdd.addActionListener(e -> doAddProject());
-        JPanel btnWrap = new JPanel(new BorderLayout());
-        btnWrap.setBackground(BG_SIDEBAR);
-        btnWrap.setBorder(new EmptyBorder(6, 8, 8, 8));
-        btnWrap.add(btnAdd);
-        panel.add(btnWrap, BorderLayout.SOUTH);
-
-        // 오른쪽 경계선
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(BG_SIDEBAR);
-        wrapper.add(panel, BorderLayout.CENTER);
-        wrapper.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, DIVIDER));
-        return wrapper;
+        return panel;
     }
 
-    // ── 우측 카드 영역 ───────────────────────────────────
-    private JPanel buildRightArea() {
-        cardLayout = new CardLayout();
-        rightCards = new JPanel(cardLayout);
-        rightCards.setBackground(BG_PANEL);
+    private JPanel createProjectHeaderPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-        rightCards.add(buildProjectCard(),    "PROJECT");
-        rightCards.add(buildUnassignedCard(), "UNASSIGNED");
-        rightCards.add(buildEmptyCard(),      "EMPTY");
+        JPanel titlePanel = new JPanel(new GridLayout(2, 1));
+        projectTitleLabel = new JLabel("Project");
+        projectDescriptionLabel = new JLabel(" ");
+        titlePanel.add(projectTitleLabel);
+        titlePanel.add(projectDescriptionLabel);
 
-        return rightCards;
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton editButton = new JButton("Edit");
+        JButton deleteButton = new JButton("Delete");
+        JButton addMemberButton = new JButton("+ Member");
+        editButton.addActionListener(e -> doEditProject());
+        deleteButton.addActionListener(e -> doDeleteProject());
+        addMemberButton.addActionListener(e -> doAddMember());
+        buttonPanel.add(editButton);
+        buttonPanel.add(deleteButton);
+        buttonPanel.add(addMemberButton);
+
+        panel.add(titlePanel, BorderLayout.WEST);
+        panel.add(buttonPanel, BorderLayout.EAST);
+        return panel;
     }
 
-    // ════════════════════════════════════════════════════════
-    //  PROJECT 카드
-    // ════════════════════════════════════════════════════════
-    private JPanel buildProjectCard() {
-        JPanel card = new JPanel(new BorderLayout(0, 0));
-        card.setBackground(BG_PANEL);
+    private JPanel createTablesPanel() {
+        JPanel panel = new JPanel(new GridLayout(2, 1, 0, 8));
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
 
-        // 헤더
-        JPanel header = new JPanel(new BorderLayout(0, 4));
-        header.setBackground(BG_PANEL);
-        header.setBorder(new EmptyBorder(18, 22, 12, 22));
-
-        lblProjectTitle = new JLabel("프로젝트");
-        lblProjectTitle.setFont(new Font("SansSerif", Font.BOLD, 18));
-        lblProjectTitle.setForeground(FG_WHITE);
-
-        lblProjectDesc = new JLabel(" ");
-        lblProjectDesc.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lblProjectDesc.setForeground(FG_HINT);
-
-        JPanel titleBox = new JPanel(new BorderLayout());
-        titleBox.setOpaque(false);
-        titleBox.add(lblProjectTitle, BorderLayout.CENTER);
-        titleBox.add(lblProjectDesc, BorderLayout.SOUTH);
-        header.add(titleBox, BorderLayout.WEST);
-
-        // 헤더 버튼들
-        JPanel headerBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        headerBtns.setOpaque(false);
-
-        JButton btnEdit   = makeBtn("✏ 이름 변경", BG_INPUT);
-        JButton btnDelete = makeBtn("🗑 프로젝트 삭제", new Color(0x7F1D1D));
-        btnEdit.addActionListener(e   -> doEditProject());
-        btnDelete.addActionListener(e -> doDeleteProject());
-        headerBtns.add(btnEdit);
-        headerBtns.add(btnDelete);
-        header.add(headerBtns, BorderLayout.EAST);
-        card.add(header, BorderLayout.NORTH);
-
-        // 멤버 테이블
         memberTableModel = new DefaultTableModel(
-                new String[]{"Username", "Role", "Account Status", "액션"}, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
-        };
-        memberTable = buildStyledTable(memberTableModel);
-        memberTable.getColumnModel().getColumn(0).setPreferredWidth(160);
-        memberTable.getColumnModel().getColumn(1).setPreferredWidth(110);
-        memberTable.getColumnModel().getColumn(2).setPreferredWidth(120);
-        memberTable.getColumnModel().getColumn(3).setPreferredWidth(80);
-        memberTable.getColumnModel().getColumn(1).setCellRenderer(roleBadgeRenderer());
-        memberTable.getColumnModel().getColumn(2).setCellRenderer(statusBadgeRenderer());
-        memberTable.getColumnModel().getColumn(3).setCellRenderer(btnRenderer("제거", new Color(0x7F1D1D)));
-        memberTable.getColumnModel().getColumn(3).setCellEditor(new RemoveMemberEditor());
-
-        JScrollPane sp = new JScrollPane(memberTable);
-        styleScrollPane(sp);
-
-        JLabel sec = makeSectionLabel("멤버 목록");
-        JPanel center = new JPanel(new BorderLayout(0, 8));
-        center.setBackground(BG_PANEL);
-        center.setBorder(new EmptyBorder(0, 22, 0, 22));
-        center.add(sec, BorderLayout.NORTH);
-        center.add(sp,  BorderLayout.CENTER);
-        card.add(center, BorderLayout.CENTER);
-
-        // 하단: 멤버 추가
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 8));
-        bottom.setBackground(BG_PANEL);
-        bottom.setBorder(new EmptyBorder(0, 22, 16, 22));
-        JButton btnAddMember = makeBtn("+ 멤버 추가", new Color(0x065F46));
-        btnAddMember.addActionListener(e -> doAddMember());
-        bottom.add(btnAddMember);
-        card.add(bottom, BorderLayout.SOUTH);
-
-        return card;
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  UNASSIGNED 카드
-    // ════════════════════════════════════════════════════════
-    private JPanel buildUnassignedCard() {
-        JPanel card = new JPanel(new BorderLayout(0, 0));
-        card.setBackground(BG_PANEL);
-
-        // 헤더
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(BG_PANEL);
-        header.setBorder(new EmptyBorder(18, 22, 12, 22));
-
-        JLabel title = new JLabel("⚠  Unassigned / Pending Users");
-        title.setFont(new Font("SansSerif", Font.BOLD, 18));
-        title.setForeground(C_UNASSIGN);
-        header.add(title, BorderLayout.WEST);
-        card.add(header, BorderLayout.NORTH);
-
-        // 테이블
-        unassignedTableModel = new DefaultTableModel(
-                new String[]{"Username", "Role", "Account Status", "액션"}, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
-        };
-        unassignedTable = buildStyledTable(unassignedTableModel);
-        unassignedTable.getColumnModel().getColumn(0).setPreferredWidth(160);
-        unassignedTable.getColumnModel().getColumn(1).setPreferredWidth(110);
-        unassignedTable.getColumnModel().getColumn(2).setPreferredWidth(120);
-        unassignedTable.getColumnModel().getColumn(3).setPreferredWidth(130);
-        unassignedTable.getColumnModel().getColumn(1).setCellRenderer(roleBadgeRenderer());
-        unassignedTable.getColumnModel().getColumn(2).setCellRenderer(statusBadgeRenderer());
-        unassignedTable.getColumnModel().getColumn(3).setCellRenderer(btnRenderer("프로젝트 배정", new Color(0x1E40AF)));
-        unassignedTable.getColumnModel().getColumn(3).setCellEditor(new AssignUserEditor());
-
-        JScrollPane sp = new JScrollPane(unassignedTable);
-        styleScrollPane(sp);
-
-        JLabel sec = makeSectionLabel("어떤 프로젝트에도 배정되지 않은 계정  (읽기 전용으로 모든 프로젝트 열람 가능)");
-        JPanel center = new JPanel(new BorderLayout(0, 8));
-        center.setBackground(BG_PANEL);
-        center.setBorder(new EmptyBorder(0, 22, 20, 22));
-        center.add(sec, BorderLayout.NORTH);
-        center.add(sp,  BorderLayout.CENTER);
-        card.add(center, BorderLayout.CENTER);
-
-        return card;
-    }
-
-    // ── 빈 카드 ──────────────────────────────────────────
-    private JPanel buildEmptyCard() {
-        JPanel p = new JPanel(new GridBagLayout());
-        p.setBackground(BG_PANEL);
-        JLabel l = new JLabel("좌측에서 프로젝트를 선택하세요");
-        l.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        l.setForeground(FG_HINT);
-        p.add(l);
-        return p;
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  사이드바 선택 → 우측 갱신
-    // ════════════════════════════════════════════════════════
-    private void onSidebarSelect(int idx) {
-        if (idx < 0) { cardLayout.show(rightCards, "EMPTY"); return; }
-
-        if (idx < projects.size()) {
-            selectedProject = projects.get(idx);
-            refreshProjectCard();
-            cardLayout.show(rightCards, "PROJECT");
-        } else {
-            // Unassigned 항목
-            selectedProject = null;
-            refreshUnassignedCard();
-            cardLayout.show(rightCards, "UNASSIGNED");
-        }
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  갱신 메서드
-    // ════════════════════════════════════════════════════════
-    private void refreshSidebar() {
-        int prevSel = sidebarList.getSelectedIndex();
-        sidebarModel.clear();
-        for (Project p : projects)
-            sidebarModel.addElement(p.getName());
-        sidebarModel.addElement(UNASSIGNED_KEY);
-
-        int total = sidebarModel.getSize();
-        if (prevSel >= 0 && prevSel < total)
-            sidebarList.setSelectedIndex(prevSel);
-        else if (total > 0)
-            sidebarList.setSelectedIndex(0);
-    }
-
-    private void refreshProjectCard() {
-        if (selectedProject == null) return;
-
-        lblProjectTitle.setText("📁  " + selectedProject.getName()
-                + "  (" + selectedProject.getMembers().size() + "명)");
-        String desc = selectedProject.getDescription();
-        lblProjectDesc.setText(desc != null && !desc.isBlank() ? desc : " ");
-
-        memberTableModel.setRowCount(0);
-        for (User u : selectedProject.getMembers()) {
-            memberTableModel.addRow(new Object[]{
-                u.getLoginId(),
-                u.getRole().name(),
-                u.getAccountStatus().name(),
-                "제거"
-            });
-        }
-    }
-
-    private void refreshUnassignedCard() {
-        unassignedTableModel.setRowCount(0);
-        for (User u : getUnassignedUsers()) {
-            unassignedTableModel.addRow(new Object[]{
-                u.getLoginId(),
-                u.getRole().name(),
-                u.getAccountStatus().name(),
-                "프로젝트 배정"
-            });
-        }
-    }
-
-    /** 어떤 프로젝트 멤버에도 없는 유저 (Admin 제외) */
-    private List<User> getUnassignedUsers() {
-        List<User> result = new ArrayList<>();
-        for (User u : allUsers) {
-            if (u.isAdmin()) continue;
-            boolean assigned = false;
-            for (Project p : projects) {
-                if (p.getMembers().contains(u)) { assigned = true; break; }
+                new String[]{"Username", "Role", "Account Status", ""}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 1 || column == 2 || column == 3;
             }
-            if (!assigned) result.add(u);
+        };
+        memberTable = createTable(memberTableModel);
+        memberTable.getColumn("Role").setCellEditor(new EnumCellEditor<>(Role.class));
+        memberTable.getColumn("Account Status").setCellEditor(new EnumCellEditor<>(AccountStatus.class));
+        memberTable.getColumn("").setCellRenderer(new ButtonRenderer("Remove"));
+        memberTable.getColumn("").setCellEditor(new RemoveMemberEditor());
+        memberTableModel.addTableModelListener(e -> onMemberTableChanged(e));
+
+        unassignedTableModel = new DefaultTableModel(
+                new String[]{"Username", "Role", "Account Status", ""}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 1 || column == 2 || column == 3;
+            }
+        };
+        unassignedTable = createTable(unassignedTableModel);
+        unassignedTable.getColumn("Role").setCellEditor(new EnumCellEditor<>(Role.class));
+        unassignedTable.getColumn("Account Status").setCellEditor(new EnumCellEditor<>(AccountStatus.class));
+        unassignedTable.getColumn("").setCellRenderer(new ButtonRenderer("Assign"));
+        unassignedTable.getColumn("").setCellEditor(new AssignUserEditor());
+        unassignedTableModel.addTableModelListener(e -> onUserTableChanged(e));
+
+        JPanel memberPanel = new JPanel(new BorderLayout());
+        memberPanel.setBorder(BorderFactory.createTitledBorder("Project Members"));
+        memberPanel.add(new JScrollPane(memberTable), BorderLayout.CENTER);
+
+        JPanel unassignedPanel = new JPanel(new BorderLayout());
+        unassignedPanel.setBorder(BorderFactory.createTitledBorder(USERS_LABEL));
+        unassignedPanel.add(new JScrollPane(unassignedTable), BorderLayout.CENTER);
+
+        panel.add(memberPanel);
+        panel.add(unassignedPanel);
+        return panel;
+    }
+
+    private JTable createTable(DefaultTableModel model) {
+        JTable table = new JTable(model);
+        table.setRowHeight(32);
+        table.getTableHeader().setReorderingAllowed(false);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        return table;
+    }
+
+    private void onProjectSelectionChanged() {
+        int index = projectList.getSelectedIndex();
+        if (index < 0) {
+            selectedProject = null;
+            return;
+        }
+
+        if (index < projects.size()) {
+            selectedProject = projects.get(index);
+            refreshProjectPanel();
+        } else {
+            showUsers();
+        }
+    }
+
+    private void refreshProjectList() {
+        int previousIndex = projectList == null ? -1 : projectList.getSelectedIndex();
+
+        projectListModel.clear();
+        for (Project project : projects) {
+            projectListModel.addElement(project.getName());
+        }
+        projectListModel.addElement(USERS_LABEL);
+
+        if (previousIndex >= 0 && previousIndex < projectListModel.size()) {
+            projectList.setSelectedIndex(previousIndex);
+        }
+    }
+
+    private void refreshProjectPanel() {
+        if (selectedProject == null) {
+            return;
+        }
+
+        projectTitleLabel.setText(selectedProject.getName()
+                + " (" + selectedProject.getMembers().size() + " members)");
+        String description = selectedProject.getDescription();
+        projectDescriptionLabel.setText(description == null || description.isBlank() ? " " : description);
+
+        refreshingTables = true;
+        memberTableModel.setRowCount(0);
+        for (User user : selectedProject.getMembers()) {
+            memberTableModel.addRow(new Object[]{
+                    user.getLoginId(),
+                    user.getRole(),
+                    user.getAccountStatus(),
+                    "Remove"
+            });
+        }
+
+        refreshUserTable();
+        refreshingTables = false;
+    }
+
+    private void showUsers() {
+        selectedProject = null;
+        projectTitleLabel.setText(USERS_LABEL);
+        projectDescriptionLabel.setText("Pending users and project assignment.");
+        refreshingTables = true;
+        memberTableModel.setRowCount(0);
+        refreshUserTable();
+        refreshingTables = false;
+    }
+
+    private void refreshUserTable() {
+        refreshingTables = true;
+        unassignedTableModel.setRowCount(0);
+        for (User user : getManagedUsers()) {
+            unassignedTableModel.addRow(new Object[]{
+                    user.getLoginId(),
+                    user.getRole(),
+                    user.getAccountStatus(),
+                    "Assign"
+            });
+        }
+        refreshingTables = false;
+    }
+
+    private List<User> getManagedUsers() {
+        List<User> result = new ArrayList<>();
+        for (User user : allUsers) {
+            if (user.isAdmin()) {
+                continue;
+            }
+            result.add(user);
         }
         return result;
     }
 
-    // ════════════════════════════════════════════════════════
-    //  액션: 프로젝트 CRUD
-    // ════════════════════════════════════════════════════════
-    private void doAddProject() {
-        JTextField tfName = new JTextField();
-        JTextField tfDesc = new JTextField();
-        styleInputField(tfName);
-        styleInputField(tfDesc);
-
-        JPanel form = new JPanel(new GridLayout(4, 1, 0, 6));
-        form.setBackground(BG_PANEL);
-        form.add(makeFormLabel("프로젝트 이름 *")); form.add(tfName);
-        form.add(makeFormLabel("설명 (선택)"));     form.add(tfDesc);
-
-        int r = JOptionPane.showConfirmDialog(this, form,
-                "프로젝트 추가", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (r != JOptionPane.OK_OPTION) return;
-
-        String name = tfName.getText().trim();
-        if (name.isEmpty()) {
-            showWarn("프로젝트 이름은 필수입니다."); return;
+    private List<User> getUsersNotInSelectedProject() {
+        List<User> result = new ArrayList<>();
+        if (selectedProject == null) {
+            return result;
         }
-        for (Project p : projects)
-            if (p.getName().equals(name)) { showWarn("이미 존재하는 이름입니다."); return; }
 
-        int newId = projects.stream().mapToInt(Project::getProjectId).max().orElse(0) + 1;
-        projects.add(new Project(newId, name, tfDesc.getText().trim()));
-        refreshSidebar();
-        sidebarList.setSelectedIndex(projects.size() - 1);
+        for (User user : getManagedUsers()) {
+            if (!selectedProject.getMembers().contains(user)) {
+                result.add(user);
+            }
+        }
+        return result;
+    }
+
+    private List<Project> getProjectsWithoutUser(User user) {
+        List<Project> result = new ArrayList<>();
+        for (Project project : projects) {
+            if (!project.getMembers().contains(user)) {
+                result.add(project);
+            }
+        }
+        return result;
+    }
+
+    private void onMemberTableChanged(TableModelEvent event) {
+        if (refreshingTables || event.getType() != TableModelEvent.UPDATE) {
+            return;
+        }
+        int row = event.getFirstRow();
+        int column = event.getColumn();
+        if (selectedProject == null || row < 0 || row >= selectedProject.getMembers().size()) {
+            return;
+        }
+        if (column == 1 || column == 2) {
+            updateUserFromTable(selectedProject.getMembers().get(row), memberTableModel, row, column);
+        }
+    }
+
+    private void onUserTableChanged(TableModelEvent event) {
+        if (refreshingTables || event.getType() != TableModelEvent.UPDATE) {
+            return;
+        }
+        int row = event.getFirstRow();
+        int column = event.getColumn();
+        List<User> users = getManagedUsers();
+        if (row < 0 || row >= users.size()) {
+            return;
+        }
+        if (column == 1 || column == 2) {
+            updateUserFromTable(users.get(row), unassignedTableModel, row, column);
+        }
+    }
+
+    private void updateUserFromTable(User user, DefaultTableModel model, int row, int column) {
+            // 임시 디버그 — 어디서 호출되는지 추적
+        System.out.println("=== updateUserFromTable 호출 ===");
+        System.out.println("user: " + user.getLoginId());
+        System.out.println("column: " + column);
+        System.out.println("value: " + model.getValueAt(row, column));
+        new Exception("호출 스택").printStackTrace();
+        try {
+            if (column == 1) {
+                Role role = toRole(model.getValueAt(row, column));
+                authController.changeRole(adminUser, user.getUserId(), role);
+                user.changeRole(role);
+            } else if (column == 2) {
+                AccountStatus status = toAccountStatus(model.getValueAt(row, column));
+                authController.changeAccountStatus(adminUser, user.getUserId(), status);
+                user.changeAccountStatus(status);
+            }
+            refreshProjectList();
+            if (selectedProject != null) {
+                refreshProjectPanel();
+            } else {
+                showUsers();
+            }
+        } catch (IllegalArgumentException ex) {
+            showWarning(ex.getMessage());
+        }
+    }
+
+    private Role toRole(Object value) {
+        if (value instanceof Role) {
+            return (Role) value;
+        }
+        return Role.valueOf(String.valueOf(value));
+    }
+
+    private AccountStatus toAccountStatus(Object value) {
+        if (value instanceof AccountStatus) {
+            return (AccountStatus) value;
+        }
+        return AccountStatus.valueOf(String.valueOf(value));
+    }
+
+    private void doAddProject() {
+        JTextField nameField = new JTextField();
+        JTextField descriptionField = new JTextField();
+        JPanel form = new JPanel(new GridLayout(4, 1, 4, 4));
+        form.add(new JLabel("Project name"));
+        form.add(nameField);
+        form.add(new JLabel("Description"));
+        form.add(descriptionField);
+
+        int result = JOptionPane.showConfirmDialog(
+                this, form, "Add Project", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        String name = nameField.getText().trim();
+        if (name.isEmpty()) {
+            showWarning("Project name is required.");
+            return;
+        }
+        for (Project project : projects) {
+            if (project.getName().equals(name)) {
+                showWarning("Project name already exists.");
+                return;
+            }
+        }
+
+        Project project = projectController.createProject(name, descriptionField.getText().trim(), adminUser);
+        projects.add(project);
+        refreshProjectList();
+        projectList.setSelectedIndex(projects.size() - 1);
     }
 
     private void doEditProject() {
-        if (selectedProject == null) return;
-        String newName = JOptionPane.showInputDialog(this,
-                "새 프로젝트 이름:", selectedProject.getName());
-        if (newName == null || newName.isBlank()) return;
-        selectedProject.setName(newName.trim());
-        refreshSidebar();
-        refreshProjectCard();
+        if (selectedProject == null) {
+            return;
+        }
+
+        JTextField nameField = new JTextField(selectedProject.getName());
+        JTextField descriptionField = new JTextField(
+                selectedProject.getDescription() == null ? "" : selectedProject.getDescription());
+        JPanel form = new JPanel(new GridLayout(4, 1, 4, 4));
+        form.add(new JLabel("Project name"));
+        form.add(nameField);
+        form.add(new JLabel("Description"));
+        form.add(descriptionField);
+
+        int result = JOptionPane.showConfirmDialog(
+                this, form, "Edit Project", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        String name = nameField.getText().trim();
+        if (name.isEmpty()) {
+            showWarning("Project name is required.");
+            return;
+        }
+
+        selectedProject.setName(name);
+        selectedProject.setDescription(descriptionField.getText().trim());
+        projectController.updateProject(selectedProject, adminUser);
+        refreshProjectList();
+        refreshProjectPanel();
     }
 
     private void doDeleteProject() {
-        if (selectedProject == null) return;
-        int r = JOptionPane.showConfirmDialog(this,
-                "'" + selectedProject.getName() + "' 을 삭제하시겠습니까?\n"
-                + "멤버 배정과 이슈 연결이 모두 해제됩니다.",
-                "프로젝트 삭제", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-        if (r != JOptionPane.YES_OPTION) return;
+        if (selectedProject == null) {
+            return;
+        }
+
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "Delete '" + selectedProject.getName() + "'?",
+                "Delete Project",
+                JOptionPane.YES_NO_OPTION);
+        if (result != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        projectController.deleteProject(selectedProject.getProjectId(), adminUser);
         projects.remove(selectedProject);
         selectedProject = null;
-        refreshSidebar();
-        cardLayout.show(rightCards, "EMPTY");
+        refreshProjectList();
+        if (!projects.isEmpty()) {
+            projectList.setSelectedIndex(0);
+        } else {
+            showUsers();
+        }
     }
 
-    // ════════════════════════════════════════════════════════
-    //  액션: 멤버 추가 / 제거
-    // ════════════════════════════════════════════════════════
     private void doAddMember() {
-        if (selectedProject == null) return;
-        List<User> candidates = getUnassignedUsers();
+        if (selectedProject == null) {
+            return;
+        }
+
+        List<User> candidates = getUsersNotInSelectedProject();
         if (candidates.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "추가 가능한 Unassigned 유저가 없습니다.", "알림",
+            JOptionPane.showMessageDialog(this, "No available users.", "Info",
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        // loginId 배열로 선택
-        String[] ids = candidates.stream().map(User::getLoginId).toArray(String[]::new);
-        String chosen = (String) JOptionPane.showInputDialog(this,
-                "프로젝트에 추가할 유저:", "멤버 추가",
-                JOptionPane.PLAIN_MESSAGE, null, ids, ids[0]);
-        if (chosen == null) return;
 
-        candidates.stream()
-                .filter(u -> u.getLoginId().equals(chosen))
-                .findFirst()
-                .ifPresent(u -> {
-                    selectedProject.addMember(u);
-                    refreshProjectCard();
-                    refreshUnassignedCard();
-                    refreshSidebar();
-                    sidebarList.setSelectedIndex(projects.indexOf(selectedProject));
-                });
+        String[] loginIds = candidates.stream().map(User::getLoginId).toArray(String[]::new);
+        String selectedLoginId = (String) JOptionPane.showInputDialog(
+                this,
+                "Select user",
+                "Add Member",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                loginIds,
+                loginIds[0]);
+        if (selectedLoginId == null) {
+            return;
+        }
+
+        for (User user : candidates) {
+            if (user.getLoginId().equals(selectedLoginId)) {
+                projectController.addMemberToProject(selectedProject, user, adminUser);
+                break;
+            }
+        }
+
+        refreshProjectList();
+        refreshProjectPanel();
     }
 
-    private void doRemoveMember(int row) {
-        if (selectedProject == null || row < 0) return;
-        List<User> members = selectedProject.getMembers();
-        if (row >= members.size()) return;
+    private void doRemoveMember(int modelRow) {
+        if (selectedProject == null || modelRow < 0 || modelRow >= selectedProject.getMembers().size()) {
+            return;
+        }
 
-        User target = members.get(row);
-        int r = JOptionPane.showConfirmDialog(this,
-                "'" + target.getLoginId() + "' 을 프로젝트에서 제거하시겠습니까?",
-                "멤버 제거", JOptionPane.YES_NO_OPTION);
-        if (r != JOptionPane.YES_OPTION) return;
+        User user = selectedProject.getMembers().get(modelRow);
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "Remove '" + user.getLoginId() + "' from this project?",
+                "Remove Member",
+                JOptionPane.YES_NO_OPTION);
+        if (result != JOptionPane.YES_OPTION) {
+            return;
+        }
 
-        members.remove(target);
-        refreshProjectCard();
-        refreshUnassignedCard();
-        refreshSidebar();
-        sidebarList.setSelectedIndex(projects.indexOf(selectedProject));
+        projectController.removeMemberFromProject(selectedProject, user, adminUser);
+        refreshProjectList();
+        refreshProjectPanel();
     }
 
-    // ════════════════════════════════════════════════════════
-    //  액션: Unassigned → 프로젝트 배정
-    // ════════════════════════════════════════════════════════
-    private void doAssignToProject(int row) {
-        List<User> unassigned = getUnassignedUsers();
-        if (row < 0 || row >= unassigned.size()) return;
-        User target = unassigned.get(row);
-
+    private void doAssignToProject(int modelRow) {
+        List<User> users = getManagedUsers();
+        if (modelRow < 0 || modelRow >= users.size()) {
+            return;
+        }
         if (projects.isEmpty()) {
-            showWarn("배정 가능한 프로젝트가 없습니다."); return;
+            showWarning("There are no projects.");
+            return;
         }
-        String[] names = projects.stream().map(Project::getName).toArray(String[]::new);
-        String chosen = (String) JOptionPane.showInputDialog(this,
-                "'" + target.getLoginId() + "' 을 배정할 프로젝트:",
-                "프로젝트 배정", JOptionPane.PLAIN_MESSAGE, null, names, names[0]);
-        if (chosen == null) return;
 
-        projects.stream()
-                .filter(p -> p.getName().equals(chosen))
-                .findFirst()
-                .ifPresent(p -> {
-                    p.addMember(target);
-                    refreshUnassignedCard();
-                    refreshProjectCard();
-                    refreshSidebar();
-                });
+        User user = users.get(modelRow);
+        List<Project> candidates = getProjectsWithoutUser(user);
+        if (candidates.isEmpty()) {
+            showWarning("This user is already assigned to every project.");
+            return;
+        }
+
+        String[] projectNames = candidates.stream().map(Project::getName).toArray(String[]::new);
+        String selectedProjectName = (String) JOptionPane.showInputDialog(
+                this,
+                "Assign '" + user.getLoginId() + "' to project",
+                "Assign User",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                projectNames,
+                projectNames[0]);
+        if (selectedProjectName == null) {
+            return;
+        }
+
+        for (Project project : candidates) {
+            if (project.getName().equals(selectedProjectName)) {
+                projectController.addMemberToProject(project, user, adminUser);
+                break;
+            }
+        }
+
+        refreshProjectList();
+        if (selectedProject != null) {
+            refreshProjectPanel();
+        } else {
+            showUsers();
+        }
     }
 
-    // ── 로그아웃 ─────────────────────────────────────────
     private void onLogout() {
-        int r = JOptionPane.showConfirmDialog(this,
-                "로그아웃 하시겠습니까?", "로그아웃", JOptionPane.YES_NO_OPTION);
-        if (r != JOptionPane.YES_OPTION) return;
-        dispose();
-        new LoginView().setVisible(true);
+        int result = JOptionPane.showConfirmDialog(this, "Logout?", "Logout", JOptionPane.YES_NO_OPTION);
+        if (result == JOptionPane.YES_OPTION) {
+            dispose();
+            new LoginView().setVisible(true);
+        }
     }
 
-    // ════════════════════════════════════════════════════════
-    //  셀 에디터 (버튼 클릭 처리)
-    // ════════════════════════════════════════════════════════
-    private class RemoveMemberEditor extends DefaultCellEditor {
-        private int currentRow = -1;
-        RemoveMemberEditor() {
-            super(new JCheckBox());
-            JButton btn = makeBtn("제거", new Color(0x7F1D1D));
-            btn.addActionListener(e -> { fireEditingStopped(); doRemoveMember(currentRow); });
-            editorComponent = btn;
+    private void showWarning(String message) {
+        JOptionPane.showMessageDialog(this, message, "Warning", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private static class ButtonRenderer extends JButton implements TableCellRenderer {
+        private ButtonRenderer(String text) {
+            setText(text);
+            setHorizontalAlignment(SwingConstants.CENTER);
         }
+
         @Override
-        public Component getTableCellEditorComponent(JTable t, Object v, boolean s, int r, int c) {
-            currentRow = r; return editorComponent;
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            setText(value == null ? "" : value.toString());
+            return this;
         }
-        @Override public Object getCellEditorValue() { return "제거"; }
+    }
+
+    private class RemoveMemberEditor extends DefaultCellEditor {
+        private final JButton button = new JButton("Remove");
+        private int currentRow = -1;
+
+        private RemoveMemberEditor() {
+            super(new JCheckBox());
+            button.addActionListener(e -> {
+                fireEditingStopped();
+                doRemoveMember(currentRow);
+            });
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected, int row, int column) {
+            currentRow = table.convertRowIndexToModel(row);
+            return button;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return "Remove";
+        }
     }
 
     private class AssignUserEditor extends DefaultCellEditor {
+        private final JButton button = new JButton("Assign");
         private int currentRow = -1;
-        AssignUserEditor() {
+
+        private AssignUserEditor() {
             super(new JCheckBox());
-            JButton btn = makeBtn("프로젝트 배정", new Color(0x1E40AF));
-            btn.addActionListener(e -> { fireEditingStopped(); doAssignToProject(currentRow); });
-            editorComponent = btn;
+            button.addActionListener(e -> {
+                fireEditingStopped();
+                doAssignToProject(currentRow);
+            });
         }
+
         @Override
-        public Component getTableCellEditorComponent(JTable t, Object v, boolean s, int r, int c) {
-            currentRow = r; return editorComponent;
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected, int row, int column) {
+            currentRow = table.convertRowIndexToModel(row);
+            return button;
         }
-        @Override public Object getCellEditorValue() { return "프로젝트 배정"; }
-    }
 
-    // ════════════════════════════════════════════════════════
-    //  사이드바 커스텀 렌더러
-    // ════════════════════════════════════════════════════════
-    private class SidebarRenderer extends DefaultListCellRenderer {
         @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
-            JLabel lbl = (JLabel) super.getListCellRendererComponent(
-                    list, value, index, isSelected, cellHasFocus);
-            lbl.setBorder(new EmptyBorder(0, 14, 0, 8));
-            lbl.setBackground(isSelected ? SEL_BG : BG_SIDEBAR);
-            lbl.setForeground(FG_WHITE);
+        public Object getCellEditorValue() {
+            return "Assign";
+        }
+    }
+    
+    private class EnumCellEditor<E extends Enum<E>> extends DefaultCellEditor {
 
-            String val = (String) value;
-            if (UNASSIGNED_KEY.equals(val)) {
-                lbl.setText("⚠  Unassigned");
-                lbl.setForeground(C_UNASSIGN);
-                lbl.setFont(new Font("SansSerif", Font.BOLD, 13));
-            } else {
-                Project p = projects.stream()
-                        .filter(pr -> pr.getName().equals(val))
-                        .findFirst().orElse(null);
-                String suffix = p != null ? "  (" + p.getMembers().size() + "명)" : "";
-                lbl.setText("📁  " + val + suffix);
-                lbl.setFont(new Font("SansSerif", Font.PLAIN, 13));
-            }
-            return lbl;
+        private final JComboBox<E> comboBox;
+        private boolean initializing = false;  // 초기화 중 플래그
+
+        @SuppressWarnings("unchecked")
+        EnumCellEditor(Class<E> enumClass) {
+            super(new JComboBox<>(enumClass.getEnumConstants()));
+            this.comboBox = (JComboBox<E>) editorComponent;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected, int row, int col) {
+
+            initializing = true;          // 초기화 시작
+            comboBox.setSelectedItem(value);
+            initializing = false;         // 초기화 완료
+
+            return comboBox;
+        }
+
+        @Override
+        public boolean stopCellEditing() {
+            if (initializing) return false;  // 초기화 중이면 커밋 차단
+            return super.stopCellEditing();
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return comboBox.getSelectedItem();
         }
     }
 
-    // ════════════════════════════════════════════════════════
-    //  렌더러 헬퍼
-    // ════════════════════════════════════════════════════════
-    private TableCellRenderer roleBadgeRenderer() {
-        return (t, v, s, f, r, c) -> {
-            JLabel lbl = new JLabel(v != null ? v.toString() : "");
-            lbl.setHorizontalAlignment(SwingConstants.CENTER);
-            lbl.setOpaque(true);
-            lbl.setFont(new Font("SansSerif", Font.BOLD, 11));
-            lbl.setForeground(Color.WHITE);
-            switch (v != null ? v.toString() : "") {
-                case "ADMIN":     lbl.setBackground(C_ADMIN);   break;
-                case "PL":        lbl.setBackground(C_PL);      break;
-                case "DEVELOPER": lbl.setBackground(C_DEV);     break;
-                case "TESTER":    lbl.setBackground(C_TESTER);  break;
-                default:          lbl.setBackground(C_UNASSIGN);
-            }
-            lbl.setBorder(new EmptyBorder(4, 8, 4, 8));
-            return lbl;
-        };
-    }
-
-    private TableCellRenderer statusBadgeRenderer() {
-        return (t, v, s, f, r, c) -> {
-            JLabel lbl = new JLabel(v != null ? v.toString() : "");
-            lbl.setHorizontalAlignment(SwingConstants.CENTER);
-            lbl.setOpaque(true);
-            lbl.setFont(new Font("SansSerif", Font.BOLD, 11));
-            lbl.setForeground(Color.WHITE);
-            switch (v != null ? v.toString() : "") {
-                case "ACTIVE":   lbl.setBackground(C_ACTIVE);   break;
-                case "PENDING":  lbl.setBackground(C_PENDING);  break;
-                case "REJECTED": lbl.setBackground(C_REJECTED); break;
-                case "DISABLED": lbl.setBackground(C_DISABLED); break;
-                default:         lbl.setBackground(BG_INPUT);
-            }
-            lbl.setBorder(new EmptyBorder(4, 8, 4, 8));
-            return lbl;
-        };
-    }
-
-    private TableCellRenderer btnRenderer(String label, Color bg) {
-        return (t, v, s, f, r, c) -> makeBtn(label, bg);
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  공통 UI 헬퍼
-    // ════════════════════════════════════════════════════════
-    private JTable buildStyledTable(DefaultTableModel model) {
-        JTable table = new JTable(model);
-        table.setBackground(BG_PANEL);
-        table.setForeground(FG_WHITE);
-        table.setGridColor(DIVIDER);
-        table.setRowHeight(38);
-        table.setShowHorizontalLines(true);
-        table.setShowVerticalLines(false);
-        table.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        table.setSelectionBackground(SEL_BG);
-        table.setIntercellSpacing(new Dimension(0, 0));
-        table.getTableHeader().setBackground(BG_DARK);
-        table.getTableHeader().setForeground(FG_LABEL);
-        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
-        table.getTableHeader().setReorderingAllowed(false);
-
-        DefaultTableCellRenderer def = new DefaultTableCellRenderer();
-        def.setBackground(BG_PANEL);
-        def.setForeground(FG_WHITE);
-        table.setDefaultRenderer(Object.class, def);
-        return table;
-    }
-
-    private void styleScrollPane(JScrollPane sp) {
-        sp.setBorder(BorderFactory.createLineBorder(DIVIDER));
-        sp.getViewport().setBackground(BG_PANEL);
-    }
-
-    private JButton makeBtn(String text, Color bg) {
-        JButton btn = new JButton(text);
-        btn.setBackground(bg);
-        btn.setForeground(FG_WHITE);
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setBorder(new EmptyBorder(5, 12, 5, 12));
-        return btn;
-    }
-
-    private JLabel makeSectionLabel(String text) {
-        JLabel l = new JLabel(text);
-        l.setFont(new Font("SansSerif", Font.BOLD, 12));
-        l.setForeground(FG_LABEL);
-        l.setBorder(new EmptyBorder(0, 0, 6, 0));
-        return l;
-    }
-
-    private JLabel makeFormLabel(String text) {
-        JLabel l = new JLabel(text);
-        l.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        l.setForeground(FG_LABEL);
-        return l;
-    }
-
-    private void styleInputField(JTextField tf) {
-        tf.setBackground(BG_INPUT);
-        tf.setForeground(FG_WHITE);
-        tf.setCaretColor(FG_WHITE);
-        tf.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        tf.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(DIVIDER),
-                new EmptyBorder(5, 8, 5, 8)));
-    }
-
-    private void showWarn(String msg) {
-        JOptionPane.showMessageDialog(this, msg, "경고", JOptionPane.WARNING_MESSAGE);
-    }
+    
 }
+

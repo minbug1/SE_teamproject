@@ -2,9 +2,13 @@
 package its.controller;
 
 
+import its.model.AccountStatus;
+import its.model.Role;
 import its.model.User;
 import its.repository.FileUserRepository;
 import its.repository.UserRepository;
+
+import java.util.List;
 
 /**
  * controller for authentication (before login)
@@ -57,17 +61,21 @@ public class AuthController {
 
         User user = userRepository.findByLoginId(loginId);
 
+        
+
         if (user == null) {
             throw new IllegalArgumentException("Invalid Login ID or password.");
         }
-
         if (!user.matchesPassword(password)) {
             throw new IllegalArgumentException("Invalid Login ID or password.");
         }
 
         if (!user.isActive()) {
-            throw new IllegalArgumentException("Account is not active.");
-        }
+            if (user.isPending())  throw new IllegalStateException("Account is pending admin approval.");
+            if (user.isRejected()) throw new IllegalStateException("Account has been rejected.");
+            if (user.isDisabled()) throw new IllegalStateException("Account is disabled.");
+            throw new IllegalStateException("Account is not active.");
+       }
 
         currentUser = user;
 
@@ -86,6 +94,77 @@ public class AuthController {
         return currentUser != null;
     }
 
+    public List<User> findPendingUsers(User adminUser) {
+        validateAdmin(adminUser);
+        return userRepository.findPendingUsers();
+    }
+
+    public List<User> findAllUsers(User adminUser) {
+        validateAdmin(adminUser);
+        return userRepository.findAll();
+    }
+
+    public void changeRole(User adminUser, long userId, Role newRole) {
+        validateAdmin(adminUser);
+        validateUserId(userId);
+
+        if (newRole == null) {
+            throw new IllegalArgumentException("Role must not be null.");
+        }
+
+        User user = getExistingUser(userId);
+        user.changeRole(newRole);
+        userRepository.update(user);
+    }
+
+    public void changeAccountStatus(User adminUser, long userId, AccountStatus newStatus) {
+        validateAdmin(adminUser);
+        validateUserId(userId);
+
+        if (newStatus == null) {
+            throw new IllegalArgumentException("Account status must not be null.");
+        }
+
+        User user = getExistingUser(userId);
+        user.changeAccountStatus(newStatus);
+        userRepository.update(user);
+    }
+
+    public void approveUser(User adminUser, long userId, Role role) {
+        validateAdmin(adminUser);
+        validateUserId(userId);
+
+        if (role == null) {
+            throw new IllegalArgumentException("Role must not be null.");
+        }
+        if (role == Role.UNASSIGNED) {
+            throw new IllegalArgumentException("Approved user must have a role.");
+        }
+
+        User user = getExistingUser(userId);
+        user.changeRole(role);
+        user.changeAccountStatus(AccountStatus.ACTIVE);
+        userRepository.update(user);
+    }
+
+    public void rejectUser(User adminUser, long userId) {
+        validateAdmin(adminUser);
+        validateUserId(userId);
+
+        User user = getExistingUser(userId);
+        user.changeAccountStatus(AccountStatus.REJECTED);
+        userRepository.update(user);
+    }
+
+    public void deactivateUser(User adminUser, long userId) {
+        validateAdmin(adminUser);
+        validateUserId(userId);
+
+        User user = getExistingUser(userId);
+        user.changeAccountStatus(AccountStatus.DISABLED);
+        userRepository.update(user);
+    }
+
     // helper
     private void validateLoginId(String loginId) {
         if (loginId == null || loginId.trim().isEmpty()) {
@@ -97,5 +176,25 @@ public class AuthController {
         if (password == null || password.trim().isEmpty()) {
             throw new IllegalArgumentException("Password must not be empty.");
         }
+    }
+
+    private void validateUserId(long userId) {
+        if (userId <= 0) {
+            throw new IllegalArgumentException("User ID must be a positive number.");
+        }
+    }
+
+    private void validateAdmin(User user) {
+        if (user == null || !user.isAdmin()) {
+            throw new IllegalArgumentException("Admin permission is required.");
+        }
+    }
+
+    private User getExistingUser(long userId) {
+        User user = userRepository.findByUserId(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found.");
+        }
+        return user;
     }
 }

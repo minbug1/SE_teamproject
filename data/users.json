@@ -10,21 +10,21 @@
     "userId": 2,
     "loginId": "iampl",
     "password": "erwe",
-    "accountStatus": "ACTIVE",
-    "role": "PL"
+    "accountStatus": "PENDING",
+    "role": "UNASSIGNED"
   },
   {
     "userId": 3,
     "loginId": "iamdev",
     "password": "erwe",
-    "accountStatus": "ACTIVE",
-    "role": "DEVELOPER"
+    "accountStatus": "PENDING",
+    "role": "UNASSIGNED"
   },
   {
     "userId": 4,
     "loginId": "iamtester",
     "password": "erwe",
-    "accountStatus": "ACTIVE",
-    "role": "TESTER"
+    "accountStatus": "PENDING",
+    "role": "UNASSIGNED"
   }
 ]

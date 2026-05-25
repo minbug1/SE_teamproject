@@ -2,9 +2,7 @@ package its.view.swing;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -36,16 +34,18 @@ public class MainView extends JFrame {
     private User currentUser;
     private final List<Project> projects = new ArrayList<>();
 
-    private static final int COL_ID = 0;
-    private static final int COL_NAME = 1;
-    private static final int COL_PRIORITY = 2;
-    private static final int COL_STATUS = 3;
-    private static final int COL_REPORTER = 4;
-    private static final int COL_ASSIGNEE = 5;
-    private static final int COL_ACTION = 6;
+    private static final int COL_PROJECT_ID = 0;
+    private static final int COL_PROJECT = 1;
+    private static final int COL_ID = 2;
+    private static final int COL_NAME = 3;
+    private static final int COL_PRIORITY = 4;
+    private static final int COL_STATUS = 5;
+    private static final int COL_REPORTER = 6;
+    private static final int COL_ASSIGNEE = 7;
+    private static final int COL_ACTION = 8;
 
     private static final String[] COLUMNS = {
-        "ID", "Issue Name", "Priority", "Status", "Reporter", "Assignee", ""
+        "Project ID", "Project", "ID", "Issue Name", "Priority", "Status", "Reporter", "Assignee", ""
     };
 
     public MainView(IssueController issueController, ProjectController projectController, User currentUser) {
@@ -111,6 +111,10 @@ public class MainView extends JFrame {
         issueTable.getColumn("").setCellRenderer(new ActionButtonRenderer());
         issueTable.getColumn("").setCellEditor(new ActionButtonEditor(currentUser));
 
+        issueTable.getColumnModel().getColumn(COL_PROJECT_ID).setMinWidth(0);
+        issueTable.getColumnModel().getColumn(COL_PROJECT_ID).setMaxWidth(0);
+        issueTable.getColumnModel().getColumn(COL_PROJECT_ID).setPreferredWidth(0);
+        issueTable.getColumnModel().getColumn(COL_PROJECT).setPreferredWidth(120);
         issueTable.getColumnModel().getColumn(COL_ID).setPreferredWidth(40);
         issueTable.getColumnModel().getColumn(COL_NAME).setPreferredWidth(200);
         issueTable.getColumnModel().getColumn(COL_PRIORITY).setPreferredWidth(80);
@@ -120,8 +124,8 @@ public class MainView extends JFrame {
         issueTable.getColumnModel().getColumn(COL_ACTION).setPreferredWidth(48);
         issueTable.getColumnModel().getColumn(COL_ACTION).setMaxWidth(56);
 
-        loadIssues();
         loadProjects();
+        loadIssues();
         refreshProjectFilter();
 
         panel.add(new JScrollPane(issueTable), BorderLayout.CENTER);
@@ -130,23 +134,41 @@ public class MainView extends JFrame {
 
     private void loadIssues() {
         tableModel.setRowCount(0);
-        for (Issue issue : issueController.getAllIssues()) {
-            tableModel.addRow(new Object[]{
-                issue.getIssueId(),
-                issue.getTitle(),
-                issue.getPriority(),
-                issue.getStatus(),
-                getLoginIdOrDash(issue.getReporter()),
-                getLoginIdOrDash(issue.getAssignee()),
-                ""
-            });
+        for (Project project : projects) {
+            for (Issue issue : project.getIssues()) {
+                tableModel.addRow(new Object[]{
+                    project.getProjectId(),
+                    project.getName(),
+                    issue.getIssueId(),
+                    issue.getTitle(),
+                    issue.getPriority(),
+                    issue.getStatus(),
+                    getLoginIdOrDash(issue.getReporter()),
+                    getLoginIdOrDash(issue.getAssignee()),
+                    ""
+                });
+            }
         }
     }
 
     private void loadProjects() {
         projects.clear();
         projects.addAll(projectController.getAllProjects());
-    }
+
+        // 전체 이슈 로드
+        List<Issue> allIssues = issueController.getAllIssues();
+
+        // projectId 기준으로 이슈를 프로젝트에 주입
+        for (Project project : projects) {
+            project.getIssues().clear();
+            for (int issueId : project.getIssueIds()) {
+                allIssues.stream()
+                        .filter(i -> i.getIssueId() == issueId)
+                        .findFirst()
+                        .ifPresent(project::addIssue);
+            }
+        }
+        }
 
     private String getLoginIdOrDash(User user) {
         return user == null ? "-" : user.getLoginId();
@@ -172,32 +194,21 @@ public class MainView extends JFrame {
             return;
         }
 
-        Set<Integer> issueIds = getIssueIds(selectedItem.getProject());
+        int projectId = selectedItem.getProject().getProjectId();
         tableSorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
             @Override
             public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
-                Object id = entry.getValue(COL_ID);
+                Object id = entry.getValue(COL_PROJECT_ID);
                 if (id instanceof Number) {
-                    return issueIds.contains(((Number) id).intValue());
+                    return ((Number) id).intValue() == projectId;
                 }
                 try {
-                    return issueIds.contains(Integer.parseInt(id.toString()));
+                    return Integer.parseInt(id.toString()) == projectId;
                 } catch (NumberFormatException e) {
                     return false;
                 }
             }
         });
-    }
-
-    private Set<Integer> getIssueIds(Project project) {
-        Set<Integer> issueIds = new HashSet<>();
-        for (Issue issue : project.getIssues()) {
-            if (issue.getIssueId() != null) {
-                issueIds.add(issue.getIssueId().intValue());
-            }
-        }
-        issueIds.addAll(project.getIssueIds());
-        return issueIds;
     }
 
     private void onReportIssue() {
@@ -208,14 +219,15 @@ public class MainView extends JFrame {
                     this,
                     "Select a project before reporting an issue.",
                     "Project Required",
-                    JOptionPane.WARNING_MESSAGE
-            );
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        ReportIssueView dialog = new ReportIssueView(this, issueController, currentUser, selectedProject);
+        ReportIssueView dialog = new ReportIssueView(
+                this, issueController, currentUser, selectedProject);
         dialog.setVisible(true);
-    }
+        refreshTable();
+    }   
 
     private void onLogout() {
         int confirm = JOptionPane.showConfirmDialog(
@@ -228,8 +240,8 @@ public class MainView extends JFrame {
     }
 
     public void refreshTable() {
-        loadIssues();
         loadProjects();
+        loadIssues();
         refreshProjectFilter();
         applyProjectFilter();
     }

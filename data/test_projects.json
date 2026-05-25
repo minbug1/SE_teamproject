@@ -1,15 +1,26 @@
 [
   {
     "projectId": 1,
-    "name": "테스트 프로젝트",
+    "name": "테스트 프로젝트 1",
     "description": "저장 테스트용",
     "memberIds": [
-      2,
       3,
-      4
+      4,
+      2
     ],
     "issueIds": [
       1
     ]
+  },
+  {
+    "projectId": 2,
+    "name": "테스트 프로젝트 2",
+    "description": "테스트 프로젝트 2",
+    "memberIds": [
+      5,
+      3,
+      4
+    ],
+    "issueIds": []
   }
 ]

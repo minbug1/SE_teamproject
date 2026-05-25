@@ -26,9 +26,29 @@ public class Project {
     }
 
     public void addIssue(Issue issue) {
-        if (issue != null) { 
-            this.issues.add(issue);
+        if (issue != null && issue.getIssueId() != null) {
+            int issueId = issue.getIssueId().intValue();
+            boolean alreadyExists = getIssues().stream()
+                    .anyMatch(existing -> existing.getIssueId() != null
+                            && existing.getIssueId().intValue() == issueId);
+
+            if (!alreadyExists) {
+                this.issues.add(issue);
+            }
+            addIssueId(issueId);
         }
+    }
+
+    public void addIssueId(int issueId) {
+        if (issueId > 0 && !getIssueIds().contains(issueId)) {
+            getIssueIds().add(issueId);
+        }
+    }
+
+    public void removeIssueById(int issueId) {
+        getIssues().removeIf(issue -> issue.getIssueId() != null
+                && issue.getIssueId().intValue() == issueId);
+        getIssueIds().removeIf(id -> id != null && id == issueId);
     }
 
     public int getProjectId() {
@@ -74,6 +94,9 @@ public class Project {
         return memberIds; 
     }
     public List<Integer> getIssueIds() { 
+        if (this.issueIds == null) {
+            this.issueIds = new ArrayList<>();
+        }
         return issueIds; 
     }
 }

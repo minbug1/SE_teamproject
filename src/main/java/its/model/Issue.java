@@ -8,6 +8,7 @@ import java.util.List;
 public class Issue {
 
     private Long issueId;
+    private int projectId;
     private String title;
     private String description;
     private User reporter;
@@ -30,6 +31,14 @@ public class Issue {
 
     public Long getIssueId() {
         return issueId;
+    }
+
+    public int getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(int projectId) {
+        this.projectId = projectId;
     }
     
     public String getTitle() {
