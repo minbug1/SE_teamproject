@@ -8,13 +8,19 @@ import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 
+import its.controller.AuthController;
+import its.controller.IssueController;
+import its.controller.ProjectController;
+import its.controller.UserController;
 import its.model.Priority;
 import its.model.Status;
 import its.model.User;
@@ -33,12 +39,21 @@ public class ActionButtonEditor implements TableCellEditor {
     private final User currentUser;
     private final JButton button = new JButton(ACTION_MENU_TEXT);
     private final EventListenerList listenerList = new EventListenerList();
+    
+    private UserController userController;
+    private IssueController issueController;
+    private ProjectController projectController;
+    private AuthController authController;
 
     private JTable table;
     private Object currentValue;
     private int modelRow = -1;
 
-    public ActionButtonEditor(User currentUser) {
+    public ActionButtonEditor(UserController userController, IssueController issueController, ProjectController projectController, AuthController authController, User currentUser) {
+        this.userController = userController;
+        this.issueController = issueController;
+        this.projectController = projectController;
+        this.authController = authController;
         this.currentUser = currentUser;
         button.addActionListener(e -> showActionMenu());
     }
@@ -152,9 +167,29 @@ public class ActionButtonEditor implements TableCellEditor {
     }
 
     private void addComment() {
-        String comment = JOptionPane.showInputDialog(button, "Comment");
-        if (comment != null && !comment.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(button, "Comment added.");
+        JTextArea commentArea = new JTextArea(10, 30); // 행, 열 크기 증가
+        commentArea.setFont(commentArea.getFont().deriveFont(10f));
+        commentArea.setLineWrap(true);
+        commentArea.setWrapStyleWord(true);
+
+        JScrollPane scrollPane = new JScrollPane(commentArea);
+
+        int result = JOptionPane.showConfirmDialog(
+                button,
+                scrollPane,
+                "코멘트 입력",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            String comment = commentArea.getText();
+
+            if (comment != null && !comment.trim().isEmpty()) {
+                // todo: 실제로는 이 부분에서 컨트롤러를 호출하여 코멘트를 저장해야 함
+                
+                JOptionPane.showMessageDialog(button, "Comment added.");
+            }
         }
     }
 

@@ -10,7 +10,7 @@
     "userId": 2,
     "loginId": "iampl",
     "password": "pass1234",
-    "accountStatus": "ACTIVE",
+    "accountStatus": "PENDING",
     "role": "PL"
   },
   {
