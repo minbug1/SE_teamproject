@@ -117,9 +117,9 @@ class FileUserRepositoryTest {
 
         userRepository.save(user);
 
-        user.changeAccountStatus(AccountStatus.ACTIVE);
-        user.changeRole(Role.TESTER);
-        user.changeLoginId("testerChanged");
+        user.setAccountStatus(AccountStatus.ACTIVE);
+        user.setRole(Role.TESTER);
+        user.setLoginId("testerChanged");
 
         userRepository.update(user);
 
@@ -167,7 +167,7 @@ class FileUserRepositoryTest {
         userRepository.save(user1);
         userRepository.save(user2);
 
-        user2.changeLoginId("user1");
+        user2.setLoginId("user1");
 
         assertThrows(IllegalArgumentException.class, () -> {
             userRepository.update(user2);

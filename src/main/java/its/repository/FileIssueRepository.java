@@ -8,8 +8,9 @@ import com.google.gson.reflect.TypeToken;
 import its.model.Comment;
 import its.model.Issue;
 import its.model.Priority;
-import its.model.Status;
+import its.model.IssueStatus;
 import its.model.User;
+import its.model.CommentStatus;
 
 import java.io.File;
 import java.io.FileReader;
@@ -249,12 +250,23 @@ public class FileIssueRepository implements IssueRepository {
         private int projectId;
         private String title;
         private String description;
-        private String reportedDate;
+        private String priority;
+        private String status;
         private Long reporterId;
         private Long assigneeId;
         private Long fixerId;
-        private String priority;
-        private String status;
+        private String reportedDate;
+
+        // 추가 ////////////////////////////////////////////////////////////////////////////////
+        private String assignedDate;
+        private String fixedDate;
+        private String resolvedDate;
+        private String closedDate;
+        private List<String> reopenedDates;
+        private int reopenCount;
+        private int categoryId;
+        // 여기까지 ////////////////////////////////////////////////////////////////////////////////
+
         private List<CommentRecord> comments;
 
         private Issue toIssue(UserRepository userRepo) {
@@ -268,7 +280,42 @@ public class FileIssueRepository implements IssueRepository {
             issue.setProjectId(projectId);
 
             if (priority != null) issue.setPriority(Priority.valueOf(priority));
-            if (status != null)   issue.setStatus(Status.valueOf(status));
+            if (status != null)   issue.setStatus(IssueStatus.valueOf(status));
+
+
+            // 추가 ////////////////////////////////////////////////////////////////////////////////
+            if (assignedDate != null) {
+                issue.setAssignedDate(LocalDateTime.parse(assignedDate));
+            }
+
+            if (fixedDate != null) {
+                issue.setFixedDate(LocalDateTime.parse(fixedDate));
+            }
+
+            if (resolvedDate != null) {
+                issue.setResolvedDate(LocalDateTime.parse(resolvedDate));
+            }
+
+            if (closedDate != null) {
+                issue.setClosedDate(LocalDateTime.parse(closedDate));
+            }
+
+            if (reopenedDates != null) {
+                List<LocalDateTime> parsedReopenedDates = new ArrayList<>();
+
+                for (String reopenedDate : reopenedDates) {
+                    if (reopenedDate != null) {
+                        parsedReopenedDates.add(LocalDateTime.parse(reopenedDate));
+                    }
+                }
+
+                issue.setReopenedDates(parsedReopenedDates);
+            }
+
+            issue.setReopenCount(reopenCount);
+            issue.setCategoryId(categoryId);
+            // 여기까지 ////////////////////////////////////////////////////////////////////////////////
+
 
             if (userRepo != null) {
                 if (assigneeId != null) issue.setAssignee(userRepo.findByUserId(assigneeId));
@@ -292,11 +339,37 @@ public class FileIssueRepository implements IssueRepository {
             r.description = issue.getDescription();
             r.reportedDate = issue.getReportedDate() != null
                     ? issue.getReportedDate().toString() : null;
+            r.priority    = issue.getPriority()  != null ? issue.getPriority().name()  : null;
+            r.status      = issue.getStatus()    != null ? issue.getStatus().name()    : null;
             r.reporterId  = issue.getReporter()  != null ? issue.getReporter().getUserId()  : null;
             r.assigneeId  = issue.getAssignee()  != null ? issue.getAssignee().getUserId()  : null;
             r.fixerId     = issue.getFixer()     != null ? issue.getFixer().getUserId()     : null;
-            r.priority    = issue.getPriority()  != null ? issue.getPriority().name()  : null;
-            r.status      = issue.getStatus()    != null ? issue.getStatus().name()    : null;
+            
+            // 추가 ////////////////////////////////////////////////////////////////////////////////
+
+            r.assignedDate = issue.getAssignedDate() != null
+                    ? issue.getAssignedDate().toString() : null;
+
+            r.fixedDate = issue.getFixedDate() != null
+                    ? issue.getFixedDate().toString() : null;
+
+            r.resolvedDate = issue.getResolvedDate() != null
+                    ? issue.getResolvedDate().toString() : null;
+
+            r.closedDate = issue.getClosedDate() != null
+                    ? issue.getClosedDate().toString() : null;
+
+            r.reopenedDates = new ArrayList<>();
+            for (LocalDateTime reopenedDate : issue.getReopenedDates()) {
+                if (reopenedDate != null) {
+                    r.reopenedDates.add(reopenedDate.toString());
+                }
+            }
+
+            r.reopenCount = issue.getReopenCount();
+            r.categoryId = issue.getCategoryId();
+            // 여기까지 ////////////////////////////////////////////////////////////////////////////////
+
 
             r.comments = new ArrayList<>();
             for (Comment c : issue.getComments()) {
@@ -310,6 +383,11 @@ public class FileIssueRepository implements IssueRepository {
         private int commentId;
         private String content;
         private Long authorId;
+
+        // 추가 ////////////////////////////////////////////////////////////////////////////////
+        private String commentStatus;
+        // 여기까지 ////////////////////////////////////////////////////////////////////////////////
+
         private String writtenDate;
 
         private Comment toComment(UserRepository userRepo) {
@@ -317,7 +395,16 @@ public class FileIssueRepository implements IssueRepository {
                     ? userRepo.findByUserId(authorId) : null;
             LocalDateTime date = (writtenDate != null)
                     ? LocalDateTime.parse(writtenDate) : LocalDateTime.now();
-            return new Comment(commentId, content, author, date);
+
+            // 수정 ////////////////////////////////////////////////////////////////////////////////
+            Comment comment = new Comment(commentId, content, author, date);
+
+            if (commentStatus != null) {
+                comment.setCommentStatus(CommentStatus.valueOf(commentStatus));
+            }
+            
+            return comment;
+            // 여기까지 ////////////////////////////////////////////////////////////////////////////////
         }
 
         private static CommentRecord fromComment(Comment comment) {
@@ -325,6 +412,12 @@ public class FileIssueRepository implements IssueRepository {
             r.commentId   = comment.getCommentId();
             r.content     = comment.getContent();
             r.authorId    = comment.getAuthor() != null ? comment.getAuthor().getUserId() : null;
+
+            // 추가 ////////////////////////////////////////////////////////////////////////////////
+            r.commentStatus = comment.getCommentStatus() != null
+                    ? comment.getCommentStatus().name() : null;
+            // 여기까지 ////////////////////////////////////////////////////////////////////////////////
+
             r.writtenDate = comment.getWrittenDate() != null
                     ? comment.getWrittenDate().toString() : null;
             return r;

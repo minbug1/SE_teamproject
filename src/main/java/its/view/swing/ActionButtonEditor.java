@@ -16,7 +16,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 
 import its.model.Priority;
-import its.model.Status;
+import its.model.IssueStatus;
 import its.model.User;
 
 public class ActionButtonEditor implements TableCellEditor {
@@ -94,7 +94,7 @@ public class ActionButtonEditor implements TableCellEditor {
         addItem(menu, "상세 보기", this::showIssueDetail);
         addItem(menu, "코멘트 추가", this::addComment);
 
-        Status status = getStatus();
+        IssueStatus status = getStatus();
         if (currentUser != null && currentUser.isAdmin()) {
             addItem(menu, "이슈 삭제", this::deleteIssue);
             if (isAssignedOrLater(status)) {
@@ -104,24 +104,24 @@ public class ActionButtonEditor implements TableCellEditor {
         }
 
         if (currentUser != null && currentUser.isPL()) {
-            if (status == Status.NEW) {
+            if (status == IssueStatus.NEW) {
                 addItem(menu, "담당자 지정", this::changeAssignee);
             }
             addItem(menu, "우선순위 변경", this::changePriority);
-            if (status == Status.RESOLVED) {
-                addItem(menu, "이슈 닫기", () -> updateStatus(Status.CLOSED));
+            if (status == IssueStatus.RESOLVED) {
+                addItem(menu, "이슈 닫기", () -> updateStatus(IssueStatus.CLOSED));
             }
         }
 
         if (currentUser != null && currentUser.isDev()
-                && status == Status.ASSIGNED && isAssigneeCurrentUser()) {
-            addItem(menu, "수정 완료", () -> updateStatus(Status.FIXED));
+                && status == IssueStatus.ASSIGNED && isAssigneeCurrentUser()) {
+            addItem(menu, "수정 완료", () -> updateStatus(IssueStatus.FIXED));
         }
 
         if (currentUser != null && currentUser.isTester()
-                && status == Status.FIXED && isReporterCurrentUser()) {
-            addItem(menu, "검증 통과", () -> updateStatus(Status.RESOLVED));
-            addItem(menu, "재오픈", () -> updateStatus(Status.REOPENED));
+                && status == IssueStatus.FIXED && isReporterCurrentUser()) {
+            addItem(menu, "검증 통과", () -> updateStatus(IssueStatus.RESOLVED));
+            addItem(menu, "재오픈", () -> updateStatus(IssueStatus.REOPENED));
         }
 
         menu.show(button, 0, button.getHeight());
@@ -170,8 +170,8 @@ public class ActionButtonEditor implements TableCellEditor {
         String assignee = JOptionPane.showInputDialog(button, "Assignee", getValue(COL_ASSIGNEE));
         if (assignee != null && !assignee.trim().isEmpty()) {
             setValue(COL_ASSIGNEE, assignee.trim());
-            if (getStatus() == Status.NEW || getStatus() == Status.REOPENED) {
-                setValue(COL_STATUS, Status.ASSIGNED.name());
+            if (getStatus() == IssueStatus.NEW || getStatus() == IssueStatus.REOPENED) {
+                setValue(COL_STATUS, IssueStatus.ASSIGNED.name());
             }
         }
     }
@@ -185,12 +185,12 @@ public class ActionButtonEditor implements TableCellEditor {
         }
     }
 
-    private void updateStatus(Status status) {
+    private void updateStatus(IssueStatus status) {
         setValue(COL_STATUS, status.name());
     }
 
-    private boolean isAssignedOrLater(Status status) {
-        return status != null && status != Status.NEW;
+    private boolean isAssignedOrLater(IssueStatus status) {
+        return status != null && status != IssueStatus.NEW;
     }
 
     private boolean isAssigneeCurrentUser() {
@@ -206,9 +206,9 @@ public class ActionButtonEditor implements TableCellEditor {
                 && currentUser.getLoginId().equals(value.toString());
     }
 
-    private Status getStatus() {
+    private IssueStatus getStatus() {
         try {
-            return Status.valueOf(String.valueOf(getValue(COL_STATUS)));
+            return IssueStatus.valueOf(String.valueOf(getValue(COL_STATUS)));
         } catch (IllegalArgumentException e) {
             return null;
         }

@@ -4,7 +4,7 @@ import its.model.Comment;
 import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
-import its.model.Status;
+import its.model.IssueStatus;
 import its.model.Role;
 import its.model.User;
 import its.repository.FileIssueRepository;
@@ -75,7 +75,7 @@ public class IssueController {
         newIssue.setProjectId(project.getProjectId());
 
         newIssue.setPriority(priority);
-        newIssue.setStatus(Status.NEW);
+        newIssue.setStatus(IssueStatus.NEW);
 
         if (commentContent != null && !commentContent.trim().isEmpty()) {
             Comment comment = new Comment(
@@ -110,7 +110,7 @@ public class IssueController {
         validateIssueId(issueId);
         
         Issue issue = getProjectIssueOrNull(project, issueId);
-        validateIssueStatus(issue, Status.ASSIGNED);
+        validateIssueStatus(issue, IssueStatus.ASSIGNED);
 
         if (issue.getAssignee() == null || !issue.getAssignee().equals(dev)) {
             throw new SecurityException("Only assigned issues can be fixed.");
@@ -118,7 +118,7 @@ public class IssueController {
 
         addCommentIfPresent(issue, commentContent, dev);
 
-        issue.setStatus(Status.FIXED);
+        issue.setStatus(IssueStatus.FIXED);
         issue.setFixer(dev);
 
         issueRepository.update(issue);
@@ -136,7 +136,7 @@ public class IssueController {
 
         Issue issue = getProjectIssueOrNull(project, issueId);
 
-        if (issue == null || issue.getStatus() != Status.FIXED) {
+        if (issue == null || issue.getStatus() != IssueStatus.FIXED) {
             return null;
         }
 
@@ -145,9 +145,9 @@ public class IssueController {
         }
 
         if (isResolved) {
-            issue.setStatus(Status.RESOLVED);
+            issue.setStatus(IssueStatus.RESOLVED);
         } else {
-            issue.setStatus(Status.REOPENED);
+            issue.setStatus(IssueStatus.REOPENED);
         }
 
         addCommentIfPresent(issue, commentContent, tester);
@@ -167,13 +167,13 @@ public class IssueController {
 
         Issue issue = getProjectIssueOrNull(project, issueId);
 
-        if (issue == null || issue.getStatus() != Status.RESOLVED) {
+        if (issue == null || issue.getStatus() != IssueStatus.RESOLVED) {
             return null;
         }
 
         addCommentIfPresent(issue, commentContent, pl);
 
-        issue.setStatus(Status.CLOSED);
+        issue.setStatus(IssueStatus.CLOSED);
         
         issueRepository.update(issue);
 
@@ -195,12 +195,12 @@ public class IssueController {
 
         Issue issue = getProjectIssueOrNull(project, issueId);
 
-        if (issue == null || (issue.getStatus() != Status.NEW && issue.getStatus() != Status.REOPENED)) {
+        if (issue == null || (issue.getStatus() != IssueStatus.NEW && issue.getStatus() != IssueStatus.REOPENED)) {
             return null;
         }
 
         issue.setAssignee(assignee);
-        issue.setStatus(Status.ASSIGNED);
+        issue.setStatus(IssueStatus.ASSIGNED);
 
         addCommentIfPresent(issue, commentContent, pl);
 
@@ -312,7 +312,7 @@ public class IssueController {
     }
 
     //이거 UI구현되면 수정필요
-    public void showIssues(Project project, Status filterStatus) {
+    public void showIssues(Project project, IssueStatus filterStatus) {
         validateProject(project);
 
         String statusText = (filterStatus == null) ? "전체" : filterStatus.toString();
@@ -355,7 +355,7 @@ public class IssueController {
         }
     }
 
-    private void validateIssueStatus(Issue issue, Status... validStatuses) {
+    private void validateIssueStatus(Issue issue, IssueStatus... validStatuses) {
         if (issue == null) {
             throw new IllegalArgumentException("Issue not found.");
         }

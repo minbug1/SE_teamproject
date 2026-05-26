@@ -21,10 +21,10 @@ import java.util.Objects;
 public class FileUserRepository implements UserRepository {
 
     // 테스트용 파일 경로
-    private static final String FILE_PATH = "data/test_users.json";
+    // private static final String FILE_PATH = "data/test_users.json";
 
     // 실제 파일 경로
-    // private static final String FILE_PATH = "data/users.json";
+    private static final String FILE_PATH = "data/users.json";
 
     private final File file;
     private final Gson gson;

@@ -160,7 +160,7 @@ public class UserController {
         }
 
         User user = getUserByUserId(currentUser.getUserId());
-        user.changeLoginId(newLoginId);
+        user.setLoginId(newLoginId);
 
         userRepository.update(user);
     }
@@ -173,7 +173,7 @@ public class UserController {
         }
 
         User user = getUserByUserId(currentUser.getUserId());
-        user.changePassword(newPassword);
+        user.setPassword(newPassword);
 
         userRepository.update(user);
     }
@@ -187,7 +187,7 @@ public class UserController {
         }
 
         User user = getUserByUserId(userId);
-        user.changeRole(newRole);
+        user.setRole(newRole);
 
         userRepository.update(user);
     }
@@ -201,7 +201,7 @@ public class UserController {
         }
 
         User user = getUserByUserId(userId);
-        user.changeAccountStatus(newStatus);
+        user.setAccountStatus(newStatus);
 
         userRepository.update(user);
     }
@@ -227,8 +227,8 @@ public class UserController {
 
         User user = getUserByUserId(userId);
 
-        user.changeRole(role);
-        user.changeAccountStatus(AccountStatus.ACTIVE);
+        user.setRole(role);
+        user.setAccountStatus(AccountStatus.ACTIVE);
 
         userRepository.update(user);
     }
@@ -238,7 +238,7 @@ public class UserController {
         validateUserId(userId);
 
         User user = getUserByUserId(userId);
-        user.changeAccountStatus(AccountStatus.REJECTED);
+        user.setAccountStatus(AccountStatus.REJECTED);
 
         userRepository.update(user);
     }
@@ -248,7 +248,7 @@ public class UserController {
         validateUserId(userId);
 
         User user = getUserByUserId(userId);
-        user.changeAccountStatus(AccountStatus.DISABLED);
+        user.setAccountStatus(AccountStatus.DISABLED);
 
         userRepository.update(user);
     }
@@ -267,7 +267,7 @@ public class UserController {
         }
 
         User user = getUserByUserId(userId);
-        user.changePassword(temporaryPassword);
+        user.setPassword(temporaryPassword);
 
         userRepository.update(user);
     }

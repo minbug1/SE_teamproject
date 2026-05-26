@@ -372,11 +372,11 @@ public class AdminView extends JFrame {
             if (column == 1) {
                 Role role = toRole(model.getValueAt(row, column));
                 authController.changeRole(adminUser, user.getUserId(), role);
-                user.changeRole(role);
+                user.setRole(role);
             } else if (column == 2) {
                 AccountStatus status = toAccountStatus(model.getValueAt(row, column));
                 authController.changeAccountStatus(adminUser, user.getUserId(), status);
-                user.changeAccountStatus(status);
+                user.setAccountStatus(status);
             }
             refreshProjectList();
             if (selectedProject != null) {
