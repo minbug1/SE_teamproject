@@ -31,7 +31,7 @@
     "userId": 5,
     "loginId": "testpl",
     "password": "testpl",
-    "accountStatus": "REJECTED",
+    "accountStatus": "ACTIVE",
     "role": "PL"
   },
   {
