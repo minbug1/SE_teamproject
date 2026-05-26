@@ -9,6 +9,7 @@ import its.model.IssueStatus;
 import its.model.Role;
 import its.model.User;
 import its.repository.FileIssueRepository;
+import its.repository.FileUserRepository;
 import its.repository.IssueRepository;
 import its.repository.ProjectRepository;
 import its.repository.UserRepository;
@@ -25,24 +26,28 @@ public class IssueController {
 
     // 기본 생성자에서 FileIssueRepository를 사용하도록 설정
     public IssueController() {
-        this(new FileIssueRepository());
+        this(
+            new FileIssueRepository(new FileUserRepository()),
+            null,
+            new FileUserRepository()
+        );
     }
-
     // 의존성 주입을 위한 생성자
-    public IssueController(IssueRepository issueRepository) {
-        this(issueRepository, null);
-    }
-
-    public IssueController(IssueRepository issueRepository, ProjectRepository projectRepository) {
+    public IssueController(
+            IssueRepository issueRepository,
+            ProjectRepository projectRepository,
+            UserRepository userRepository
+    ) {
         if (issueRepository == null) {
             throw new IllegalArgumentException("Issue repository must not be null.");
         }
+        if (userRepository == null) {
+            throw new IllegalArgumentException("User repository must not be null.");
+        }
+
         this.issueRepository = issueRepository;
         this.projectRepository = projectRepository;
-    }
-
-    public List<Issue> getAllIssues() {
-        return issueRepository.findAll();
+        this.userRepository = userRepository;
     }
 
     //Report Issue
