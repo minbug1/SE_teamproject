@@ -16,8 +16,10 @@ import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
+import its.controller.AuthController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.UserController;
 import its.model.Issue;
 import its.model.Project;
 import its.model.User;
@@ -31,6 +33,9 @@ public class MainView extends JFrame {
 
     private IssueController issueController;
     private ProjectController projectController;
+    private AuthController authController;
+    private UserController userController;
+    
     private User currentUser;
     private final List<Project> projects = new ArrayList<>();
 
@@ -48,9 +53,15 @@ public class MainView extends JFrame {
         "Project ID", "Project", "ID", "Issue Name", "Priority", "Status", "Reporter", "Assignee", ""
     };
 
-    public MainView(IssueController issueController, ProjectController projectController, User currentUser) {
+    public MainView(AuthController authController,
+                    IssueController issueController,
+                    ProjectController projectController,
+                    UserController userController,
+                    User currentUser) {
+        this.authController = authController;
         this.issueController = issueController;
         this.projectController = projectController;
+        this.userController = userController;
         this.currentUser = currentUser;
         initUI();
     }
@@ -224,20 +235,21 @@ public class MainView extends JFrame {
         }
 
         ReportIssueView dialog = new ReportIssueView(
-                this, issueController, currentUser, selectedProject);
+                this, issueController, projectController, currentUser, selectedProject);
         dialog.setVisible(true);
         refreshTable();
     }   
 
     private void onLogout() {
-        int confirm = JOptionPane.showConfirmDialog(
-            this, "Logout?", "Logout", JOptionPane.YES_NO_OPTION
-        );
-        if (confirm == JOptionPane.YES_OPTION) {
-            dispose();
-            new LoginView().setVisible(true);
-        }
+    int confirm = JOptionPane.showConfirmDialog(
+        this, "Logout?", "Logout", JOptionPane.YES_NO_OPTION
+    );
+    if (confirm == JOptionPane.YES_OPTION) {
+        dispose();
+        new LoginView(authController, issueController,
+                      userController, projectController).setVisible(true);
     }
+}
 
     public void refreshTable() {
         loadProjects();

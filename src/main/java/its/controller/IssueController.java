@@ -44,12 +44,6 @@ public class IssueController {
 
     //Report Issue
     public Issue reportIssue(Project project, String title, String description, User reporter, Priority priority, String commentContent) {
-        
-        
-        // 기존 이슈 ID 목록
-        for (Issue i : issueRepository.findAll()) {
-            System.out.println("  기존 이슈 id=" + i.getIssueId() + " projectId=" + i.getProjectId());
-        }
 
         //user가 project 멤버인지
         validateMember(project, reporter);

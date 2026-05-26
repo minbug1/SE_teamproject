@@ -10,7 +10,8 @@
     ],
     "issueIds": [
       1,
-      2
+      2,
+      3
     ]
   },
   {
@@ -23,7 +24,19 @@
       4
     ],
     "issueIds": [
-      1
+      1,
+      2
     ]
+  },
+  {
+    "projectId": 3,
+    "name": "테스트 프로젝트 3",
+    "description": "테스트 프로젝트 3",
+    "memberIds": [
+      2,
+      3,
+      4
+    ],
+    "issueIds": []
   }
 ]
