@@ -24,6 +24,7 @@ public class Issue {
     private List<LocalDateTime> reopenedDates = new ArrayList<>();
     private int reopenCount;
     private int categoryId;
+    private String categoryName;
     private List<Comment> comments = new ArrayList<>();
 
     public Issue(long issueId,int projectId, String title, String description, User reporter, LocalDateTime reportedDate) {
@@ -109,6 +110,10 @@ public class Issue {
         return categoryId;
     }
 
+    public String getCategoryName() {
+        return categoryName;
+    }
+
     //comment 새로 생성할때 commentid = 현재 comment개수+1
     public int getNextCommentId() {
         return this.comments.size() + 1;
@@ -185,6 +190,10 @@ public class Issue {
         }
 
         this.categoryId = categoryId;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     public List<Comment> getComments() {

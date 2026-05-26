@@ -17,6 +17,7 @@ public class TFIDF{
 
     // TF
     public Map<Long, Map<String, Double>> calculateTfByIssue(List<Issue> issues) {
+        // {issueId: {"word": tf}}
         Map<Long, Map<String, Double>> tfByIssue = new HashMap<>();
 
         if (issues == null) {
@@ -45,20 +46,21 @@ public class TFIDF{
 
     // IDF
     public Map<String, Double> calculateIdfByCategory(List<Issue> issues) {
-        Map<Integer, Map<String, Integer>> categoryWordCounts =
-                countWordsForIdf(issues);
+        // {category_id: {"word": count}}
+        Map<Integer, Map<String, Integer>> categoryWordCounts = countWordsForIdf(issues);
 
         // cut
         for (Map<String, Integer> wordCount : categoryWordCounts.values()) {
             cutWords(wordCount, MIN_WORD_COUNT);
         }
 
-        // 
+        // category 수
         int categoryDocumentCount = categoryWordCounts.size();
 
         Map<String, Integer> documentFrequency = new HashMap<>();
-
+        // category 별 unique words
         for (Map<String, Integer> wordCount : categoryWordCounts.values()) {
+            // 전체 category의 unique words frequency
             for (String word : wordCount.keySet()) {
                 documentFrequency.put(
                         word,
@@ -67,27 +69,26 @@ public class TFIDF{
             }
         }
 
-        Map<String, Double> idf = new HashMap<>();
+        Map<String, Double> idfByDocument = new HashMap<>();
 
         for (Map.Entry<String, Integer> entry : documentFrequency.entrySet()) {
             String word = entry.getKey();
             int df = entry.getValue();
-
-
+            // 0 방지
             double idfValue =
                     Math.log((categoryDocumentCount + 1.0) / (df + 1.0)) + 1.0;
 
-            idf.put(word, idfValue);
+            idfByDocument.put(word, idfValue);
         }
 
-        return idf;
+        return idfByDocument;
     }
 
-    // IDF
+    // TF-IDF
     public Map<Long, Map<String, Double>> calculateTfIdfByIssue(List<Issue> issues) {
         Map<Long, Map<String, Double>> tfByIssue = calculateTfByIssue(issues);
-        Map<String, Double> idf = calculateIdfByCategory(issues);
-
+        Map<String, Double> idfByDocument = calculateIdfByCategory(issues);
+        // {issueId: {"word": tf-idf}}
         Map<Long, Map<String, Double>> tfIdfByIssue = new HashMap<>();
 
         for (Map.Entry<Long, Map<String, Double>> issueEntry : tfByIssue.entrySet()) {
@@ -103,11 +104,11 @@ public class TFIDF{
                 /*
                  * IDF 문서에 없는 단어는 category 기준으로 의미가 확정되지 않은 단어이므로 제외.
                  */
-                if (!idf.containsKey(word)) {
+                if (!idfByDocument.containsKey(word)) {
                     continue;
                 }
 
-                double idfValue = idf.get(word);
+                double idfValue = idfByDocument.get(word);
                 tfIdf.put(word, tfValue * idfValue);
             }
 
@@ -117,15 +118,9 @@ public class TFIDF{
         return tfIdfByIssue;
     }
 
-    /*
-     * 초기 categorize용 word set 생성.
-     *
-     * 최초 categorize는 IDF 없이 TF만 사용한다고 했으므로,
-     * TF word count에서 3회 이상 등장한 단어만 set으로 만든다.
-     *
-     * issueId -> word set
-     */
+    // for categorization
     public Map<Long, HashSet<String>> buildWordSetByIssue(List<Issue> issues) {
+        // {issueId: {word set}}
         Map<Long, HashSet<String>> wordSetByIssue = new HashMap<>();
 
         if (issues == null) {
@@ -136,10 +131,11 @@ public class TFIDF{
             if (issue == null) {
                 continue;
             }
-
+            // count
             Map<String, Integer> wordCount = countWordsForTf(issue);
+            // cut
             cutWords(wordCount, MIN_WORD_COUNT);
-
+            // word set
             wordSetByIssue.put(
                     issue.getIssueId(),
                     new HashSet<>(wordCount.keySet())
@@ -151,6 +147,7 @@ public class TFIDF{
 
     // count for tf
     private Map<String, Integer> countWordsForTf(Issue issue) {
+        // {"word":count}
         Map<String, Integer> wordCount = new HashMap<>();
 
         if (issue == null) {
@@ -173,6 +170,7 @@ public class TFIDF{
 
     // count for idf
     private Map<Integer, Map<String, Integer>> countWordsForIdf(List<Issue> issues) {
+        // {category_id:{"word":count}}
         Map<Integer, Map<String, Integer>> categoryWordCounts = new HashMap<>();
 
         if (issues == null) {
@@ -190,7 +188,7 @@ public class TFIDF{
             if (categoryId <= 0) {
                 continue;
             }
-
+            // category 없으면, 만들어서 추가
             Map<String, Integer> wordCount =
                     categoryWordCounts.computeIfAbsent(
                             categoryId,
@@ -225,14 +223,11 @@ public class TFIDF{
         if (weight <= 0) {
             return;
         }
-
+        // tokenize
         List<String> words = tokenize(text);
-
+        // add weighted count
         for (String word : words) {
-            wordCount.put(
-                    word,
-                    wordCount.getOrDefault(word, 0) + weight
-            );
+            wordCount.put(word, wordCount.getOrDefault(word, 0) + weight);
         }
     }
 

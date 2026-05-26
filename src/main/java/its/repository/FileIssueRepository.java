@@ -265,6 +265,7 @@ public class FileIssueRepository implements IssueRepository {
         private List<String> reopenedDates;
         private int reopenCount;
         private int categoryId;
+        private String categoryName;
         // 여기까지 ////////////////////////////////////////////////////////////////////////////////
 
         private List<CommentRecord> comments;
@@ -314,6 +315,7 @@ public class FileIssueRepository implements IssueRepository {
 
             issue.setReopenCount(reopenCount);
             issue.setCategoryId(categoryId);
+            issue.setCategoryName(categoryName);
             // 여기까지 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -368,6 +370,7 @@ public class FileIssueRepository implements IssueRepository {
 
             r.reopenCount = issue.getReopenCount();
             r.categoryId = issue.getCategoryId();
+            r.categoryName = issue.getCategoryName();
             // 여기까지 ////////////////////////////////////////////////////////////////////////////////
 
 

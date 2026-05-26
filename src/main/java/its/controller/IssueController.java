@@ -4,12 +4,14 @@ import its.model.Comment;
 import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
+import its.model.RecommendationEngine;
 import its.model.IssueStatus;
 import its.model.Role;
 import its.model.User;
 import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
 import its.repository.ProjectRepository;
+import its.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -19,6 +21,7 @@ public class IssueController {
 
     private IssueRepository issueRepository;
     private ProjectRepository projectRepository;
+    private UserRepository userRepository;
 
     // 기본 생성자에서 FileIssueRepository를 사용하도록 설정
     public IssueController() {
@@ -366,4 +369,20 @@ public class IssueController {
         }
     }
 
+
+
+    private final RecommendationEngine recommendationEngine = new RecommendationEngine();
+
+    public List<RecommendationEngine.DeveloperRecommendation> recommendAssignees(long issueId) {
+        Issue targetIssue = issueRepository.findById(issueId);
+
+        if (targetIssue == null) {
+            throw new IllegalArgumentException("Issue does not exist.");
+        }
+
+        List<Issue> issues = issueRepository.findAll();
+        List<User> developers = userRepository.findByRole(Role.DEVELOPER);
+
+        return recommendationEngine.recommendDevelopers(targetIssue, issues, developers, 3);
+    }
 }
