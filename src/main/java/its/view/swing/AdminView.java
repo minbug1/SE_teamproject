@@ -38,8 +38,6 @@ import java.util.List;
 
 public class AdminView extends JFrame {
 
-    private static final String USERS_LABEL = "Users";
-
     private final AuthController authController;
     private final ProjectController projectController;
     private final IssueController issueController;
@@ -94,8 +92,6 @@ public class AdminView extends JFrame {
         refreshProjectList();
         if (!projects.isEmpty()) {
             projectList.setSelectedIndex(0);
-        } else {
-            showUsers();
         }
     }
 
@@ -209,7 +205,7 @@ public class AdminView extends JFrame {
         memberPanel.add(new JScrollPane(memberTable), BorderLayout.CENTER);
 
         JPanel unassignedPanel = new JPanel(new BorderLayout());
-        unassignedPanel.setBorder(BorderFactory.createTitledBorder(USERS_LABEL));
+        unassignedPanel.setBorder(BorderFactory.createTitledBorder("Users"));
         unassignedPanel.add(new JScrollPane(unassignedTable), BorderLayout.CENTER);
 
         panel.add(memberPanel);
@@ -235,9 +231,7 @@ public class AdminView extends JFrame {
         if (index < projects.size()) {
             selectedProject = projects.get(index);
             refreshProjectPanel();
-        } else {
-            showUsers();
-        }
+        } 
     }
 
     private void refreshProjectList() {
@@ -247,7 +241,6 @@ public class AdminView extends JFrame {
         for (Project project : projects) {
             projectListModel.addElement(project.getName());
         }
-        projectListModel.addElement(USERS_LABEL);
 
         if (previousIndex >= 0 && previousIndex < projectListModel.size()) {
             projectList.setSelectedIndex(previousIndex);
@@ -275,16 +268,6 @@ public class AdminView extends JFrame {
             });
         }
 
-        refreshUserTable();
-        refreshingTables = false;
-    }
-
-    private void showUsers() {
-        selectedProject = null;
-        projectTitleLabel.setText(USERS_LABEL);
-        projectDescriptionLabel.setText("Pending users and project assignment.");
-        refreshingTables = true;
-        memberTableModel.setRowCount(0);
         refreshUserTable();
         refreshingTables = false;
     }
@@ -382,8 +365,6 @@ public class AdminView extends JFrame {
             refreshProjectList();
             if (selectedProject != null) {
                 refreshProjectPanel();
-            } else {
-                showUsers();
             }
         } catch (IllegalArgumentException ex) {
             showWarning(ex.getMessage());
@@ -490,8 +471,6 @@ public class AdminView extends JFrame {
         refreshProjectList();
         if (!projects.isEmpty()) {
             projectList.setSelectedIndex(0);
-        } else {
-            showUsers();
         }
     }
 
@@ -591,8 +570,6 @@ public class AdminView extends JFrame {
         refreshProjectList();
         if (selectedProject != null) {
             refreshProjectPanel();
-        } else {
-            showUsers();
         }
     }
 

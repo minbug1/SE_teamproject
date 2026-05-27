@@ -8,19 +8,28 @@ import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 
+import its.controller.AuthController;
+import its.controller.IssueController;
+import its.controller.ProjectController;
+import its.controller.UserController;
+import its.model.Issue;
 import its.model.Priority;
+import its.model.Project;
 import its.model.Status;
 import its.model.User;
 
 public class ActionButtonEditor implements TableCellEditor {
 
+    private static final int COL_PROJECT_ID = 0;
     private static final int COL_PROJECT = 1;
     private static final int COL_ID = 2;
     private static final int COL_NAME = 3;
@@ -33,12 +42,21 @@ public class ActionButtonEditor implements TableCellEditor {
     private final User currentUser;
     private final JButton button = new JButton(ACTION_MENU_TEXT);
     private final EventListenerList listenerList = new EventListenerList();
+    
+    private UserController userController;
+    private IssueController issueController;
+    private ProjectController projectController;
+    private AuthController authController;
 
     private JTable table;
     private Object currentValue;
     private int modelRow = -1;
 
-    public ActionButtonEditor(User currentUser) {
+    public ActionButtonEditor(UserController userController, IssueController issueController, ProjectController projectController, AuthController authController, User currentUser) {
+        this.userController = userController;
+        this.issueController = issueController;
+        this.projectController = projectController;
+        this.authController = authController;
         this.currentUser = currentUser;
         button.addActionListener(e -> showActionMenu());
     }
@@ -139,33 +157,80 @@ public class ActionButtonEditor implements TableCellEditor {
     }
 
     private void showIssueDetail() {
-        JOptionPane.showMessageDialog(button,
-                "Project: " + getValue(COL_PROJECT)
-                        + "\nID: " + getValue(COL_ID)
-                        + "\nTitle: " + getValue(COL_NAME)
-                        + "\nPriority: " + getValue(COL_PRIORITY)
-                        + "\nStatus: " + getValue(COL_STATUS)
-                        + "\nReporter: " + getValue(COL_REPORTER)
-                        + "\nAssignee: " + getValue(COL_ASSIGNEE),
-                "Issue Detail",
-                JOptionPane.INFORMATION_MESSAGE);
+        try {
+            int projectId = ((Number) table.getModel().getValueAt(modelRow, COL_PROJECT_ID)).intValue();
+            long issueId  = ((Number) getValue(COL_ID)).longValue();
+
+            Project project = projectController.getAllProjects().stream()
+                    .filter(p -> p.getProjectId() == projectId)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Project not found."));
+
+            Issue issue = issueController.getIssues(project, issueId);
+            if (issue == null) {
+                JOptionPane.showMessageDialog(button, "이슈를 찾을 수 없습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            new IssueDetailView(button, issue).setVisible(true);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(button,
+                    "상세 보기 실패: " + ex.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
+        }
+    
     }
 
     private void addComment() {
-        String comment = JOptionPane.showInputDialog(button, "Comment");
-        if (comment != null && !comment.trim().isEmpty()) {
+        JTextArea commentArea = new JTextArea(10, 30); // 행, 열 크기 증가
+        commentArea.setFont(commentArea.getFont().deriveFont(12f));
+        commentArea.setLineWrap(true);
+        commentArea.setWrapStyleWord(true);
+
+        JScrollPane scrollPane = new JScrollPane(commentArea);
+
+        int result = JOptionPane.showConfirmDialog(
+                button,
+                scrollPane,
+                "코멘트 입력",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            String commentContent = commentArea.getText();
+            if (commentContent == null || commentContent.trim().isEmpty()) return;
+
+        try {
+            int projectId = ((Number) table.getModel().getValueAt(modelRow, COL_PROJECT_ID)).intValue();
+            long issueId  = ((Number) getValue(COL_ID)).longValue();
+
+            // Project, 컨트롤러 통해 가져오기
+            Project project = projectController.getAllProjects().stream()
+                    .filter(p -> p.getProjectId() == projectId)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Project not found."));
+
+            issueController.addComment(project, issueId, commentContent, currentUser);
+
             JOptionPane.showMessageDialog(button, "Comment added.");
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(button,
+                    "코멘트 추가 실패: " + ex.getMessage(),
+                    "오류", JOptionPane.ERROR_MESSAGE);
+        }
         }
     }
 
-    private void deleteIssue() {
-        if (JOptionPane.showConfirmDialog(button, "Delete this issue?", "Delete",
-                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            stopCellEditing();
-            ((javax.swing.table.DefaultTableModel) table.getModel()).removeRow(modelRow);
+        private void deleteIssue() {
+            if (JOptionPane.showConfirmDialog(button, "Delete this issue?", "Delete",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                stopCellEditing();
+                ((javax.swing.table.DefaultTableModel) table.getModel()).removeRow(modelRow);
+            }
         }
-    }
-
+    
     private void changeAssignee() {
         String assignee = JOptionPane.showInputDialog(button, "Assignee", getValue(COL_ASSIGNEE));
         if (assignee != null && !assignee.trim().isEmpty()) {

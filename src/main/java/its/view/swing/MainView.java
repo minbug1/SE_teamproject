@@ -120,7 +120,7 @@ public class MainView extends JFrame {
         issueTable.getTableHeader().setReorderingAllowed(false);
 
         issueTable.getColumn("").setCellRenderer(new ActionButtonRenderer());
-        issueTable.getColumn("").setCellEditor(new ActionButtonEditor(currentUser));
+        issueTable.getColumn("").setCellEditor(new ActionButtonEditor(userController, issueController, projectController, authController, currentUser));
 
         issueTable.getColumnModel().getColumn(COL_PROJECT_ID).setMinWidth(0);
         issueTable.getColumnModel().getColumn(COL_PROJECT_ID).setMaxWidth(0);
