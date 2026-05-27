@@ -2,9 +2,12 @@ package its.view.swing;
 
 import java.awt.Component;
 import java.util.EventObject;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -14,13 +17,12 @@ import javax.swing.JTextArea;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 
-import its.controller.AuthController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
-import its.controller.UserController;
 import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
@@ -43,20 +45,18 @@ public class ActionButtonEditor implements TableCellEditor {
     private final JButton button = new JButton(ACTION_MENU_TEXT);
     private final EventListenerList listenerList = new EventListenerList();
     
-    private UserController userController;
+    private List<Project> projects;
     private IssueController issueController;
     private ProjectController projectController;
-    private AuthController authController;
 
     private JTable table;
     private Object currentValue;
     private int modelRow = -1;
 
-    public ActionButtonEditor(UserController userController, IssueController issueController, ProjectController projectController, AuthController authController, User currentUser) {
-        this.userController = userController;
+    public ActionButtonEditor(List<Project> projects, IssueController issueController, ProjectController projectController, User currentUser) {
+        this.projects = projects;
         this.issueController = issueController;
         this.projectController = projectController;
-        this.authController = authController;
         this.currentUser = currentUser;
         button.addActionListener(e -> showActionMenu());
     }
@@ -127,19 +127,19 @@ public class ActionButtonEditor implements TableCellEditor {
             }
             addItem(menu, "우선순위 변경", this::changePriority);
             if (status == Status.RESOLVED) {
-                addItem(menu, "이슈 닫기", () -> updateStatus(Status.CLOSED));
+                addItem(menu, "이슈 닫기", () -> closeIssue());
             }
         }
 
         if (currentUser != null && currentUser.isDev()
                 && status == Status.ASSIGNED && isAssigneeCurrentUser()) {
-            addItem(menu, "수정 완료", () -> updateStatus(Status.FIXED));
+            addItem(menu, "수정 완료", () -> fixIssue());
         }
 
         if (currentUser != null && currentUser.isTester()
                 && status == Status.FIXED && isReporterCurrentUser()) {
-            addItem(menu, "검증 통과", () -> updateStatus(Status.RESOLVED));
-            addItem(menu, "재오픈", () -> updateStatus(Status.REOPENED));
+            addItem(menu, "검증 통과", () -> verifyIssue(true));
+            addItem(menu, "재오픈", () -> verifyIssue(false));
         }
 
         menu.show(button, 0, button.getHeight());
@@ -166,7 +166,7 @@ public class ActionButtonEditor implements TableCellEditor {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("Project not found."));
 
-            Issue issue = issueController.getIssues(project, issueId);
+            Issue issue = issueController.getIssue(project, issueId);
             if (issue == null) {
                 JOptionPane.showMessageDialog(button, "이슈를 찾을 수 없습니다.", "오류", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -223,54 +223,208 @@ public class ActionButtonEditor implements TableCellEditor {
         }
     }
 
+        // deleteIssue, changeAssignee, changePriority, updateStatus 메서드도 비슷한 패턴으로 구현
         private void deleteIssue() {
-            if (JOptionPane.showConfirmDialog(button, "Delete this issue?", "Delete",
-                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                stopCellEditing();
-                ((javax.swing.table.DefaultTableModel) table.getModel()).removeRow(modelRow);
-            }
+        if (JOptionPane.showConfirmDialog(button, "이슈를 삭제하시겠습니까?", "삭제",
+                JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
+ 
+        Project project = getCurrentProject();
+        long issueId    = getIssueId();
+        if (project == null || issueId <= 0) return;
+ 
+        try {
+            issueController.deleteIssue(project, issueId, currentUser);
+            // 테이블 행 제거
+            ((DefaultTableModel) table.getModel()).removeRow(modelRow);
+        } catch (Exception ex) {
+            showError(ex.getMessage());
         }
+    }
     
-    private void changeAssignee() {
-        String assignee = JOptionPane.showInputDialog(button, "Assignee", getValue(COL_ASSIGNEE));
-        if (assignee != null && !assignee.trim().isEmpty()) {
-            setValue(COL_ASSIGNEE, assignee.trim());
-            if (getStatus() == Status.NEW || getStatus() == Status.REOPENED) {
-                setValue(COL_STATUS, Status.ASSIGNED.name());
+     private void changeAssignee() {
+        Project project = getCurrentProject();
+        long issueId    = getIssueId();
+        if (project == null || issueId <= 0) return;
+ 
+        List<User> devs = project.getMembers().stream()
+                .filter(User::isDev)
+                .collect(Collectors.toList());
+ 
+        if (devs.isEmpty()) {
+            JOptionPane.showMessageDialog(button,
+                    "배정 가능한 개발자가 없습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+ 
+        // 현재 assignee 기본 선택
+        User defaultDev = devs.stream()
+                .filter(u -> u.getLoginId().equals(String.valueOf(getValue(COL_ASSIGNEE))))
+                .findFirst()
+                .orElse(devs.get(0));
+ 
+        JComboBox<User> combo = new JComboBox<>(devs.toArray(new User[0]));
+        combo.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
+            JLabel label = new JLabel(value != null ? value.getLoginId() : "");
+            label.setOpaque(true);
+            if (isSelected) {
+                label.setBackground(list.getSelectionBackground());
+                label.setForeground(list.getSelectionForeground());
+            } else {
+                label.setBackground(list.getBackground());
+                label.setForeground(list.getForeground());
             }
+            return label;
+        });
+        combo.setSelectedItem(defaultDev);
+ 
+        String comment = JOptionPane.showInputDialog(button, "코멘트 (선택):");
+        if (comment == null) return; 
+ 
+        if (JOptionPane.showConfirmDialog(button, combo, "담당자 지정",
+                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
+ 
+        User selected = (User) combo.getSelectedItem();
+        if (selected == null) return;
+ 
+        try {
+            issueController.assignIssue(project, issueId, selected, currentUser, comment);
+            setValue(COL_ASSIGNEE, selected.getLoginId());
+            setValue(COL_STATUS, Status.ASSIGNED.name());
+        } catch (Exception ex) {
+            showError(ex.getMessage());
         }
     }
 
     private void changePriority() {
-        JComboBox<Priority> comboBox = new JComboBox<>(Priority.values());
-        comboBox.setSelectedItem(getPriority());
-        if (JOptionPane.showConfirmDialog(button, comboBox, "Priority",
-                JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-            setValue(COL_PRIORITY, comboBox.getSelectedItem().toString());
+        JComboBox<Priority> combo = new JComboBox<>(Priority.values());
+        combo.setSelectedItem(getPriority());
+ 
+        if (JOptionPane.showConfirmDialog(button, combo, "우선순위 변경",
+                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
+ 
+        Priority selected = (Priority) combo.getSelectedItem();
+        if (selected == null) return;
+ 
+        Project project = getCurrentProject();
+        long issueId    = getIssueId();
+        if (project == null || issueId <= 0) return;
+ 
+        try {
+            issueController.changePriority(project, issueId, selected, currentUser);
+            setValue(COL_PRIORITY, selected.name());
+        } catch (Exception ex) {
+            showError(ex.getMessage());
         }
     }
 
-    private void updateStatus(Status status) {
-        setValue(COL_STATUS, status.name());
+    // assigned -> fixed, assignee가 수정 완료 선택
+    private void fixIssue() {
+        String comment = JOptionPane.showInputDialog(button, "수정 내용 코멘트:");
+        if (comment == null) return;
+ 
+        Project project = getCurrentProject();
+        long issueId    = getIssueId();
+        if (project == null || issueId <= 0) return;
+ 
+        try {
+            issueController.fixIssue(project, issueId, comment, currentUser);
+            setValue(COL_STATUS, Status.FIXED.name());
+        } catch (Exception ex) {
+            showError(ex.getMessage());
+        }
     }
 
+    // fixed -> resolved, reporter가 검증 통과/재오픈 선택
+    private void verifyIssue(boolean isResolved) {
+        String comment = JOptionPane.showInputDialog(button,
+                isResolved ? "검증 통과 코멘트:" : "재오픈 사유:");
+        if (comment == null) return;
+ 
+        Project project = getCurrentProject();
+        long issueId    = getIssueId();
+        if (project == null || issueId <= 0) return;
+ 
+        try {
+            issueController.verifyIssue(project, issueId, comment, currentUser, isResolved);
+            setValue(COL_STATUS, isResolved ? Status.RESOLVED.name() : Status.REOPENED.name());
+        } catch (Exception ex) {
+            showError(ex.getMessage());
+        }
+    }
+
+    // resolved -> closed, PL이 이슈 닫기 선택
+    private void closeIssue() {
+        String comment = JOptionPane.showInputDialog(button, "종료 코멘트:");
+        if (comment == null) return;
+ 
+        Project project = getCurrentProject();
+        long issueId    = getIssueId();
+        if (project == null || issueId <= 0) return;
+ 
+        try {
+            issueController.closeIssue(project, issueId, comment, currentUser);
+            setValue(COL_STATUS, Status.CLOSED.name());
+        } catch (Exception ex) {
+            showError(ex.getMessage());
+        }
+    }
+
+    // private void updateStatus(Status status) {
+    //     setValue(COL_STATUS, status.name());
+    // }
+
+    private Project getCurrentProject() {
+        Object projectIdVal = getValue(COL_PROJECT_ID);
+        if (projectIdVal == null) return null;
+        try {
+            int projectId = Integer.parseInt(projectIdVal.toString());
+            return projects.stream()
+                    .filter(p -> p.getProjectId() == projectId)
+                    .findFirst()
+                    .orElse(null);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+ 
+    private long getIssueId() {
+        Object val = getValue(COL_ID);
+        if (val == null) return -1;
+        try {
+            return Long.parseLong(val.toString());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    private void refreshRow(Project project, long issueId) {
+        project.getIssues().stream()
+                .filter(i -> i.getIssueId() == issueId)
+                .findFirst()
+                .ifPresent(issue -> {
+                    setValue(COL_STATUS,   issue.getStatus().name());
+                    setValue(COL_ASSIGNEE, issue.getAssignee() != null
+                            ? issue.getAssignee().getLoginId() : "-");
+                });
+    }
+ 
     private boolean isAssignedOrLater(Status status) {
         return status != null && status != Status.NEW;
     }
-
+ 
     private boolean isAssigneeCurrentUser() {
         return isCurrentUser(getValue(COL_ASSIGNEE));
     }
-
+ 
     private boolean isReporterCurrentUser() {
         return isCurrentUser(getValue(COL_REPORTER));
     }
-
+ 
     private boolean isCurrentUser(Object value) {
         return currentUser != null && value != null
                 && currentUser.getLoginId().equals(value.toString());
     }
-
+ 
     private Status getStatus() {
         try {
             return Status.valueOf(String.valueOf(getValue(COL_STATUS)));
@@ -278,7 +432,7 @@ public class ActionButtonEditor implements TableCellEditor {
             return null;
         }
     }
-
+ 
     private Priority getPriority() {
         try {
             return Priority.valueOf(String.valueOf(getValue(COL_PRIORITY)));
@@ -286,27 +440,31 @@ public class ActionButtonEditor implements TableCellEditor {
             return Priority.MAJOR;
         }
     }
-
+ 
     private Object getValue(int column) {
         return table.getModel().getValueAt(modelRow, column);
     }
-
+ 
     private void setValue(int column, Object value) {
         TableModel model = table.getModel();
         model.setValueAt(value, modelRow, column);
     }
-
+ 
+    private void showError(String message) {
+        JOptionPane.showMessageDialog(button, message, "오류", JOptionPane.ERROR_MESSAGE);
+    }
+ 
     private void fireEditingStopped() {
         ChangeEvent event = new ChangeEvent(this);
-        for (CellEditorListener listener : listenerList.getListeners(CellEditorListener.class)) {
-            listener.editingStopped(event);
+        for (CellEditorListener l : listenerList.getListeners(CellEditorListener.class)) {
+            l.editingStopped(event);
         }
     }
-
+ 
     private void fireEditingCanceled() {
         ChangeEvent event = new ChangeEvent(this);
-        for (CellEditorListener listener : listenerList.getListeners(CellEditorListener.class)) {
-            listener.editingCanceled(event);
+        for (CellEditorListener l : listenerList.getListeners(CellEditorListener.class)) {
+            l.editingCanceled(event);
         }
     }
 }

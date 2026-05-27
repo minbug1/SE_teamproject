@@ -252,25 +252,44 @@ public class IssueController {
     }
 
     public Issue addComment(Project project, long issueId, String commentContent, User author) {
-    validateProject(project);
-    validateUser(author, "Author must not be null.");
-    validateMember(project, author);
-    validateIssueId(issueId);
+        validateProject(project);
+        validateUser(author, "Author must not be null.");
+        validateMember(project, author);
+        validateIssueId(issueId);
 
-    if (commentContent == null || commentContent.trim().isEmpty()) {
-        throw new IllegalArgumentException("Comment must not be empty.");
+        if (commentContent == null || commentContent.trim().isEmpty()) {
+            throw new IllegalArgumentException("Comment must not be empty.");
+        }
+
+        Issue issue = getProjectIssueOrNull(project, issueId);
+        if (issue == null) {
+            throw new IllegalArgumentException("Issue not found.");
+        }
+
+        addCommentIfPresent(issue, commentContent, author);
+        issueRepository.update(issue);
+
+        return issue;
     }
 
-    Issue issue = getProjectIssueOrNull(project, issueId);
-    if (issue == null) {
-        throw new IllegalArgumentException("Issue not found.");
+    public void changePriority(Project project, long issueId, Priority priority, User user) {
+        validateProject(project);
+        validateUser(user, "User must not be null.");
+        validateMember(project, user);
+        validateIssueId(issueId);
+
+        if (priority == null) {
+            throw new IllegalArgumentException("Priority must not be null.");
+        }
+
+        Issue issue = getProjectIssueOrNull(project, issueId);
+        if (issue == null) {
+            throw new IllegalArgumentException("Issue not found.");
+        }
+
+        issue.setPriority(priority);
+        issueRepository.update(issue);
     }
-
-    addCommentIfPresent(issue, commentContent, author);
-    issueRepository.update(issue);
-
-    return issue;
-}
 
     private void validateProject(Project project) {
         if (project == null) {
@@ -381,7 +400,7 @@ public class IssueController {
         }
     }
 
-    public Issue getIssues(Project project, long issueId) {
+    public Issue getIssue(Project project, long issueId) {
         validateProject(project);
         validateIssueId(issueId);
         return getProjectIssueOrNull(project, issueId);

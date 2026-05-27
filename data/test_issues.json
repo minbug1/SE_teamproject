@@ -62,14 +62,21 @@
     "description": "dfdf",
     "reportedDate": "2026-05-25T16:36:04.081870400",
     "reporterId": 4,
+    "assigneeId": 3,
     "priority": "MAJOR",
-    "status": "NEW",
+    "status": "ASSIGNED",
     "comments": [
       {
         "commentId": 1,
         "content": "dfdf",
         "authorId": 4,
         "writtenDate": "2026-05-25T16:36:04.081870400"
+      },
+      {
+        "commentId": 2,
+        "content": "코멘트",
+        "authorId": 2,
+        "writtenDate": "2026-05-27T20:35:47.253024600"
       }
     ]
   },
@@ -80,14 +87,34 @@
     "description": "safasdf",
     "reportedDate": "2026-05-26T16:26:07.785272700",
     "reporterId": 4,
+    "assigneeId": 3,
+    "fixerId": 3,
     "priority": "MAJOR",
-    "status": "NEW",
+    "status": "CLOSED",
     "comments": [
       {
         "commentId": 1,
         "content": "asdffasd",
         "authorId": 4,
         "writtenDate": "2026-05-26T16:26:07.785272700"
+      },
+      {
+        "commentId": 2,
+        "content": "asdf",
+        "authorId": 3,
+        "writtenDate": "2026-05-27T20:36:27.710656600"
+      },
+      {
+        "commentId": 3,
+        "content": "검증 통과",
+        "authorId": 4,
+        "writtenDate": "2026-05-27T20:36:57.424277500"
+      },
+      {
+        "commentId": 4,
+        "content": "종료",
+        "authorId": 2,
+        "writtenDate": "2026-05-27T20:37:18.505244"
       }
     ]
   },
