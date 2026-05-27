@@ -1,9 +1,11 @@
 package its.controller;
 
 import its.model.Comment;
+import its.model.DeveloperRecommendation;
 import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
+import its.model.RecommendEngine;
 import its.model.IssueStatus;
 import its.model.UserRole;
 import its.model.User;
@@ -12,6 +14,7 @@ import its.repository.IssueRepository;
 import its.repository.ProjectRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -207,6 +210,34 @@ public class IssueController {
         issueRepository.update(issue);
 
         return issue;
+    }
+
+    // assign recommendation
+    public List<DeveloperRecommendation> recommendAssignees(Project project, long issueId, User pl) {
+        validateProject(project);
+        validateUser(pl, "PL must not be null.");
+        validateRole(pl, UserRole.PL, "Only PL can get recommendations.");
+        validateProjectMember(project, pl, "This user is not a PL member of the project.");
+
+        Issue targetIssue = getProjectIssueOrNull(project, issueId);
+
+        if (targetIssue == null ||
+            (targetIssue.getStatus() != IssueStatus.NEW &&
+            targetIssue.getStatus() != IssueStatus.REOPENED)) {
+            return new ArrayList<>();
+        }
+
+        List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
+
+        List<User> developers = new ArrayList<>();
+        for (User member : project.getMembers()) {
+            if (member != null && member.isDev()) {
+                developers.add(member);
+            }
+        }
+
+        RecommendEngine recommendEngine = new RecommendEngine();
+        return recommendEngine.recommendDevelopers(targetIssue, projectIssues, developers);
     }
 
     // helper

@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 /*
- * model for Category (Dynamic Threshold & Classification Metadata)
+ * model for Category
  *
+ * 
  * @author hanung
  */
 
@@ -17,7 +18,7 @@ public class Category {
     private int categoryId;
     private String categoryName;
     // threshold
-    private double cosineThreshold = 0.25;
+    private double threshold = 0.25;
     // issues
     private List<Issue> issues = new ArrayList<>();
     // category vocabulary vector
@@ -27,7 +28,7 @@ public class Category {
     public Category(long projectId, int categoryId, double cosineThreshold, List<Issue> issues, Map<String, Double> representVector) {
         this.projectId = projectId;
         this.categoryId = categoryId;
-        this.cosineThreshold = cosineThreshold;
+        this.threshold = cosineThreshold;
         this.issues = issues != null ? issues : new ArrayList<>();
         this.representVector = representVector != null ? representVector : new HashMap<>();
     }
@@ -64,8 +65,8 @@ public class Category {
         return projectId;
     }
     
-    public double getCosineThreshold() {
-        return cosineThreshold;
+    public double getThreshold() {
+        return threshold;
     }
 
     public List<Issue> getIssues() {

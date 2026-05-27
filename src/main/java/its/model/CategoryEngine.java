@@ -7,41 +7,134 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Engine for Category Classification and Vector Operations
+/*
+ * model for categorize
  * 
- * * @author hanung
+ * 
+ * @author hanung
  */
 public class CategoryEngine {
 
-    // 한웅님이 작성하신 원본 상태 그대로의 TfIdf 계산기 인스턴스 유지
     private final TfIdf tfIdf = new TfIdf();
-    
-    // 엔진 레벨에서 즉석 복원 및 코사인 유사도 순회에 사용할 단어장 캐시
-    private final Set<String> globalVocabulary = new HashSet<>();
+    private Set<String> vocabulary = new HashSet<>();
 
-    // ==========================================
-    //      1. 단일 미분류 이슈 실시간 즉시 분류
-    // ==========================================
-    public int categorizeSingleIssue(Issue newIssue, List<Category> savedCategories) {
+    // constructor
+    public CategoryEngine() {}
+
+    // full training
+    public List<Category> createCategoriesByThreshold(List<Issue> Issues, double threshold) {
+        List<Category> categories = new ArrayList<>();
+
+        if (Issues == null || Issues.isEmpty()) {
+            return categories;
+        }
+
+        if (threshold < 0.0 || threshold > 1.0) {
+            throw new IllegalArgumentException("Threshold must be between 0.0 and 1.0.");
+        }
+
+        // extract project id
+        long projectId = 0;
+        for (Issue issue : Issues) {
+            if (issue != null) {
+                projectId = issue.getProjectId();
+                break;
+            }
+        }
+
+        // TF-IDF
+        Map<Long, Map<String, Double>> tfIdfVectors = tfIdf.calculateTfIdfByIssue(Issues);
+        this.vocabulary = tfIdf.getVocabulary();
+
+        int nextCategoryId = 1;
+
+        for (Issue issue : Issues) {
+            if (issue == null) {
+                continue;
+            }
+
+            Map<String, Double> issueVector = tfIdfVectors.get(issue.getIssueId());
+            Category bestCategory = null;
+            double bestSimilarity = -1.0;
+
+            // search best category
+            for (Category category : categories) {
+                double similarity = tfIdf.cosineSimilarity(issueVector, category.getRepresentVector());
+
+                if (similarity > bestSimilarity) {
+                    bestSimilarity = similarity;
+                    bestCategory = category;
+                }
+            }
+
+            // classify or create
+            if (bestCategory != null && bestSimilarity >= threshold) {
+                issue.setCategoryId(bestCategory.getCategoryId());
+                bestCategory.getIssues().add(issue);
+
+                // update mean vector
+                Map<String, Double> updatedMean = calculateMean(bestCategory.getIssues(), tfIdfVectors);
+                bestCategory.getRepresentVector().clear();
+                bestCategory.getRepresentVector().putAll(updatedMean);
+            }
+            else {
+                issue.setCategoryId(nextCategoryId);
+
+                List<Issue> categoryIssues = new ArrayList<>();
+                categoryIssues.add(issue);
+
+                Map<String, Double> meanVector = calculateMean(categoryIssues, tfIdfVectors);
+
+                Category newCategory = new Category(
+                        projectId,
+                        nextCategoryId,
+                        threshold,
+                        categoryIssues,
+                        meanVector
+                );
+
+                categories.add(newCategory);
+                nextCategoryId++;
+            }
+        }
+
+        return categories;
+    }
+
+    // instant classification
+    public int categorizeSingleIssue(Issue newIssue, List<Category> savedCategories, List<Issue> Issues) {
         if (newIssue == null || savedCategories == null || savedCategories.isEmpty()) {
             return 0; 
         }
 
-        // 프로그램 실행 직후라 엔진의 단어장이 비어있다면, 불러온 카테고리 정보의 키셋으로 즉석 복원
-        if (this.globalVocabulary.isEmpty()) {
-            this.globalVocabulary.addAll(savedCategories.get(0).getRepresentVector().keySet());
+        // no idf -> build
+        if (tfIdf.getIdf() == null || tfIdf.getIdf().isEmpty()) {
+            if (Issues != null && !Issues.isEmpty()) {
+                double threshold = savedCategories.get(0).getThreshold();
+                
+                buildCategories(newIssue.getProjectId(), Issues, threshold);
+            }
         }
 
-        // 복원된 단어장을 기반으로 단일 이슈 TF 벡터 생성
-        Map<String, Double> newIssueVector = calculateSingleIssueTfIdf(newIssue, this.globalVocabulary);
+        // use category keyset
+        if (this.vocabulary.isEmpty()) {
+            for (Category category : savedCategories) {
+                if (category != null && category.getRepresentVector() != null) {
+                    this.vocabulary.addAll(category.getRepresentVector().keySet());
+                }
+            }
+        }
+        
+        // new issue vector
+        Map<String, Double> newIssueVector = calculateSingleIssueTfIdf(newIssue, this.vocabulary);
 
         int bestCategoryId = 0;
         double maxSimilarity = -1.0;
         Category bestCategory = null;
+        double threshold = savedCategories.get(0).getThreshold();
 
         for (Category category : savedCategories) {
-            double similarity = calculateCosineSimilarity(newIssueVector, category.getRepresentVector());
+            double similarity = tfIdf.cosineSimilarity(newIssueVector, category.getRepresentVector());
 
             if (similarity > maxSimilarity) {
                 maxSimilarity = similarity;
@@ -50,72 +143,65 @@ public class CategoryEngine {
             }
         }
 
-        // 해당 카테고리 스냅샷 정보에서 고유 임계치(Threshold)를 직접 읽어와 검증
-        if (bestCategory != null && maxSimilarity >= bestCategory.getCosineThreshold()) {
+        if (bestCategory != null && maxSimilarity >= threshold) {
             return bestCategoryId;
         }
 
         return 0; 
     }
 
-    // ==========================================
-    //      2. 전체 이슈 기반 카테고리 통째로 재학습
-    // ==========================================
-    public List<Category> trainCategories(long projectId, List<Issue> allIssues, double targetThreshold) {
-        List<Category> trainedCategories = new ArrayList<>();
-        if (allIssues == null || allIssues.isEmpty()) {
-            return trainedCategories;
+    // rebuild category
+    public List<Category> buildCategories(long projectId, List<Issue> Issues, double threshold) {
+        List<Category> builtCategories = new ArrayList<>();
+        if (Issues == null || Issues.isEmpty()) {
+            return builtCategories;
         }
 
-        // ★ [에러 해결 핵심] 한웅님의 원본 함수 포맷 그대로 인자를 1개만 전달!
-        // 이 함수 호출이 끝나면 tfIdf 내부의 vocabulary 변수가 완벽하게 최신 상태로 구워집니다.
-        Map<Long, Map<String, Double>> tfIdfVectors = tfIdf.calculateTfIdfByIssue(allIssues);
+        Map<Long, Map<String, Double>> tfIdfVectors = tfIdf.calculateTfIdfByIssue(Issues);
+        this.vocabulary = tfIdf.getVocabulary();
 
-        // ★ 엔진 상단의 globalVocabulary 세트도 굳이 복잡하게 새로 빌드할 필요 없이, 
-        // 방금 계산이 끝난 카테고리 벡터 중 하나의 키셋을 가져와 깔끔하게 동기화합니다.
-        this.globalVocabulary.clear();
-        if (!tfIdfVectors.isEmpty()) {
-            // 아무 이슈 벡터나 하나 잡아서 키셋을 복사하면 전역 단어장 완벽 셋업
-            Map<String, Double> randomVector = tfIdfVectors.values().iterator().next();
-            this.globalVocabulary.addAll(randomVector.keySet());
-        }
-
-        // 카테고리별 그루핑
+        // grouping
         Map<Integer, List<Issue>> issuesByCategory = new HashMap<>();
-        for (Issue issue : allIssues) {
-            if (issue == null || issue.getCategoryId() <= 0) continue;
+        for (Issue issue : Issues) {
+            if (issue == null || issue.getCategoryId() <= 0) {
+                continue;
+            }
             issuesByCategory.computeIfAbsent(issue.getCategoryId(), k -> new ArrayList<>()).add(issue);
         }
 
-        // 카테고리 대표 중심(Centroid) 벡터 연산 및 새 불변 스냅샷 빌드
+        // build category
         for (Map.Entry<Integer, List<Issue>> entry : issuesByCategory.entrySet()) {
             int categoryId = entry.getKey();
             List<Issue> categoryIssues = entry.getValue();
 
-            Map<String, Double> centroidVector = calculateCentroid(categoryIssues, tfIdfVectors);
+            Map<String, Double> meanVector = calculateMean(categoryIssues, tfIdfVectors);
 
             Category newCategorySnapshot = new Category(
                     projectId,
                     categoryId,
-                    targetThreshold,
+                    threshold,
                     categoryIssues,
-                    centroidVector
+                    meanVector
             );
 
-            trainedCategories.add(newCategorySnapshot);
+            builtCategories.add(newCategorySnapshot);
         }
 
-        return trainedCategories;
+        return builtCategories;
     }
 
-    // ==========================================
-    //              내부 연산 헬퍼 메서드
-    // ==========================================
+    // calculate mean
+    private Map<String, Double> calculateMean(List<Issue> categoryIssues, Map<Long, Map<String, Double>> tfIdfVectors) {
+        Map<String, Double> mean = new HashMap<>();
 
-    private Map<String, Double> calculateCentroid(List<Issue> categoryIssues, Map<Long, Map<String, Double>> tfIdfVectors) {
-        Map<String, Double> centroid = new HashMap<>();
+        if (categoryIssues == null || categoryIssues.isEmpty()) {
+            for (String word : this.vocabulary) {
+                mean.put(word, 0.0);
+            }
+            return mean;
+        }
         
-        for (String word : this.globalVocabulary) {
+        for (String word : this.vocabulary) {
             double sum = 0.0;
             for (Issue issue : categoryIssues) {
                 Map<String, Double> issueVector = tfIdfVectors.get(issue.getIssueId());
@@ -123,22 +209,33 @@ public class CategoryEngine {
                     sum += issueVector.getOrDefault(word, 0.0);
                 }
             }
-            centroid.put(word, sum / categoryIssues.size());
+            mean.put(word, sum / categoryIssues.size());
         }
-        return centroid;
+        return mean;
     }
 
-    private Map<String, Double> calculateSingleIssueTfIdf(Issue issue, Set<String> vocabulary) {
+    // calculate single issue TF-IDF
+    public Map<String, Double> calculateSingleIssueTfIdf(Issue issue, Set<String> vocabulary) {
         Map<String, Double> singleVector = new HashMap<>();
         if (issue == null) return singleVector;
 
-        // 단일 이슈용 가중치 계산 (TfIdf 내부의 문자열 전처리 및 가중치 사상을 모방)
-        Map<String, Integer> issueWordCounts = countWordsForSingle(issue);
-        int totalWeightCount = issueWordCounts.values().stream().mapToInt(Integer::intValue).sum();
+        Map<String, Integer> issueWordCounts = tfIdf.countWordsByIssue(issue);
+        tfIdf.cutWords(issueWordCounts, 3);
+
+        int totalWeightCount = 0;
+        for (Integer count : issueWordCounts.values()) {
+            if (count != null) {
+                totalWeightCount += count.intValue();
+            }
+        }
+        
+        Map<String, Double> storedIdfMap = tfIdf.getIdf();
 
         for (String word : vocabulary) {
             if (totalWeightCount > 0 && issueWordCounts.containsKey(word)) {
-                singleVector.put(word, (double) issueWordCounts.get(word) / totalWeightCount);
+                double tf = (double) issueWordCounts.get(word) / totalWeightCount;
+                double idfValue = storedIdfMap.getOrDefault(word, 1.0);
+                singleVector.put(word, tf * idfValue); 
             } else {
                 singleVector.put(word, 0.0);
             }
@@ -146,54 +243,147 @@ public class CategoryEngine {
         return singleVector;
     }
 
-    private double calculateCosineSimilarity(Map<String, Double> vectorA, Map<String, Double> vectorB) {
-        if (vectorA == null || vectorB == null || vectorA.isEmpty() || vectorB.isEmpty()) return 0.0;
+    // merge
+    public Category mergeCategories(int categoryIdA, int categoryIdB, List<Category> savedCategories, Map<Long, Map<String, Double>> tfIdfVectors) {
+        Category categoryA = null;
+        Category categoryB = null;
 
-        double dotProduct = 0.0;
-        double normA = 0.0;
-        double normB = 0.0;
-
-        for (String word : this.globalVocabulary) {
-            double valA = vectorA.getOrDefault(word, 0.0);
-            double valB = vectorB.getOrDefault(word, 0.0);
-
-            dotProduct += valA * valB;
-            normA += valA * valA;
-            normB += valB * valB;
+        for (Category category : savedCategories) {
+            if (category.getCategoryId() == categoryIdA) {
+                categoryA = category;
+            }
+            if (category.getCategoryId() == categoryIdB) {
+                categoryB = category;
+            }
         }
 
-        if (normA == 0.0 || normB == 0.0) return 0.0;
-        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+        if (categoryA == null || categoryB == null) {
+            return categoryA;
+        }
+
+        // integrate
+        List<Issue> mergedIssues = new ArrayList<>();
+        mergedIssues.addAll(categoryA.getIssues());
+        mergedIssues.addAll(categoryB.getIssues());
+
+        // set category id
+        for (Issue issue : mergedIssues) {
+            if (issue != null) {
+                issue.setCategoryId(categoryIdA);
+            }
+        }
+
+        // new mean vector
+        Map<String, Double> newMeanVector = calculateMean(mergedIssues, tfIdfVectors);
+
+        // build category
+        return new Category(
+                categoryA.getProjectId(),
+                categoryIdA,
+                categoryA.getThreshold(),
+                mergedIssues,
+                newMeanVector
+        );
     }
 
-    private Map<String, Integer> countWordsForSingle(Issue issue) {
-        Map<String, Integer> wordCount = new HashMap<>();
-        if (issue == null) return wordCount;
+    // partition
+    public List<Category> partitionCategoryA(int targetCategoryId, 
+                                             List<Issue> remainingIssues, List<Issue> separatingIssues, 
+                                             List<Category> savedCategories, Map<Long, Map<String, Double>> tfIdfVectors) {
+        
+        List<Category> partitionedResult = new ArrayList<>();
+        
+        if (savedCategories == null || savedCategories.isEmpty()) {
+            return partitionedResult;
+        }
 
-        // 단일 이슈 전처리용 간단 로직 (한웅님 소스코드 기반)
-        addTextForSingle(wordCount, issue.getTitle(), 3);        // titleWeight
-        addTextForSingle(wordCount, issue.getDescription(), 2);  // descriptionWeight
+        // search category
+        Category targetCategory = null;
+        int maxCategoryId = 0;
 
-        if (issue.getComments() != null) {
-            for (its.model.Comment comment : issue.getComments()) {
-                if (comment != null) {
-                    addTextForSingle(wordCount, comment.getContent(), 1); // commentWeight
+        for (Category category : savedCategories) {
+            if (category.getCategoryId() == targetCategoryId) {
+                targetCategory = category;
+            }
+            if (category.getCategoryId() > maxCategoryId) {
+                maxCategoryId = category.getCategoryId();
+            }
+        }
+
+        // target validation
+        if (targetCategory == null) {
+            return partitionedResult;
+        }
+        // new category id
+        int newCategoryId = maxCategoryId + 1;
+
+        // separate partition
+        if (separatingIssues != null) {
+            for (Issue issue : separatingIssues) {
+                if (issue != null) {
+                    issue.setCategoryId(newCategoryId);
                 }
             }
         }
-        // MIN_WORD_COUNT 컷오프 처리
-        wordCount.entrySet().removeIf(entry -> entry.getValue() < 3);
-        return wordCount;
-    }
 
-    private void addTextForSingle(Map<String, Integer> wordCount, String text, int weight) {
-        if (text == null || text.trim().isEmpty()) return;
-        String normalized = text.toLowerCase().replaceAll("[^a-z0-9]", " ");
-        String[] tokens = normalized.split("\\s+");
-        for (String token : tokens) {
-            if (!token.trim().isEmpty()) {
-                wordCount.put(token, wordCount.getOrDefault(token, 0) + weight);
+        // remain validation        
+        if (remainingIssues != null) {
+            for (Issue issue : remainingIssues) {
+                if (issue != null) {
+                    issue.setCategoryId(targetCategoryId);
+                }
             }
         }
+
+        // new mean vector
+        Map<String, Double> remainingMean = calculateMean(remainingIssues != null ? remainingIssues : new ArrayList<>(), tfIdfVectors);
+        Map<String, Double> separatingMean = calculateMean(separatingIssues != null ? separatingIssues : new ArrayList<>(), tfIdfVectors);
+
+        // build category
+        Category updatedOriginalCategory = new Category(
+                targetCategory.getProjectId(),
+                targetCategoryId,
+                targetCategory.getThreshold(),
+                remainingIssues,
+                remainingMean
+        );
+
+        Category newCategory = new Category(
+                targetCategory.getProjectId(),
+                newCategoryId,
+                targetCategory.getThreshold(),
+                separatingIssues,
+                separatingMean
+        );
+
+        partitionedResult.add(updatedOriginalCategory);
+        partitionedResult.add(newCategory);
+
+        return partitionedResult;
+    }
+
+    // reset
+    public void resetCategory(List<Issue> Issues) {
+        if (Issues == null || Issues.isEmpty()) {
+            this.vocabulary.clear();
+            return;
+        }
+
+        for (Issue issue : Issues) {
+            if (issue != null) {
+                issue.setCategoryId(0); 
+            }
+        }
+        
+        this.vocabulary.clear();
+    }
+
+    // get
+    public Set<String> getVocabulary() {
+        return this.vocabulary;
+    }
+
+    public TfIdf getTfIdf() {
+        return this.tfIdf;
     }
 }

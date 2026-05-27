@@ -25,6 +25,8 @@ public class TfIdf {
     private static final int generalWeight = 1;
     // for vocabulary
     private Set<String> vocabulary = new HashSet<>();
+    // for IDF
+    private Map<String, Double> idf = new HashMap<>();
 
     // build vocabulary
     public void buildVocabulary(List<Issue> issues) {
@@ -171,11 +173,13 @@ public class TfIdf {
             idfByDocument.put(word, idfValue);
         }
 
+        this.idf = idfByDocument;
+
         return idfByDocument;
     }
     
     // count for tf
-    private Map<String, Integer> countWordsByIssue(Issue issue) {
+    public Map<String, Integer> countWordsByIssue(Issue issue) {
         // {"word1":count, "word2":count, ...}
         Map<String, Integer> wordCount = new HashMap<>();
 
@@ -290,11 +294,41 @@ public class TfIdf {
     }
 
     // cut
-    private void cutWords(Map<String, Integer> wordCount, int minCount) {
+    public void cutWords(Map<String, Integer> wordCount, int minCount) {
         if (wordCount == null) {
             return;
         }
 
         wordCount.entrySet().removeIf(entry -> entry.getValue() < minCount);
+    }
+
+    // get
+    public Set<String> getVocabulary() {
+        return vocabulary;
+    }
+
+    public Map<String, Double> getIdf() {
+        return idf;
+    }
+
+    // cosine similarity
+    public double cosineSimilarity(Map<String, Double> vectorA, Map<String, Double> vectorB) {
+        if (vectorA == null || vectorB == null || vectorA.isEmpty() || vectorB.isEmpty()) return 0.0;
+
+        double dotProduct = 0.0;
+        double normA = 0.0;
+        double normB = 0.0;
+
+        for (String word : this.vocabulary) {
+            double valA = vectorA.getOrDefault(word, 0.0);
+            double valB = vectorB.getOrDefault(word, 0.0);
+
+            dotProduct += valA * valB;
+            normA += valA * valA;
+            normB += valB * valB;
+        }
+
+        if (normA == 0.0 || normB == 0.0) return 0.0;
+        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 }
