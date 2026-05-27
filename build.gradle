@@ -14,8 +14,8 @@ java {
 }
 
 application {
-    //mainClass = 'its.Main'
-    mainClass = 'its.MainFX'
+    mainClass = 'its.Main'
+    //mainClass = 'its.MainFX'
 }
 
 javafx {

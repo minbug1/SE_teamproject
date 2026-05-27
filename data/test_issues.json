@@ -40,6 +40,18 @@
         "content": "이슈 닫습니다.",
         "authorId": 2,
         "writtenDate": "2026-05-23T19:25:24.659880"
+      },
+      {
+        "commentId": 6,
+        "content": "코멘트 추가 테스트",
+        "authorId": 4,
+        "writtenDate": "2026-05-27T14:39:47.994972"
+      },
+      {
+        "commentId": 7,
+        "content": "코멘트 추가 테스트 2",
+        "authorId": 4,
+        "writtenDate": "2026-05-27T14:48:16.330107800"
       }
     ]
   },

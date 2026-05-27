@@ -21,12 +21,15 @@ import its.controller.AuthController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
 import its.controller.UserController;
+import its.model.Issue;
 import its.model.Priority;
+import its.model.Project;
 import its.model.Status;
 import its.model.User;
 
 public class ActionButtonEditor implements TableCellEditor {
 
+    private static final int COL_PROJECT_ID = 0;
     private static final int COL_PROJECT = 1;
     private static final int COL_ID = 2;
     private static final int COL_NAME = 3;
@@ -154,21 +157,33 @@ public class ActionButtonEditor implements TableCellEditor {
     }
 
     private void showIssueDetail() {
-        JOptionPane.showMessageDialog(button,
-                "Project: " + getValue(COL_PROJECT)
-                        + "\nID: " + getValue(COL_ID)
-                        + "\nTitle: " + getValue(COL_NAME)
-                        + "\nPriority: " + getValue(COL_PRIORITY)
-                        + "\nStatus: " + getValue(COL_STATUS)
-                        + "\nReporter: " + getValue(COL_REPORTER)
-                        + "\nAssignee: " + getValue(COL_ASSIGNEE),
-                "Issue Detail",
-                JOptionPane.INFORMATION_MESSAGE);
+        try {
+            int projectId = ((Number) table.getModel().getValueAt(modelRow, COL_PROJECT_ID)).intValue();
+            long issueId  = ((Number) getValue(COL_ID)).longValue();
+
+            Project project = projectController.getAllProjects().stream()
+                    .filter(p -> p.getProjectId() == projectId)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Project not found."));
+
+            Issue issue = issueController.getIssues(project, issueId);
+            if (issue == null) {
+                JOptionPane.showMessageDialog(button, "이슈를 찾을 수 없습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            new IssueDetailView(button, issue).setVisible(true);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(button,
+                    "상세 보기 실패: " + ex.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
+        }
+    
     }
 
     private void addComment() {
         JTextArea commentArea = new JTextArea(10, 30); // 행, 열 크기 증가
-        commentArea.setFont(commentArea.getFont().deriveFont(10f));
+        commentArea.setFont(commentArea.getFont().deriveFont(12f));
         commentArea.setLineWrap(true);
         commentArea.setWrapStyleWord(true);
 
@@ -183,24 +198,39 @@ public class ActionButtonEditor implements TableCellEditor {
         );
 
         if (result == JOptionPane.OK_OPTION) {
-            String comment = commentArea.getText();
+            String commentContent = commentArea.getText();
+            if (commentContent == null || commentContent.trim().isEmpty()) return;
 
-            if (comment != null && !comment.trim().isEmpty()) {
-                // todo: 실제로는 이 부분에서 컨트롤러를 호출하여 코멘트를 저장해야 함
-                
-                JOptionPane.showMessageDialog(button, "Comment added.");
+        try {
+            int projectId = ((Number) table.getModel().getValueAt(modelRow, COL_PROJECT_ID)).intValue();
+            long issueId  = ((Number) getValue(COL_ID)).longValue();
+
+            // Project, 컨트롤러 통해 가져오기
+            Project project = projectController.getAllProjects().stream()
+                    .filter(p -> p.getProjectId() == projectId)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Project not found."));
+
+            issueController.addComment(project, issueId, commentContent, currentUser);
+
+            JOptionPane.showMessageDialog(button, "Comment added.");
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(button,
+                    "코멘트 추가 실패: " + ex.getMessage(),
+                    "오류", JOptionPane.ERROR_MESSAGE);
+        }
+        }
+    }
+
+        private void deleteIssue() {
+            if (JOptionPane.showConfirmDialog(button, "Delete this issue?", "Delete",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                stopCellEditing();
+                ((javax.swing.table.DefaultTableModel) table.getModel()).removeRow(modelRow);
             }
         }
-    }
-
-    private void deleteIssue() {
-        if (JOptionPane.showConfirmDialog(button, "Delete this issue?", "Delete",
-                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            stopCellEditing();
-            ((javax.swing.table.DefaultTableModel) table.getModel()).removeRow(modelRow);
-        }
-    }
-
+    
     private void changeAssignee() {
         String assignee = JOptionPane.showInputDialog(button, "Assignee", getValue(COL_ASSIGNEE));
         if (assignee != null && !assignee.trim().isEmpty()) {
