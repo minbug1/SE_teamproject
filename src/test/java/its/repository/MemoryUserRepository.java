@@ -1,7 +1,7 @@
 package its.repository;
 
 import its.model.AccountStatus;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 
 import java.util.ArrayList;
@@ -133,7 +133,7 @@ public class MemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> findByRole(Role role) {
+    public List<User> findByRole(UserRole role) {
         if (role == null) {
             throw new IllegalArgumentException("Role must not be null.");
         }

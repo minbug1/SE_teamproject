@@ -1,11 +1,11 @@
 package its.repository;
 
 import its.model.AccountStatus;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 import java.util.List;
 
-/**
+/*
  * Repository interface for user
  * save, update, delete, find, generateUserId
  *
@@ -27,7 +27,7 @@ public interface UserRepository {
 
     List<User> findByAccountStatus(AccountStatus accountStatus);
 
-    List<User> findByRole(Role role);
+    List<User> findByRole(UserRole role);
 
     List<User> findAll();
 

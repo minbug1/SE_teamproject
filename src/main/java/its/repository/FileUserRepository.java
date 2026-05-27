@@ -6,7 +6,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import its.model.AccountStatus;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 
 import java.io.File;
@@ -17,6 +17,13 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+/*
+ * Repository interface for user
+ * save, update, delete, find, generateUserId
+ *
+ * @author hanung
+ */
 
 public class FileUserRepository implements UserRepository {
 
@@ -198,7 +205,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> findByRole(Role role) {
+    public List<User> findByRole(UserRole role) {
         if (role == null) {
             throw new IllegalArgumentException("Role must not be null.");
         }
@@ -341,7 +348,7 @@ public class FileUserRepository implements UserRepository {
                         loginId,
                         password,
                         AccountStatus.valueOf(accountStatus),
-                        Role.valueOf(role)
+                        UserRole.valueOf(role)
                 );
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Saved account status or role value does not match the enum.", e);

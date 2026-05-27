@@ -5,7 +5,7 @@ import its.controller.IssueController;
 import its.controller.ProjectController;
 import its.model.AccountStatus;
 import its.model.Project;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 
 import javax.swing.BorderFactory;
@@ -178,7 +178,7 @@ public class AdminView extends JFrame {
             }
         };
         memberTable = createTable(memberTableModel);
-        memberTable.getColumn("Role").setCellEditor(new EnumCellEditor<>(Role.class));
+        memberTable.getColumn("Role").setCellEditor(new EnumCellEditor<>(UserRole.class));
         memberTable.getColumn("Account Status").setCellEditor(new EnumCellEditor<>(AccountStatus.class));
         memberTable.getColumn("").setCellRenderer(new ButtonRenderer("Remove"));
         memberTable.getColumn("").setCellEditor(new RemoveMemberEditor());
@@ -192,7 +192,7 @@ public class AdminView extends JFrame {
             }
         };
         unassignedTable = createTable(unassignedTableModel);
-        unassignedTable.getColumn("Role").setCellEditor(new EnumCellEditor<>(Role.class));
+        unassignedTable.getColumn("Role").setCellEditor(new EnumCellEditor<>(UserRole.class));
         unassignedTable.getColumn("Account Status").setCellEditor(new EnumCellEditor<>(AccountStatus.class));
         unassignedTable.getColumn("").setCellRenderer(new ButtonRenderer("Assign"));
         unassignedTable.getColumn("").setCellEditor(new AssignUserEditor());
@@ -370,7 +370,7 @@ public class AdminView extends JFrame {
         new Exception("호출 스택").printStackTrace();
         try {
             if (column == 1) {
-                Role role = toRole(model.getValueAt(row, column));
+                UserRole role = toRole(model.getValueAt(row, column));
                 authController.changeRole(adminUser, user.getUserId(), role);
                 user.setRole(role);
             } else if (column == 2) {
@@ -389,11 +389,11 @@ public class AdminView extends JFrame {
         }
     }
 
-    private Role toRole(Object value) {
-        if (value instanceof Role) {
-            return (Role) value;
+    private UserRole toRole(Object value) {
+        if (value instanceof UserRole) {
+            return (UserRole) value;
         }
-        return Role.valueOf(String.valueOf(value));
+        return UserRole.valueOf(String.valueOf(value));
     }
 
     private AccountStatus toAccountStatus(Object value) {

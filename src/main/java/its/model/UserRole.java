@@ -1,6 +1,6 @@
 package its.model;
 
-public enum Role {
+public enum UserRole {
     UNASSIGNED,
     ADMIN,
     PL,

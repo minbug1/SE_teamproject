@@ -3,7 +3,7 @@ package its.view.console;
 import its.controller.RecommendationController;
 import its.model.Issue;
 import its.model.IssueSimilarity;
-import its.model.TFIDF;
+import its.model.TFIDF2;
 import its.repository.FileIssueRepository;
 import its.repository.FileUserRepository;
 import its.repository.IssueRepository;
@@ -19,7 +19,7 @@ public class RecommendationConsoleUI {
 
     private final RecommendationController recommendationController;
     private final IssueRepository issueRepository;
-    private final TFIDF tfIdfAnalyzer;
+    private final TFIDF2 tfIdfAnalyzer;
     private final IssueSimilarity issueSimilarity;
     private final Scanner scanner;
 
@@ -37,7 +37,7 @@ public class RecommendationConsoleUI {
 
         this.recommendationController = recommendationController;
         this.issueRepository = issueRepository;
-        this.tfIdfAnalyzer = new TFIDF();
+        this.tfIdfAnalyzer = new TFIDF2();
         this.issueSimilarity = new IssueSimilarity();
         this.scanner = new Scanner(System.in);
     }

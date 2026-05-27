@@ -1,14 +1,14 @@
 package its.controller;
 
 import its.model.AccountStatus;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 import its.repository.FileUserRepository;
 import its.repository.UserRepository;
 
 import java.util.List;
 
-/**
+/*
  * controller for user account management (logged in)
  * create, delete, find, change, approve/reject/deactivate, helper
  *
@@ -33,7 +33,7 @@ public class UserController {
     }
 
     // create // user register 없이 admin이 직접 생성, Q : accountStatus Active default
-    public User createUserByAdmin(User currentUser, String loginId, String password, AccountStatus accountStatus, Role role) {
+    public User createUserByAdmin(User currentUser, String loginId, String password, AccountStatus accountStatus, UserRole role) {
         validateAdmin(currentUser);
 
     if (loginId == null || loginId.trim().isEmpty()) {
@@ -52,7 +52,7 @@ public class UserController {
         throw new IllegalArgumentException("Role must not be null.");
     }
 
-    if (role == Role.UNASSIGNED) {
+    if (role == UserRole.UNASSIGNED) {
         throw new IllegalArgumentException("Admin-created user must have a role.");
     }
 
@@ -132,7 +132,7 @@ public class UserController {
         return userRepository.findByAccountStatus(accountStatus);
     }
 
-    public List<User> findUsersByRole(User currentUser, Role role) {
+    public List<User> findUsersByRole(User currentUser, UserRole role) {
         validateLogin(currentUser);
 
         if (role == null) {
@@ -178,7 +178,7 @@ public class UserController {
         userRepository.update(user);
     }
 
-     public void changeRole(User currentUser, long userId, Role newRole) {
+     public void changeRole(User currentUser, long userId, UserRole newRole) {
         validateAdmin(currentUser);
         validateUserId(userId);
 
@@ -213,7 +213,7 @@ public class UserController {
         return userRepository.findPendingUsers();
     }
 
-    public void approveUser(User currentUser, long userId, Role role) {
+    public void approveUser(User currentUser, long userId, UserRole role) {
         validateAdmin(currentUser);
         validateUserId(userId);
 
@@ -221,7 +221,7 @@ public class UserController {
             throw new IllegalArgumentException("Role must not be null.");
         }
 
-        if (role == Role.UNASSIGNED) {
+        if (role == UserRole.UNASSIGNED) {
             throw new IllegalArgumentException("Approved user must have a role.");
         }
 

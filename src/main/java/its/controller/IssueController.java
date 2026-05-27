@@ -5,7 +5,7 @@ import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
 import its.model.IssueStatus;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
@@ -131,7 +131,7 @@ public class IssueController {
 
         validateProject(project);
         validateUser(tester, "Tester must not be null.");
-        validateRole(tester, Role.TESTER, "Only testers can verify issues.");
+        validateRole(tester, UserRole.TESTER, "Only testers can verify issues.");
         validateProjectMember(project, tester, "Need to be a member of the project to verify the issue.");
 
         Issue issue = getProjectIssueOrNull(project, issueId);
@@ -162,7 +162,7 @@ public class IssueController {
 
         validateProject(project);
         validateUser(pl, "PL must not be null.");
-        validateRole(pl, Role.PL, "Only PL can change the issue status to closed.");
+        validateRole(pl, UserRole.PL, "Only PL can change the issue status to closed.");
         validateProjectMember(project, pl, "Need to be a member of the project to close the issue.");
 
         Issue issue = getProjectIssueOrNull(project, issueId);
@@ -187,8 +187,8 @@ public class IssueController {
         validateUser(pl, "PL must not be null.");
         validateUser(assignee, "Assignee must not be null.");
 
-        validateRole(pl, Role.PL, "Only PL can assign issues.");
-        validateRole(assignee, Role.DEVELOPER, "Only developers can be assigned to issues.");
+        validateRole(pl, UserRole.PL, "Only PL can assign issues.");
+        validateRole(assignee, UserRole.DEVELOPER, "Only developers can be assigned to issues.");
 
         validateProjectMember(project, pl, "This user is not a PL member of the project.");
         validateProjectMember(project, assignee, "The assignee is not a member of the project.");
@@ -279,7 +279,7 @@ public class IssueController {
         }
     }
 
-   private void validateRole(User user, Role requiredRole, String message) {
+   private void validateRole(User user, UserRole requiredRole, String message) {
         validateUser(user, "User must not be null.");
         if (requiredRole == null) {
             throw new IllegalArgumentException("Required role must not be null.");

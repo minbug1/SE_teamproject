@@ -5,18 +5,84 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-public class TFIDF{
+/*
+ * model for TF-IDF
+ * 
+ *
+ * @author hanung
+ */
 
+public class TfIdf {
+    
     // for cut
     private static final int MIN_WORD_COUNT = 3;
     // for weight
     private static final int titleWeight = 3;
     private static final int descriptionWeight = 2;
     private static final int commentWeight = 1;
+    private static final int generalWeight = 1;
+    // for vocabulary
+    private Set<String> vocabulary = new HashSet<>();
+
+    // build vocabulary
+    public void buildVocabulary(List<Issue> issues) {
+        if (issues == null) {
+            return;
+        }
+
+        for (Issue issue : issues) {
+            vocabulary.addAll(tokenize(issue.getTitle()));
+            vocabulary.addAll(tokenize(issue.getDescription()));
+
+            for (Comment comment : issue.getComments()) {
+                if (comment == null) {
+                    continue;
+                }
+
+                vocabulary.addAll(tokenize(comment.getContent()));
+            }
+        }
+    }
+
+    // TF-IDF
+    public Map<Long, Map<String, Double>> calculateTfIdfByIssue(List<Issue> issues) {
+        // build vocabulary
+        this.vocabulary.clear();
+        buildVocabulary(issues);
+
+        // {issueId1:{"word1": tf-idf, "word1": tf-idf, ...}, issueId2:{"word1":tf-idf, ...}, ...}
+        Map<Long, Map<String, Double>> tfIdfByIssue = new HashMap<>();
+
+        // TF, IDF
+        Map<Long, Map<String, Double>> tfByIssue = calculateTfByIssue(issues);
+        Map<String, Double> idfByDocument = calculateIdfByDocument(issues);
+
+        // TF * IDF
+        for (Map.Entry<Long, Map<String, Double>> issueEntry : tfByIssue.entrySet()) {
+            long issueId = issueEntry.getKey();
+            Map<String, Double> tfVector = issueEntry.getValue();
+
+            Map<String, Double> tfIdfVector = new HashMap<>();
+            
+            // vocabulary dimension
+            for (String word : vocabulary) {
+                double tfValue = tfVector.getOrDefault(word, 0.0);
+                double idfValue = idfByDocument.getOrDefault(word, 1.0);
+
+                tfIdfVector.put(word, tfValue * idfValue);
+            }
+
+            tfIdfByIssue.put(issueId, tfIdfVector);
+        }
+
+        return tfIdfByIssue;
+    }
 
     // TF
     public Map<Long, Map<String, Double>> calculateTfByIssue(List<Issue> issues) {
+        // {issueId1: {"word1": tf, ...}, {issueId2: {"word2": tf, ...}, ...}
         Map<Long, Map<String, Double>> tfByIssue = new HashMap<>();
 
         if (issues == null) {
@@ -29,36 +95,64 @@ public class TFIDF{
             }
 
             // count
-            Map<String, Integer> issueWordCounts = countWordsForTf(issue);
+            Map<String, Integer> issueWordCounts = countWordsByIssue(issue);
 
             // cut
             cutWords(issueWordCounts, MIN_WORD_COUNT);
 
-            // TF
-            Map<String, Double> tf = convertCountsToTf(issueWordCounts);
+            // total
+            int totalWeightCount = 0;
+            for (int count : issueWordCounts.values()) {
+                totalWeightCount += count;
+            }
 
-            tfByIssue.put(issue.getIssueId(), tf);
+            // calculate TF with mapping onto vocabulary
+            Map<String, Double> tfVector = new HashMap<>();
+            for (String word : vocabulary) {
+                if (totalWeightCount > 0 && issueWordCounts.containsKey(word)) {
+                    int count = issueWordCounts.get(word);
+                    // tf value
+                    tfVector.put(word, (double) count / totalWeightCount);
+                } else {
+                    // 0 value for sparse vector (vocabulary)
+                    tfVector.put(word, 0.0);
+                }
+            }
+
+            tfByIssue.put(issue.getIssueId(), tfVector);
         }
 
         return tfByIssue;
     }
 
     // IDF
-    public Map<String, Double> calculateIdfByCategory(List<Issue> issues) {
-        Map<Integer, Map<String, Integer>> categoryWordCounts =
-                countWordsForIdf(issues);
+    public Map<String, Double> calculateIdfByDocument(List<Issue> issues) {
+        // {"word1": idf, "word2": idf, ...}
+        Map<String, Double> idfByDocument = new HashMap<>();
+
+        if (issues == null || issues.isEmpty()) {
+            for (String word : vocabulary) {
+                idfByDocument.put(word, 1.0);
+            }
+            return idfByDocument;
+        }
+
+        // count
+        //{document1:{"word1":count, "word2":count, ...}, document2:{"word1":count, "word2":count, ...}, ...}
+        Map<Integer, Map<String, Integer>> documentWordCounts = countWordsByDocument(issues);
 
         // cut
-        for (Map<String, Integer> wordCount : categoryWordCounts.values()) {
+        for (Map<String, Integer> wordCount : documentWordCounts.values()) {
             cutWords(wordCount, MIN_WORD_COUNT);
         }
 
-        // 
-        int categoryDocumentCount = categoryWordCounts.size();
+        // total document
+        int totalDocumentCount = documentWordCounts.size();
 
+        // document frequency
+        // {"word1":count, "word2":count, ...}
         Map<String, Integer> documentFrequency = new HashMap<>();
-
-        for (Map<String, Integer> wordCount : categoryWordCounts.values()) {
+        for (Map<String, Integer> wordCount : documentWordCounts.values()) {
             for (String word : wordCount.keySet()) {
                 documentFrequency.put(
                         word,
@@ -67,90 +161,22 @@ public class TFIDF{
             }
         }
 
-        Map<String, Double> idf = new HashMap<>();
+        // calculate IDF with mapping onto vocabulary
+        for (String word : vocabulary) {
+            int df = documentFrequency.getOrDefault(word, 0);
 
-        for (Map.Entry<String, Integer> entry : documentFrequency.entrySet()) {
-            String word = entry.getKey();
-            int df = entry.getValue();
+            // Smoothing
+            double idfValue = Math.log((totalDocumentCount + 1.0) / (df + 1.0)) + 1.0;
 
-
-            double idfValue =
-                    Math.log((categoryDocumentCount + 1.0) / (df + 1.0)) + 1.0;
-
-            idf.put(word, idfValue);
+            idfByDocument.put(word, idfValue);
         }
 
-        return idf;
+        return idfByDocument;
     }
-
-    // IDF
-    public Map<Long, Map<String, Double>> calculateTfIdfByIssue(List<Issue> issues) {
-        Map<Long, Map<String, Double>> tfByIssue = calculateTfByIssue(issues);
-        Map<String, Double> idf = calculateIdfByCategory(issues);
-
-        Map<Long, Map<String, Double>> tfIdfByIssue = new HashMap<>();
-
-        for (Map.Entry<Long, Map<String, Double>> issueEntry : tfByIssue.entrySet()) {
-            long issueId = issueEntry.getKey();
-            Map<String, Double> tf = issueEntry.getValue();
-
-            Map<String, Double> tfIdf = new HashMap<>();
-
-            for (Map.Entry<String, Double> wordEntry : tf.entrySet()) {
-                String word = wordEntry.getKey();
-                double tfValue = wordEntry.getValue();
-
-                /*
-                 * IDF 문서에 없는 단어는 category 기준으로 의미가 확정되지 않은 단어이므로 제외.
-                 */
-                if (!idf.containsKey(word)) {
-                    continue;
-                }
-
-                double idfValue = idf.get(word);
-                tfIdf.put(word, tfValue * idfValue);
-            }
-
-            tfIdfByIssue.put(issueId, tfIdf);
-        }
-
-        return tfIdfByIssue;
-    }
-
-    /*
-     * 초기 categorize용 word set 생성.
-     *
-     * 최초 categorize는 IDF 없이 TF만 사용한다고 했으므로,
-     * TF word count에서 3회 이상 등장한 단어만 set으로 만든다.
-     *
-     * issueId -> word set
-     */
-    public Map<Long, HashSet<String>> buildWordSetByIssue(List<Issue> issues) {
-        Map<Long, HashSet<String>> wordSetByIssue = new HashMap<>();
-
-        if (issues == null) {
-            return wordSetByIssue;
-        }
-
-        for (Issue issue : issues) {
-            if (issue == null) {
-                continue;
-            }
-
-            Map<String, Integer> wordCount = countWordsForTf(issue);
-            cutWords(wordCount, MIN_WORD_COUNT);
-
-            wordSetByIssue.put(
-                    issue.getIssueId(),
-                    new HashSet<>(wordCount.keySet())
-            );
-        }
-
-        return wordSetByIssue;
-    }
-
+    
     // count for tf
-    private Map<String, Integer> countWordsForTf(Issue issue) {
+    private Map<String, Integer> countWordsByIssue(Issue issue) {
+        // {"word1":count, "word2":count, ...}
         Map<String, Integer> wordCount = new HashMap<>();
 
         if (issue == null) {
@@ -172,47 +198,50 @@ public class TFIDF{
     }
 
     // count for idf
-    private Map<Integer, Map<String, Integer>> countWordsForIdf(List<Issue> issues) {
-        Map<Integer, Map<String, Integer>> categoryWordCounts = new HashMap<>();
-
-        if (issues == null) {
-            return categoryWordCounts;
-        }
+    private Map<Integer, Map<String, Integer>> countWordsByDocument(List<Issue> issues) {
+        // {categoryId1:{"word1": count, "word2": count, ...}, categoryId2:{"word1": count, ...}}
+        Map<Integer, Map<String, Integer>> documentWordCounts = new HashMap<>();
+        
+        // for uncategorized issue
+        int virtualCategory = -1;
 
         for (Issue issue : issues) {
             if (issue == null) {
                 continue;
             }
 
-            int categoryId = issue.getCategoryId();
+            int targetKey = issue.getCategoryId();
 
-            // 미분류
-            if (categoryId <= 0) {
-                continue;
+            // regrad uncategorized issue as separate document
+            if (targetKey <= 0) {
+                targetKey = virtualCategory;
+                virtualCategory--; 
             }
 
-            Map<String, Integer> wordCount =
-                    categoryWordCounts.computeIfAbsent(
-                            categoryId,
-                            key -> new HashMap<>()
-                    );
+            // documentWordCounts.value를 변수 wordCount로 관리, 있으면 그대로 사용, 없으면 생성
+            Map<String, Integer> wordCount = documentWordCounts.computeIfAbsent(
+                    targetKey,
+                    key -> new HashMap<>()
+            );
 
-            addText(wordCount, issue.getTitle(), 1);
-            addText(wordCount, issue.getDescription(), 1);
+            // wordCount에 generalWeight 사용
+            addText(wordCount, issue.getTitle(), generalWeight);
+            addText(wordCount, issue.getDescription(), generalWeight);
 
-            for (Comment comment : issue.getComments()) {
-                if (comment == null) {
-                    continue;
+            if (issue.getComments() != null) {
+                for (Comment comment : issue.getComments()) {
+                    if (comment == null) {
+                        continue;
+                    }
+                    addText(wordCount, comment.getContent(), generalWeight);
                 }
-
-                addText(wordCount, comment.getContent(), 1);
             }
         }
 
-        return categoryWordCounts;
+        return documentWordCounts;
     }
 
-    // weight
+    // add Text with weight
     private void addText(Map<String, Integer> wordCount, String text, int weight) {
         if (wordCount == null) {
             return;
@@ -225,50 +254,39 @@ public class TFIDF{
         if (weight <= 0) {
             return;
         }
-
+        // tokenize
         List<String> words = tokenize(text);
-
+        // add weighted count
         for (String word : words) {
-            wordCount.put(
-                    word,
-                    wordCount.getOrDefault(word, 0) + weight
-            );
+            wordCount.put(word, wordCount.getOrDefault(word, 0) + weight);
         }
     }
 
-    // tokenize
+    // tokenizer
     private List<String> tokenize(String text) {
+        // ["word1", "word2", "word3", ...]
         List<String> result = new ArrayList<>();
 
-        if (text == null) {
+        if (text == null || text.trim().isEmpty()) {
             return result;
         }
 
         // lowercase
-        String normalized = text.toLowerCase();
-        // alphabet, number only
-        normalized = normalized.replaceAll("[^a-z0-9]", " ");
-        // split by whitespace
-        String[] tokens = normalized.split("\\s+");
+        String normalizedText = text.toLowerCase();
+        // alphabet and number only
+        normalizedText = normalizedText.replaceAll("[^a-z0-9]", " ");
+        // split by space
+        String[] tokens = normalizedText.split("\\s+");
 
         for (String token : tokens) {
             if (token == null || token.trim().isEmpty()) {
                 continue;
             }
-            // filter
-            if (filterWord(token)) {
-                continue;
-            }
-
+            
             result.add(token);
         }
 
         return result;
-    }
-
-    // filter
-    private boolean filterWord(String word) {
-        return word.equals("issue");
     }
 
     // cut
@@ -278,33 +296,5 @@ public class TFIDF{
         }
 
         wordCount.entrySet().removeIf(entry -> entry.getValue() < minCount);
-    }
-
-    // TF
-    private Map<String, Double> convertCountsToTf(Map<String, Integer> wordCount) {
-        Map<String, Double> tf = new HashMap<>();
-
-        if (wordCount == null || wordCount.isEmpty()) {
-            return tf;
-        }
-
-        int totalCount = 0;
-
-        for (int count : wordCount.values()) {
-            totalCount += count;
-        }
-
-        if (totalCount <= 0) {
-            return tf;
-        }
-
-        for (Map.Entry<String, Integer> entry : wordCount.entrySet()) {
-            String word = entry.getKey();
-            int count = entry.getValue();
-
-            tf.put(word, (double) count / totalCount);
-        }
-
-        return tf;
     }
 }

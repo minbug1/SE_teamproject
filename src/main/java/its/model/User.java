@@ -3,7 +3,7 @@ package its.model;
 
 import java.util.Objects;
 
-/**
+/*
  * model for user
  * 
  *
@@ -16,14 +16,14 @@ public class User {
     private String loginId;
     private String password;
     private AccountStatus accountStatus;
-    private Role role;
+    private UserRole role;
 
     // constructor 
     public User(Long userId, String loginId, String password) {
-       this(userId, loginId, password, AccountStatus.PENDING, Role.UNASSIGNED);
+       this(userId, loginId, password, AccountStatus.PENDING, UserRole.UNASSIGNED);
     }
 
-    public User(Long userId, String loginId, String password, AccountStatus accountStatus, Role role) {
+    public User(Long userId, String loginId, String password, AccountStatus accountStatus, UserRole role) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID must not be empty.");
         }
@@ -68,7 +68,7 @@ public class User {
         return accountStatus;
     }
 
-    public Role getRole() {
+    public UserRole getRole() {
         return role;
     }
 
@@ -97,7 +97,7 @@ public class User {
         this.accountStatus = newAccountStatus;
     }
 
-    public void setRole(Role newRole) {
+    public void setRole(UserRole newRole) {
         if (newRole == null) {
             throw new IllegalArgumentException("Role must not be null.");
         }
@@ -131,23 +131,23 @@ public class User {
     }
 
     public boolean isAdmin() {
-        return role == Role.ADMIN;
+        return role == UserRole.ADMIN;
     }
 
     public boolean isPL() {
-        return role == Role.PL;
+        return role == UserRole.PL;
     }
 
     public boolean isDev() {
-        return role == Role.DEVELOPER;
+        return role == UserRole.DEVELOPER;
     }
 
     public boolean isTester() {
-        return role == Role.TESTER;
+        return role == UserRole.TESTER;
     }
 
     public boolean isUnassigned() {
-        return role == Role.UNASSIGNED;
+        return role == UserRole.UNASSIGNED;
     }
 
     @Override
