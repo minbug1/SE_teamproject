@@ -175,6 +175,39 @@ public class CategoryController {
 
         return result;
     }
+    
+    // update category name
+    public Category updateCategoryName(Project project, int categoryId, String newName, User pl) {
+        validatePL(project, pl);
+        validateCategoryId(categoryId);
+
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid category name.");
+        }
+
+        List<Category> savedCategories = categoryRepository.findByProjectId(project.getProjectId());
+        Category targetCategory = findCategoryById(savedCategories, categoryId);
+        
+        // target validation
+        if (targetCategory == null) {
+            throw new IllegalArgumentException("Target category does not exist.");
+        }
+
+        // duplicate check
+        String trimmedName = newName.trim();
+        for (Category category : savedCategories) {
+            if (category == null) continue;
+            if (category.getCategoryId() != categoryId && trimmedName.equalsIgnoreCase(category.getCategoryName())) {
+                throw new IllegalArgumentException("Category name already exists.");
+            }
+        }
+
+        // update name and save
+        targetCategory.setCategoryName(trimmedName);
+        categoryRepository.saveAll(project.getProjectId(), savedCategories);
+
+        return targetCategory;
+    }
 
     // helper methods
     private void saveAndSync(long projectId, List<Category> categories, List<Issue> issues) {
