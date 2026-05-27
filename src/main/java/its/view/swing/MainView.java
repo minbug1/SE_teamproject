@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,6 +23,7 @@ import its.controller.ProjectController;
 import its.controller.UserController;
 import its.model.Issue;
 import its.model.Project;
+import its.model.Status;
 import its.model.User;
 
 public class MainView extends JFrame {
@@ -30,6 +32,8 @@ public class MainView extends JFrame {
     private DefaultTableModel tableModel;
     private TableRowSorter<DefaultTableModel> tableSorter;
     private JComboBox<ProjectFilterItem> projectFilterComboBox;
+    private JComboBox<StatusFilterItem> statusFilterComboBox;
+    private JCheckBox myIssuesCheckBox;
 
     private IssueController issueController;
     private ProjectController projectController;
@@ -90,8 +94,18 @@ public class MainView extends JFrame {
         JPanel centerPanel = new JPanel();
         centerPanel.add(new JLabel("Project"));
         projectFilterComboBox = new JComboBox<>();
-        projectFilterComboBox.addActionListener(e -> applyProjectFilter());
+        projectFilterComboBox.addActionListener(e -> applyFilters());
         centerPanel.add(projectFilterComboBox);
+
+        centerPanel.add(new JLabel("Status"));
+        statusFilterComboBox = new JComboBox<>();
+        buildStatusFilter();  // 역할에 따라 항목 구성
+        statusFilterComboBox.addActionListener(e -> applyFilters());
+        centerPanel.add(statusFilterComboBox);
+
+        myIssuesCheckBox = new JCheckBox("My Issues");
+        myIssuesCheckBox.addActionListener(e -> applyFilters());
+        centerPanel.add(myIssuesCheckBox);
 
         JPanel rightPanel = new JPanel();
         rightPanel.add(reportBtn);
@@ -101,6 +115,43 @@ public class MainView extends JFrame {
         panel.add(centerPanel, BorderLayout.CENTER);
         panel.add(rightPanel, BorderLayout.EAST);
         return panel;
+    }
+
+    private void buildStatusFilter() {
+        statusFilterComboBox.removeAllItems();
+        statusFilterComboBox.addItem(StatusFilterItem.all()); // 항상 "All" 포함
+
+        if (currentUser.isAdmin()) {
+            // Admin: 전체 상태
+            for (Status s : Status.values()) {
+                statusFilterComboBox.addItem(StatusFilterItem.of(s));
+            }
+        } else if (currentUser.isPL()) {
+            // PL: 담당자 지정 / 닫기 대상 위주
+            for (Status s : new Status[]{
+                    Status.NEW, Status.ASSIGNED, Status.FIXED,
+                    Status.RESOLVED, Status.REOPENED, Status.CLOSED}) {
+                statusFilterComboBox.addItem(StatusFilterItem.of(s));
+            }
+            // PL 기본값: NEW
+            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(Status.NEW));
+        } else if (currentUser.isDev()) {
+            // Developer: 본인 관련 상태 위주
+            for (Status s : new Status[]{
+                    Status.ASSIGNED, Status.FIXED, Status.REOPENED}) {
+                statusFilterComboBox.addItem(StatusFilterItem.of(s));
+            }
+            // Dev 기본값: ASSIGNED
+            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(Status.ASSIGNED));
+        } else if (currentUser.isTester()) {
+            // Tester: 검증 / 등록 관련
+            for (Status s : new Status[]{
+                    Status.NEW, Status.FIXED, Status.RESOLVED, Status.REOPENED}) {
+                statusFilterComboBox.addItem(StatusFilterItem.of(s));
+            }
+            // Tester 기본값: FIXED
+            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(Status.FIXED));
+        }
     }
 
     private JPanel createTablePanel() {
@@ -194,30 +245,53 @@ public class MainView extends JFrame {
         projectFilterComboBox.setSelectedIndex(0);
     }
 
-    private void applyProjectFilter() {
-        if (tableSorter == null || projectFilterComboBox == null) {
-            return;
-        }
+    private void applyFilters() {
+        if (tableSorter == null) return;
 
-        ProjectFilterItem selectedItem = (ProjectFilterItem) projectFilterComboBox.getSelectedItem();
-        if (selectedItem == null || selectedItem.isAll()) {
+        ProjectFilterItem projectItem = (ProjectFilterItem) projectFilterComboBox.getSelectedItem();
+        StatusFilterItem  statusItem  = (StatusFilterItem)  statusFilterComboBox.getSelectedItem();
+
+        boolean allProjects = projectItem == null || projectItem.isAll();
+        boolean allStatuses = statusItem  == null || statusItem.isAll();
+        boolean myIssuesOnly = myIssuesCheckBox != null && myIssuesCheckBox.isSelected();
+
+
+        if (allProjects && allStatuses && !myIssuesOnly) {
             tableSorter.setRowFilter(null);
             return;
         }
 
-        int projectId = selectedItem.getProject().getProjectId();
         tableSorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
             @Override
             public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
-                Object id = entry.getValue(COL_PROJECT_ID);
-                if (id instanceof Number) {
-                    return ((Number) id).intValue() == projectId;
+                // Project
+                if (!allProjects) {
+                    int projectId = projectItem.getProject().getProjectId();
+                    Object id = entry.getValue(COL_PROJECT_ID);
+                    int rowProjectId = (id instanceof Number)
+                            ? ((Number) id).intValue()
+                            : Integer.parseInt(id.toString());
+                    if (rowProjectId != projectId) return false;
                 }
-                try {
-                    return Integer.parseInt(id.toString()) == projectId;
-                } catch (NumberFormatException e) {
-                    return false;
+
+                // Status
+                if (!allStatuses) {
+                    String rowStatus = String.valueOf(entry.getValue(COL_STATUS));
+                    if (!rowStatus.equals(statusItem.getStatus().name())) return false;
                 }
+
+                // My Issues (본인이 Reporter 또는 Assignee)
+                if (myIssuesOnly) {
+                    String reporter = String.valueOf(entry.getValue(COL_REPORTER));
+                    String assignee = String.valueOf(entry.getValue(COL_ASSIGNEE));
+                    String myLoginId = currentUser.getLoginId();
+                    
+                    if (!reporter.equals(myLoginId) && !assignee.equals(myLoginId)) {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         });
     }
@@ -255,7 +329,7 @@ public class MainView extends JFrame {
         loadProjects();
         loadIssues();
         refreshProjectFilter();
-        applyProjectFilter();
+        applyFilters();
     }
 
     public void open() {
@@ -288,6 +362,35 @@ public class MainView extends JFrame {
         @Override
         public String toString() {
             return isAll() ? "All Projects" : project.getName();
+        }
+    }
+
+    private static class StatusFilterItem {
+        private final Status status;
+
+        private StatusFilterItem(Status status) {
+            this.status = status;
+        }
+
+        private static StatusFilterItem all() {
+            return new StatusFilterItem(null);
+        }
+
+        private static StatusFilterItem of(Status status) {
+            return new StatusFilterItem(status);
+        }
+
+        private boolean isAll() {
+            return status == null;
+        }
+
+        private Status getStatus() {
+            return status;
+        }
+
+        @Override
+        public String toString() {
+            return status == null ? "All Status" : status.name();
         }
     }
 }

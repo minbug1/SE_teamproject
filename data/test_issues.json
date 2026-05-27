@@ -143,14 +143,21 @@
     "description": "df",
     "reportedDate": "2026-05-26T20:15:42.666898200",
     "reporterId": 2,
+    "assigneeId": 3,
     "priority": "MAJOR",
-    "status": "NEW",
+    "status": "ASSIGNED",
     "comments": [
       {
         "commentId": 1,
         "content": "df",
         "authorId": 2,
         "writtenDate": "2026-05-26T20:15:42.666898200"
+      },
+      {
+        "commentId": 2,
+        "content": "담당자 지정",
+        "authorId": 2,
+        "writtenDate": "2026-05-27T21:58:50.967140500"
       }
     ]
   }
