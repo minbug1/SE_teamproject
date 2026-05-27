@@ -114,6 +114,7 @@ public class IssueController {
 
         issue.setStatus(Status.FIXED);
         issue.setFixer(dev);
+        issue.setFixedDate(LocalDateTime.now());
 
         issueRepository.update(issue);
         
@@ -140,8 +141,10 @@ public class IssueController {
 
         if (isResolved) {
             issue.setStatus(Status.RESOLVED);
+            issue.setResolvedDate(LocalDateTime.now());
         } else {
             issue.setStatus(Status.REOPENED);
+            issue.incrementReopenCount();
         }
 
         addCommentIfPresent(issue, commentContent, tester);
@@ -168,6 +171,7 @@ public class IssueController {
         addCommentIfPresent(issue, commentContent, pl);
 
         issue.setStatus(Status.CLOSED);
+        issue.setClosedDate(LocalDateTime.now());
         
         issueRepository.update(issue);
 
@@ -195,6 +199,7 @@ public class IssueController {
 
         issue.setAssignee(assignee);
         issue.setStatus(Status.ASSIGNED);
+        issue.setAssignedDate(LocalDateTime.now());
 
         addCommentIfPresent(issue, commentContent, pl);
 

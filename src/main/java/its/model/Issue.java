@@ -13,6 +13,11 @@ public class Issue {
     private String description;
     private User reporter;
     private LocalDateTime reportedDate;
+    private LocalDateTime assignedDate;
+    private LocalDateTime fixedDate;
+    private LocalDateTime resolvedDate;
+    private LocalDateTime closedDate;
+    private int reopenCount;
     private User assignee;
     private User fixer;
     private Priority priority;
@@ -26,6 +31,7 @@ public class Issue {
         this.description = description;
         this.reporter = reporter;
         this.reportedDate = reportedDate;
+        this.reopenCount = 0;
         this.priority = Priority.MAJOR; 
         this.status = Status.NEW;
     }
@@ -56,7 +62,27 @@ public class Issue {
 
     public LocalDateTime getReportedDate() {
         return reportedDate;
-    }   
+    }  
+
+    public LocalDateTime getAssignedDate() {
+        return assignedDate;
+    }
+
+    public LocalDateTime getFixedDate() {
+        return fixedDate;
+    }
+
+    public LocalDateTime getResolvedDate() {
+        return resolvedDate;
+    }
+
+    public LocalDateTime getClosedDate() {
+        return closedDate;
+    }
+
+    public int getReopenCount() {
+        return reopenCount;
+    }
 
     public User getAssignee() {
         return assignee;
@@ -99,6 +125,26 @@ public class Issue {
         this.assignee = assignee;
     }
 
+    public void setAssignedDate(LocalDateTime assignedDate) {
+        this.assignedDate = assignedDate;
+    }
+
+    public void setFixedDate(LocalDateTime fixedDate) {
+        this.fixedDate = fixedDate;
+    }
+
+    public void setResolvedDate(LocalDateTime resolvedDate) {
+        this.resolvedDate = resolvedDate;
+    }
+
+    public void setClosedDate(LocalDateTime closedDate) {
+        this.closedDate = closedDate;
+    }
+
+    public void setReopenCount(int reopenCount) {
+        this.reopenCount = reopenCount;
+    }
+
     public void addComment(Comment comment) {
         comments.add(comment);
     }
@@ -108,6 +154,10 @@ public class Issue {
             this.comments = new ArrayList<>();
         }
         return new ArrayList<>(this.comments);
+    }
+
+    public void incrementReopenCount() {
+        this.reopenCount++;
     }
 
     // 여거 테스트용도
