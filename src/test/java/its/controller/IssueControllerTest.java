@@ -94,7 +94,6 @@ class IssueControllerTest {
         project.addMember(pl);
         project.addMember(dev);
         project.addMember(tester);
-        // outsider는 멤버 아님
     }
 
     // ── reportIssue ───────────────────────────────────────────────────────────
