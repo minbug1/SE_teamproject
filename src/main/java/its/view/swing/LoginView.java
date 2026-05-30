@@ -116,10 +116,10 @@ public class LoginView extends JFrame {
         errorLabel.setText(" ");
         dispose();
         if (user.isAdmin()) {
-            new AdminView(authController, projectController, issueController,
+            new AdminView(authController, projectController, issueController, userController,
                           user, projects, allUsers).setVisible(true);
         } else {
-            new MainView(issueController, projectController, user).setVisible(true);
+            new MainView(authController, issueController, projectController, userController, user).setVisible(true);
         }
     } catch (IllegalArgumentException | IllegalStateException e) {
         String msg = e.getMessage();

@@ -2,62 +2,1691 @@
   {
     "issueId": 1,
     "projectId": 1,
-    "title": "결제 완료 후 영수증 출력 에러",
-    "description": "IE 환경에서 영수증 팝업이 뜨지 않습니다.",
-    "reportedDate": "2026-05-23T19:25:24.591650700",
-    "reporterId": 4,
-    "assigneeId": 3,
-    "fixerId": 3,
+    "title": "Login Blank",
+    "description": "Login Blank occurs during login authentication. The session state is not handled correctly and redirect behavior becomes unstable.",
+    "reportedDate": "2026-05-20T16:18",
+    "reporterId": 10,
     "priority": "MAJOR",
-    "status": "CLOSED",
+    "status": "NEW",
     "comments": [
       {
         "commentId": 1,
-        "content": "빠른 확인이 필요합니다.",
-        "authorId": 4,
-        "writtenDate": "2026-05-23T19:25:24.592688500"
+        "content": "Auth problem reported with login, session, authentication.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T16:18"
       },
       {
         "commentId": 2,
-        "content": "확인해주세요.",
-        "authorId": 2,
-        "writtenDate": "2026-05-23T19:25:24.612904800"
-      },
-      {
-        "commentId": 3,
-        "content": "팝업 차단 우회 처리 완료.",
-        "authorId": 3,
-        "writtenDate": "2026-05-23T19:25:24.629434300"
-      },
-      {
-        "commentId": 4,
-        "content": "정상 작동 확인.",
-        "authorId": 4,
-        "writtenDate": "2026-05-23T19:25:24.643552200"
-      },
-      {
-        "commentId": 5,
-        "content": "이슈 닫습니다.",
-        "authorId": 2,
-        "writtenDate": "2026-05-23T19:25:24.659880"
+        "content": "Auth category note for login, session, authentication.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T16:23"
       }
     ]
   },
   {
     "issueId": 2,
     "projectId": 1,
-    "title": "dfdf",
-    "description": "dfdf",
-    "reportedDate": "2026-05-25T16:36:04.081870400",
-    "reporterId": 4,
+    "title": "Session Expire",
+    "description": "Session Expire occurs during login authentication. The session state is not handled correctly and redirect behavior becomes unstable.",
+    "reportedDate": "2026-05-20T16:31",
+    "reporterId": 11,
+    "assigneeId": 6,
+    "priority": "CRITICAL",
+    "status": "ASSIGNED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Auth problem reported with login, session, authentication.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T16:31"
+      },
+      {
+        "commentId": 2,
+        "content": "Auth category note for login, session, authentication.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T16:36"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Auth category words: login, session, authentication.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T16:51"
+      }
+    ]
+  },
+  {
+    "issueId": 3,
+    "projectId": 1,
+    "title": "Auth Redirect",
+    "description": "Auth Redirect occurs during login authentication. The session state is not handled correctly and redirect behavior becomes unstable.",
+    "reportedDate": "2026-05-20T16:44",
+    "reporterId": 21,
+    "assigneeId": 7,
+    "fixerId": 7,
+    "priority": "MAJOR",
+    "status": "FIXED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Auth problem reported with login, session, authentication.",
+        "authorId": 21,
+        "writtenDate": "2026-05-20T16:44"
+      },
+      {
+        "commentId": 2,
+        "content": "Auth category note for login, session, authentication.",
+        "authorId": 7,
+        "writtenDate": "2026-05-20T16:49"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Auth category words: login, session, authentication.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T17:04"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Auth logic related to login, session, authentication.",
+        "authorId": 7,
+        "writtenDate": "2026-05-20T18:14"
+      }
+    ]
+  },
+  {
+    "issueId": 4,
+    "projectId": 1,
+    "title": "Login Lock",
+    "description": "Login Lock occurs during login authentication. The session state is not handled correctly and redirect behavior becomes unstable.",
+    "reportedDate": "2026-05-20T16:57",
+    "reporterId": 22,
+    "assigneeId": 8,
+    "fixerId": 8,
+    "priority": "BLOCKER",
+    "status": "RESOLVED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Auth problem reported with login, session, authentication.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T16:57"
+      },
+      {
+        "commentId": 2,
+        "content": "Auth category note for login, session, authentication.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T17:02"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Auth category words: login, session, authentication.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T17:17"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Auth logic related to login, session, authentication.",
+        "authorId": 8,
+        "writtenDate": "2026-05-20T18:27"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified Auth behavior after fix.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T19:07"
+      }
+    ]
+  },
+  {
+    "issueId": 5,
+    "projectId": 1,
+    "title": "Session Restore",
+    "description": "Session Restore occurs during login authentication. The session state is not handled correctly and redirect behavior becomes unstable.",
+    "reportedDate": "2026-05-20T17:10",
+    "reporterId": 23,
+    "assigneeId": 9,
+    "fixerId": 9,
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Auth problem reported with login, session, authentication.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T17:10"
+      },
+      {
+        "commentId": 2,
+        "content": "Auth category note for login, session, authentication.",
+        "authorId": 9,
+        "writtenDate": "2026-05-20T17:15"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Auth category words: login, session, authentication.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T17:30"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Auth logic related to login, session, authentication.",
+        "authorId": 9,
+        "writtenDate": "2026-05-20T18:40"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified Auth behavior after fix.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T19:20"
+      },
+      {
+        "commentId": 6,
+        "content": "Closed Auth issue after verification.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T19:50"
+      }
+    ]
+  },
+  {
+    "issueId": 6,
+    "projectId": 1,
+    "title": "Account Approval",
+    "description": "Account Approval occurs in user account management. The role or profile record is not updated consistently for the user.",
+    "reportedDate": "2026-05-20T17:23",
+    "reporterId": 10,
     "priority": "MAJOR",
     "status": "NEW",
     "comments": [
       {
         "commentId": 1,
-        "content": "dfdf",
-        "authorId": 4,
-        "writtenDate": "2026-05-25T16:36:04.081870400"
+        "content": "User problem reported with user, account, role.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T17:23"
+      },
+      {
+        "commentId": 2,
+        "content": "User category note for user, account, role.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T17:28"
+      }
+    ]
+  },
+  {
+    "issueId": 7,
+    "projectId": 1,
+    "title": "Role Update",
+    "description": "Role Update occurs in user account management. The role or profile record is not updated consistently for the user.",
+    "reportedDate": "2026-05-20T17:36",
+    "reporterId": 11,
+    "assigneeId": 13,
+    "priority": "CRITICAL",
+    "status": "ASSIGNED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "User problem reported with user, account, role.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T17:36"
+      },
+      {
+        "commentId": 2,
+        "content": "User category note for user, account, role.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T17:41"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking User category words: user, account, role.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T17:56"
+      }
+    ]
+  },
+  {
+    "issueId": 8,
+    "projectId": 1,
+    "title": "User Duplicate",
+    "description": "User Duplicate occurs in user account management. The role or profile record is not updated consistently for the user.",
+    "reportedDate": "2026-05-20T17:49",
+    "reporterId": 21,
+    "assigneeId": 14,
+    "fixerId": 14,
+    "priority": "MAJOR",
+    "status": "FIXED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "User problem reported with user, account, role.",
+        "authorId": 21,
+        "writtenDate": "2026-05-20T17:49"
+      },
+      {
+        "commentId": 2,
+        "content": "User category note for user, account, role.",
+        "authorId": 14,
+        "writtenDate": "2026-05-20T17:54"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking User category words: user, account, role.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T18:09"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed User logic related to user, account, role.",
+        "authorId": 14,
+        "writtenDate": "2026-05-20T19:19"
+      }
+    ]
+  },
+  {
+    "issueId": 9,
+    "projectId": 1,
+    "title": "Profile Save",
+    "description": "Profile Save occurs in user account management. The role or profile record is not updated consistently for the user.",
+    "reportedDate": "2026-05-20T18:02",
+    "reporterId": 22,
+    "assigneeId": 15,
+    "fixerId": 15,
+    "priority": "MINOR",
+    "status": "RESOLVED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "User problem reported with user, account, role.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T18:02"
+      },
+      {
+        "commentId": 2,
+        "content": "User category note for user, account, role.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T18:07"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking User category words: user, account, role.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T18:22"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed User logic related to user, account, role.",
+        "authorId": 15,
+        "writtenDate": "2026-05-20T19:32"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified User behavior after fix.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T20:12"
+      }
+    ]
+  },
+  {
+    "issueId": 10,
+    "projectId": 1,
+    "title": "Account Disable",
+    "description": "Account Disable occurs in user account management. The role or profile record is not updated consistently for the user.",
+    "reportedDate": "2026-05-20T18:15",
+    "reporterId": 23,
+    "assigneeId": 16,
+    "fixerId": 16,
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "User problem reported with user, account, role.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T18:15"
+      },
+      {
+        "commentId": 2,
+        "content": "User category note for user, account, role.",
+        "authorId": 16,
+        "writtenDate": "2026-05-20T18:20"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking User category words: user, account, role.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T18:35"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed User logic related to user, account, role.",
+        "authorId": 16,
+        "writtenDate": "2026-05-20T19:45"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified User behavior after fix.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T20:25"
+      },
+      {
+        "commentId": 6,
+        "content": "Closed User issue after verification.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T20:55"
+      }
+    ]
+  },
+  {
+    "issueId": 11,
+    "projectId": 1,
+    "title": "Project Member",
+    "description": "Project Member occurs in project management. Project member permission and project setting data are not applied correctly.",
+    "reportedDate": "2026-05-20T18:28",
+    "reporterId": 10,
+    "priority": "MAJOR",
+    "status": "ASSIGNED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Project problem reported with project, member, permission.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T18:28"
+      },
+      {
+        "commentId": 2,
+        "content": "Project category note for project, member, permission.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T18:33"
+      }
+    ]
+  },
+  {
+    "issueId": 12,
+    "projectId": 1,
+    "title": "Project Permission",
+    "description": "Project Permission occurs in project management. Project member permission and project setting data are not applied correctly.",
+    "reportedDate": "2026-05-20T18:41",
+    "reporterId": 11,
+    "assigneeId": 19,
+    "priority": "CRITICAL",
+    "status": "ASSIGNED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Project problem reported with project, member, permission.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T18:41"
+      },
+      {
+        "commentId": 2,
+        "content": "Project category note for project, member, permission.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T18:46"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Project category words: project, member, permission.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T19:01"
+      }
+    ]
+  },
+  {
+    "issueId": 13,
+    "projectId": 1,
+    "title": "Project Setting",
+    "description": "Project Setting occurs in project management. Project member permission and project setting data are not applied correctly.",
+    "reportedDate": "2026-05-20T18:54",
+    "reporterId": 21,
+    "assigneeId": 20,
+    "fixerId": 20,
+    "priority": "MAJOR",
+    "status": "FIXED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Project problem reported with project, member, permission.",
+        "authorId": 21,
+        "writtenDate": "2026-05-20T18:54"
+      },
+      {
+        "commentId": 2,
+        "content": "Project category note for project, member, permission.",
+        "authorId": 20,
+        "writtenDate": "2026-05-20T18:59"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Project category words: project, member, permission.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T19:14"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Project logic related to project, member, permission.",
+        "authorId": 20,
+        "writtenDate": "2026-05-20T20:24"
+      }
+    ]
+  },
+  {
+    "issueId": 14,
+    "projectId": 1,
+    "title": "Member Remove",
+    "description": "Member Remove occurs in project management. Project member permission and project setting data are not applied correctly.",
+    "reportedDate": "2026-05-20T19:07",
+    "reporterId": 22,
+    "assigneeId": 6,
+    "fixerId": 6,
+    "priority": "MINOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Project problem reported with project, member, permission.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T19:07"
+      },
+      {
+        "commentId": 2,
+        "content": "Project category note for project, member, permission.",
+        "authorId": 6,
+        "writtenDate": "2026-05-20T19:12"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Project category words: project, member, permission.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T19:27"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Project logic related to project, member, permission.",
+        "authorId": 6,
+        "writtenDate": "2026-05-20T20:37"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified Project behavior after fix.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T21:17"
+      },
+      {
+        "commentId": 6,
+        "content": "Closed Project issue after verification.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T21:47"
+      }
+    ]
+  },
+  {
+    "issueId": 15,
+    "projectId": 1,
+    "title": "Project List",
+    "description": "Project List occurs in project management. Project member permission and project setting data are not applied correctly.",
+    "reportedDate": "2026-05-20T19:20",
+    "reporterId": 23,
+    "assigneeId": 7,
+    "fixerId": 7,
+    "priority": "MAJOR",
+    "status": "RESOLVED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Project problem reported with project, member, permission.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T19:20"
+      },
+      {
+        "commentId": 2,
+        "content": "Project category note for project, member, permission.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T19:25"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Project category words: project, member, permission.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T19:40"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Project logic related to project, member, permission.",
+        "authorId": 7,
+        "writtenDate": "2026-05-20T20:50"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified Project behavior after fix.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T21:30"
+      }
+    ]
+  },
+  {
+    "issueId": 16,
+    "projectId": 1,
+    "title": "Button Align",
+    "description": "Button Align occurs on the UI screen. The button, layout, and display behavior are inconsistent.",
+    "reportedDate": "2026-05-20T19:33",
+    "reporterId": 10,
+    "priority": "MINOR",
+    "status": "NEW",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "UI problem reported with screen, button, layout.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T19:33"
+      },
+      {
+        "commentId": 2,
+        "content": "UI category note for screen, button, layout.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T19:38"
+      }
+    ]
+  },
+  {
+    "issueId": 17,
+    "projectId": 1,
+    "title": "Screen Freeze",
+    "description": "Screen Freeze occurs on the UI screen. The button, layout, and display behavior are inconsistent.",
+    "reportedDate": "2026-05-20T19:46",
+    "reporterId": 11,
+    "assigneeId": 8,
+    "priority": "CRITICAL",
+    "status": "ASSIGNED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "UI problem reported with screen, button, layout.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T19:46"
+      },
+      {
+        "commentId": 2,
+        "content": "UI category note for screen, button, layout.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T19:51"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking UI category words: screen, button, layout.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T20:06"
+      }
+    ]
+  },
+  {
+    "issueId": 18,
+    "projectId": 1,
+    "title": "Layout Break",
+    "description": "Layout Break occurs on the UI screen. The button, layout, and display behavior are inconsistent.",
+    "reportedDate": "2026-05-20T19:59",
+    "reporterId": 21,
+    "assigneeId": 9,
+    "fixerId": 9,
+    "priority": "MAJOR",
+    "status": "FIXED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "UI problem reported with screen, button, layout.",
+        "authorId": 21,
+        "writtenDate": "2026-05-20T19:59"
+      },
+      {
+        "commentId": 2,
+        "content": "UI category note for screen, button, layout.",
+        "authorId": 9,
+        "writtenDate": "2026-05-20T20:04"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking UI category words: screen, button, layout.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T20:19"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed UI logic related to screen, button, layout.",
+        "authorId": 9,
+        "writtenDate": "2026-05-20T21:29"
+      }
+    ]
+  },
+  {
+    "issueId": 19,
+    "projectId": 1,
+    "title": "Display Refresh",
+    "description": "Display Refresh occurs on the UI screen. The button, layout, and display behavior are inconsistent.",
+    "reportedDate": "2026-05-20T20:12",
+    "reporterId": 22,
+    "assigneeId": 13,
+    "fixerId": 13,
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "UI problem reported with screen, button, layout.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T20:12"
+      },
+      {
+        "commentId": 2,
+        "content": "UI category note for screen, button, layout.",
+        "authorId": 13,
+        "writtenDate": "2026-05-20T20:17"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking UI category words: screen, button, layout.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T20:32"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed UI logic related to screen, button, layout.",
+        "authorId": 13,
+        "writtenDate": "2026-05-20T21:42"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified UI behavior after fix.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T22:22"
+      },
+      {
+        "commentId": 6,
+        "content": "Closed UI issue after verification.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T22:52"
+      }
+    ]
+  },
+  {
+    "issueId": 20,
+    "projectId": 1,
+    "title": "Button Click",
+    "description": "Button Click occurs on the UI screen. The button, layout, and display behavior are inconsistent.",
+    "reportedDate": "2026-05-20T20:25",
+    "reporterId": 23,
+    "assigneeId": 14,
+    "fixerId": 14,
+    "priority": "MINOR",
+    "status": "RESOLVED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "UI problem reported with screen, button, layout.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T20:25"
+      },
+      {
+        "commentId": 2,
+        "content": "UI category note for screen, button, layout.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T20:30"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking UI category words: screen, button, layout.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T20:45"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed UI logic related to screen, button, layout.",
+        "authorId": 14,
+        "writtenDate": "2026-05-20T21:55"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified UI behavior after fix.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T22:35"
+      }
+    ]
+  },
+  {
+    "issueId": 21,
+    "projectId": 1,
+    "title": "Database Save",
+    "description": "Database Save occurs during database processing. The save, load, and record handling logic is inconsistent.",
+    "reportedDate": "2026-05-20T20:38",
+    "reporterId": 10,
+    "priority": "CRITICAL",
+    "status": "NEW",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "DB problem reported with database, save, load.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T20:38"
+      },
+      {
+        "commentId": 2,
+        "content": "DB category note for database, save, load.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T20:43"
+      }
+    ]
+  },
+  {
+    "issueId": 22,
+    "projectId": 1,
+    "title": "Record Load",
+    "description": "Record Load occurs during database processing. The save, load, and record handling logic is inconsistent.",
+    "reportedDate": "2026-05-20T20:51",
+    "reporterId": 11,
+    "assigneeId": 15,
+    "priority": "MAJOR",
+    "status": "ASSIGNED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "DB problem reported with database, save, load.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T20:51"
+      },
+      {
+        "commentId": 2,
+        "content": "DB category note for database, save, load.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T20:56"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking DB category words: database, save, load.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T21:11"
+      }
+    ]
+  },
+  {
+    "issueId": 23,
+    "projectId": 1,
+    "title": "Database Sync",
+    "description": "Database Sync occurs during database processing. The save, load, and record handling logic is inconsistent.",
+    "reportedDate": "2026-05-20T21:04",
+    "reporterId": 21,
+    "assigneeId": 16,
+    "fixerId": 16,
+    "priority": "CRITICAL",
+    "status": "FIXED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "DB problem reported with database, save, load.",
+        "authorId": 21,
+        "writtenDate": "2026-05-20T21:04"
+      },
+      {
+        "commentId": 2,
+        "content": "DB category note for database, save, load.",
+        "authorId": 16,
+        "writtenDate": "2026-05-20T21:09"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking DB category words: database, save, load.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T21:24"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed DB logic related to database, save, load.",
+        "authorId": 16,
+        "writtenDate": "2026-05-20T22:34"
+      }
+    ]
+  },
+  {
+    "issueId": 24,
+    "projectId": 1,
+    "title": "Save Rollback",
+    "description": "Save Rollback occurs during database processing. The save, load, and record handling logic is inconsistent.",
+    "reportedDate": "2026-05-20T21:17",
+    "reporterId": 22,
+    "assigneeId": 19,
+    "fixerId": 19,
+    "priority": "BLOCKER",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "DB problem reported with database, save, load.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T21:17"
+      },
+      {
+        "commentId": 2,
+        "content": "DB category note for database, save, load.",
+        "authorId": 19,
+        "writtenDate": "2026-05-20T21:22"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking DB category words: database, save, load.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T21:37"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed DB logic related to database, save, load.",
+        "authorId": 19,
+        "writtenDate": "2026-05-20T22:47"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified DB behavior after fix.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T23:27"
+      },
+      {
+        "commentId": 6,
+        "content": "Closed DB issue after verification.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T23:57"
+      }
+    ]
+  },
+  {
+    "issueId": 25,
+    "projectId": 1,
+    "title": "Load Timeout",
+    "description": "Load Timeout occurs during database processing. The save, load, and record handling logic is inconsistent.",
+    "reportedDate": "2026-05-20T21:30",
+    "reporterId": 23,
+    "assigneeId": 20,
+    "fixerId": 20,
+    "priority": "MAJOR",
+    "status": "RESOLVED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "DB problem reported with database, save, load.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T21:30"
+      },
+      {
+        "commentId": 2,
+        "content": "DB category note for database, save, load.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T21:35"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking DB category words: database, save, load.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T21:50"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed DB logic related to database, save, load.",
+        "authorId": 20,
+        "writtenDate": "2026-05-20T23:00"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified DB behavior after fix.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T23:40"
+      }
+    ]
+  },
+  {
+    "issueId": 26,
+    "projectId": 1,
+    "title": "Keyword Search",
+    "description": "Keyword Search occurs in issue search. The filter, keyword, and result list do not match the expected search condition.",
+    "reportedDate": "2026-05-20T21:43",
+    "reporterId": 10,
+    "priority": "MAJOR",
+    "status": "NEW",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Search problem reported with search, filter, result.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T21:43"
+      },
+      {
+        "commentId": 2,
+        "content": "Search category note for search, filter, result.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T21:48"
+      }
+    ]
+  },
+  {
+    "issueId": 27,
+    "projectId": 1,
+    "title": "Priority Filter",
+    "description": "Priority Filter occurs in issue search. The filter, keyword, and result list do not match the expected search condition.",
+    "reportedDate": "2026-05-20T21:56",
+    "reporterId": 11,
+    "assigneeId": 6,
+    "priority": "CRITICAL",
+    "status": "ASSIGNED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Search problem reported with search, filter, result.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T21:56"
+      },
+      {
+        "commentId": 2,
+        "content": "Search category note for search, filter, result.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T22:01"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Search category words: search, filter, result.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T22:16"
+      }
+    ]
+  },
+  {
+    "issueId": 28,
+    "projectId": 1,
+    "title": "Result Sort",
+    "description": "Result Sort occurs in issue search. The filter, keyword, and result list do not match the expected search condition.",
+    "reportedDate": "2026-05-20T22:09",
+    "reporterId": 21,
+    "assigneeId": 7,
+    "fixerId": 7,
+    "priority": "MAJOR",
+    "status": "FIXED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Search problem reported with search, filter, result.",
+        "authorId": 21,
+        "writtenDate": "2026-05-20T22:09"
+      },
+      {
+        "commentId": 2,
+        "content": "Search category note for search, filter, result.",
+        "authorId": 7,
+        "writtenDate": "2026-05-20T22:14"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Search category words: search, filter, result.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T22:29"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Search logic related to search, filter, result.",
+        "authorId": 7,
+        "writtenDate": "2026-05-20T23:39"
+      }
+    ]
+  },
+  {
+    "issueId": 29,
+    "projectId": 1,
+    "title": "Search Empty",
+    "description": "Search Empty occurs in issue search. The filter, keyword, and result list do not match the expected search condition.",
+    "reportedDate": "2026-05-20T22:22",
+    "reporterId": 22,
+    "assigneeId": 8,
+    "fixerId": 8,
+    "priority": "MINOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Search problem reported with search, filter, result.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T22:22"
+      },
+      {
+        "commentId": 2,
+        "content": "Search category note for search, filter, result.",
+        "authorId": 8,
+        "writtenDate": "2026-05-20T22:27"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Search category words: search, filter, result.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T22:42"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Search logic related to search, filter, result.",
+        "authorId": 8,
+        "writtenDate": "2026-05-20T23:52"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified Search behavior after fix.",
+        "authorId": 22,
+        "writtenDate": "2026-05-21T00:32"
+      },
+      {
+        "commentId": 6,
+        "content": "Closed Search issue after verification.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T01:02"
+      }
+    ]
+  },
+  {
+    "issueId": 30,
+    "projectId": 1,
+    "title": "Filter Reset",
+    "description": "Filter Reset occurs in issue search. The filter, keyword, and result list do not match the expected search condition.",
+    "reportedDate": "2026-05-20T22:35",
+    "reporterId": 23,
+    "assigneeId": 9,
+    "fixerId": 9,
+    "priority": "MAJOR",
+    "status": "RESOLVED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Search problem reported with search, filter, result.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T22:35"
+      },
+      {
+        "commentId": 2,
+        "content": "Search category note for search, filter, result.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T22:40"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Search category words: search, filter, result.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T22:55"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Search logic related to search, filter, result.",
+        "authorId": 9,
+        "writtenDate": "2026-05-21T00:05"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified Search behavior after fix.",
+        "authorId": 23,
+        "writtenDate": "2026-05-21T00:45"
+      }
+    ]
+  },
+  {
+    "issueId": 31,
+    "projectId": 1,
+    "title": "Assign Delay",
+    "description": "Assign Delay occurs in issue workflow. Assign, status, resolve, and reopen handling do not follow the expected flow.",
+    "reportedDate": "2026-05-20T22:48",
+    "reporterId": 10,
+    "priority": "MAJOR",
+    "status": "NEW",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Workflow problem reported with assign, status, resolve.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T22:48"
+      },
+      {
+        "commentId": 2,
+        "content": "Workflow category note for assign, status, resolve.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T22:53"
+      }
+    ]
+  },
+  {
+    "issueId": 32,
+    "projectId": 1,
+    "title": "Status Fixed",
+    "description": "Status Fixed occurs in issue workflow. Assign, status, resolve, and reopen handling do not follow the expected flow.",
+    "reportedDate": "2026-05-20T23:01",
+    "reporterId": 11,
+    "assigneeId": 13,
+    "priority": "CRITICAL",
+    "status": "ASSIGNED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Workflow problem reported with assign, status, resolve.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T23:01"
+      },
+      {
+        "commentId": 2,
+        "content": "Workflow category note for assign, status, resolve.",
+        "authorId": 11,
+        "writtenDate": "2026-05-20T23:06"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Workflow category words: assign, status, resolve.",
+        "authorId": 3,
+        "writtenDate": "2026-05-20T23:21"
+      }
+    ]
+  },
+  {
+    "issueId": 33,
+    "projectId": 1,
+    "title": "Resolve Check",
+    "description": "Resolve Check occurs in issue workflow. Assign, status, resolve, and reopen handling do not follow the expected flow.",
+    "reportedDate": "2026-05-20T23:14",
+    "reporterId": 21,
+    "assigneeId": 14,
+    "fixerId": 14,
+    "priority": "MAJOR",
+    "status": "FIXED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Workflow problem reported with assign, status, resolve.",
+        "authorId": 21,
+        "writtenDate": "2026-05-20T23:14"
+      },
+      {
+        "commentId": 2,
+        "content": "Workflow category note for assign, status, resolve.",
+        "authorId": 14,
+        "writtenDate": "2026-05-20T23:19"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Workflow category words: assign, status, resolve.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T23:34"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Workflow logic related to assign, status, resolve.",
+        "authorId": 14,
+        "writtenDate": "2026-05-21T00:44"
+      }
+    ]
+  },
+  {
+    "issueId": 34,
+    "projectId": 1,
+    "title": "Reopen Flow",
+    "description": "Reopen Flow occurs in issue workflow. Assign, status, resolve, and reopen handling do not follow the expected flow.",
+    "reportedDate": "2026-05-20T23:27",
+    "reporterId": 22,
+    "assigneeId": 15,
+    "fixerId": 15,
+    "priority": "CRITICAL",
+    "status": "REOPENED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Workflow problem reported with assign, status, resolve.",
+        "authorId": 22,
+        "writtenDate": "2026-05-20T23:27"
+      },
+      {
+        "commentId": 2,
+        "content": "Workflow category note for assign, status, resolve.",
+        "authorId": 15,
+        "writtenDate": "2026-05-20T23:32"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Workflow category words: assign, status, resolve.",
+        "authorId": 2,
+        "writtenDate": "2026-05-20T23:47"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Workflow logic related to assign, status, resolve.",
+        "authorId": 15,
+        "writtenDate": "2026-05-21T00:57"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified Workflow behavior after fix.",
+        "authorId": 22,
+        "writtenDate": "2026-05-21T01:37"
+      },
+      {
+        "commentId": 6,
+        "content": "Reopened because Workflow problem still appears.",
+        "authorId": 22,
+        "writtenDate": "2026-05-21T02:17"
+      }
+    ]
+  },
+  {
+    "issueId": 35,
+    "projectId": 1,
+    "title": "Close Status",
+    "description": "Close Status occurs in issue workflow. Assign, status, resolve, and reopen handling do not follow the expected flow.",
+    "reportedDate": "2026-05-20T23:40",
+    "reporterId": 23,
+    "assigneeId": 16,
+    "fixerId": 16,
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Workflow problem reported with assign, status, resolve.",
+        "authorId": 23,
+        "writtenDate": "2026-05-20T23:40"
+      },
+      {
+        "commentId": 2,
+        "content": "Workflow category note for assign, status, resolve.",
+        "authorId": 16,
+        "writtenDate": "2026-05-20T23:45"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Workflow category words: assign, status, resolve.",
+        "authorId": 3,
+        "writtenDate": "2026-05-21T00:00"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Workflow logic related to assign, status, resolve.",
+        "authorId": 16,
+        "writtenDate": "2026-05-21T01:10"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified Workflow behavior after fix.",
+        "authorId": 23,
+        "writtenDate": "2026-05-21T01:50"
+      },
+      {
+        "commentId": 6,
+        "content": "Closed Workflow issue after verification.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T02:20"
+      }
+    ]
+  },
+  {
+    "issueId": 36,
+    "projectId": 1,
+    "title": "Login Token",
+    "description": "Login Token occurs during login authentication. The session state is not handled correctly and redirect behavior becomes unstable.",
+    "reportedDate": "2026-05-20T23:53",
+    "reporterId": 10,
+    "assigneeId": 19,
+    "fixerId": 19,
+    "priority": "CRITICAL",
+    "status": "REOPENED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Auth problem reported with login, session, authentication.",
+        "authorId": 10,
+        "writtenDate": "2026-05-20T23:53"
+      },
+      {
+        "commentId": 2,
+        "content": "Auth category note for login, session, authentication.",
+        "authorId": 19,
+        "writtenDate": "2026-05-20T23:58"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Auth category words: login, session, authentication.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T00:13"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Auth logic related to login, session, authentication.",
+        "authorId": 19,
+        "writtenDate": "2026-05-21T01:23"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified Auth behavior after fix.",
+        "authorId": 10,
+        "writtenDate": "2026-05-21T02:03"
+      },
+      {
+        "commentId": 6,
+        "content": "Reopened because Auth problem still appears.",
+        "authorId": 10,
+        "writtenDate": "2026-05-21T02:43"
+      }
+    ]
+  },
+  {
+    "issueId": 37,
+    "projectId": 1,
+    "title": "User History",
+    "description": "User History occurs in user account management. The role or profile record is not updated consistently for the user.",
+    "reportedDate": "2026-05-21T00:06",
+    "reporterId": 11,
+    "assigneeId": 20,
+    "fixerId": 20,
+    "priority": "MAJOR",
+    "status": "FIXED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "User problem reported with user, account, role.",
+        "authorId": 11,
+        "writtenDate": "2026-05-21T00:06"
+      },
+      {
+        "commentId": 2,
+        "content": "User category note for user, account, role.",
+        "authorId": 20,
+        "writtenDate": "2026-05-21T00:11"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking User category words: user, account, role.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T00:26"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed User logic related to user, account, role.",
+        "authorId": 20,
+        "writtenDate": "2026-05-21T01:36"
+      }
+    ]
+  },
+  {
+    "issueId": 38,
+    "projectId": 1,
+    "title": "Project Issue",
+    "description": "Project Issue occurs in project management. Project member permission and project setting data are not applied correctly.",
+    "reportedDate": "2026-05-21T00:19",
+    "reporterId": 21,
+    "assigneeId": 6,
+    "fixerId": 6,
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Project problem reported with project, member, permission.",
+        "authorId": 21,
+        "writtenDate": "2026-05-21T00:19"
+      },
+      {
+        "commentId": 2,
+        "content": "Project category note for project, member, permission.",
+        "authorId": 6,
+        "writtenDate": "2026-05-21T00:24"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking Project category words: project, member, permission.",
+        "authorId": 3,
+        "writtenDate": "2026-05-21T00:39"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed Project logic related to project, member, permission.",
+        "authorId": 6,
+        "writtenDate": "2026-05-21T01:49"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified Project behavior after fix.",
+        "authorId": 21,
+        "writtenDate": "2026-05-21T02:29"
+      },
+      {
+        "commentId": 6,
+        "content": "Closed Project issue after verification.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T02:59"
+      }
+    ]
+  },
+  {
+    "issueId": 39,
+    "projectId": 1,
+    "title": "UI Message",
+    "description": "UI Message occurs on the UI screen. The button, layout, and display behavior are inconsistent.",
+    "reportedDate": "2026-05-21T00:32",
+    "reporterId": 22,
+    "assigneeId": 7,
+    "fixerId": 7,
+    "priority": "MINOR",
+    "status": "FIXED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "UI problem reported with screen, button, layout.",
+        "authorId": 22,
+        "writtenDate": "2026-05-21T00:32"
+      },
+      {
+        "commentId": 2,
+        "content": "UI category note for screen, button, layout.",
+        "authorId": 7,
+        "writtenDate": "2026-05-21T00:37"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking UI category words: screen, button, layout.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T00:52"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed UI logic related to screen, button, layout.",
+        "authorId": 7,
+        "writtenDate": "2026-05-21T02:02"
+      }
+    ]
+  },
+  {
+    "issueId": 40,
+    "projectId": 1,
+    "title": "DB Export",
+    "description": "DB Export occurs during database processing. The save, load, and record handling logic is inconsistent.",
+    "reportedDate": "2026-05-21T00:45",
+    "reporterId": 23,
+    "assigneeId": 8,
+    "fixerId": 8,
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "DB problem reported with database, save, load.",
+        "authorId": 23,
+        "writtenDate": "2026-05-21T00:45"
+      },
+      {
+        "commentId": 2,
+        "content": "DB category note for database, save, load.",
+        "authorId": 8,
+        "writtenDate": "2026-05-21T00:50"
+      },
+      {
+        "commentId": 3,
+        "content": "Assigned after checking DB category words: database, save, load.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T01:05"
+      },
+      {
+        "commentId": 4,
+        "content": "Fixed DB logic related to database, save, load.",
+        "authorId": 8,
+        "writtenDate": "2026-05-21T02:15"
+      },
+      {
+        "commentId": 5,
+        "content": "Verified DB behavior after fix.",
+        "authorId": 23,
+        "writtenDate": "2026-05-21T02:55"
+      },
+      {
+        "commentId": 6,
+        "content": "Closed DB issue after verification.",
+        "authorId": 3,
+        "writtenDate": "2026-05-21T03:25"
+      }
+    ]
+  },
+  {
+    "issueId": 41,
+    "projectId": 1,
+    "title": "Login Timeout",
+    "description": "Login timeout occurs after authentication. The session expires too early and login redirect returns to the login screen.",
+    "reportedDate": "2026-05-21T10:10",
+    "reporterId": 22,
+    "assigneeId": 8,
+    "fixerId": 8,
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Login timeout happens after session authentication.",
+        "authorId": 22,
+        "writtenDate": "2026-05-21T10:10"
+      },
+      {
+        "commentId": 2,
+        "content": "Assigned to dev3 for login session check.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T10:25"
+      },
+      {
+        "commentId": 3,
+        "content": "Fixed session timeout and login redirect logic.",
+        "authorId": 8,
+        "writtenDate": "2026-05-21T11:40"
+      },
+      {
+        "commentId": 4,
+        "content": "Verified login session timeout behavior.",
+        "authorId": 22,
+        "writtenDate": "2026-05-21T12:10"
+      },
+      {
+        "commentId": 5,
+        "content": "Closed after authentication test.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T12:30"
+      }
+    ]
+  },
+  {
+    "issueId": 42,
+    "projectId": 1,
+    "title": "Database Load",
+    "description": "Database load fails when issue records are restored. Some saved records are missing after load and database recovery.",
+    "reportedDate": "2026-05-21T13:00",
+    "reporterId": 23,
+    "assigneeId": 9,
+    "fixerId": 9,
+    "priority": "CRITICAL",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Database load misses saved issue records.",
+        "authorId": 23,
+        "writtenDate": "2026-05-21T13:00"
+      },
+      {
+        "commentId": 2,
+        "content": "Assigned to dev4 for database save and load check.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T13:20"
+      },
+      {
+        "commentId": 3,
+        "content": "Fixed database record parsing during load.",
+        "authorId": 9,
+        "writtenDate": "2026-05-21T15:00"
+      },
+      {
+        "commentId": 4,
+        "content": "Verified database save and load with issue records.",
+        "authorId": 23,
+        "writtenDate": "2026-05-21T15:30"
+      },
+      {
+        "commentId": 5,
+        "content": "Closed after database recovery test.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T15:50"
+      }
+    ]
+  },
+  {
+    "issueId": 43,
+    "projectId": 1,
+    "title": "Assign Status",
+    "description": "Assign status is not updated correctly after developer assignment. The workflow status remains assigned even after resolve and close steps.",
+    "reportedDate": "2026-05-21T16:05",
+    "reporterId": 10,
+    "assigneeId": 13,
+    "fixerId": 13,
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Assign status remains incorrect during workflow.",
+        "authorId": 10,
+        "writtenDate": "2026-05-21T16:05"
+      },
+      {
+        "commentId": 2,
+        "content": "Assigned to dev5 for workflow status check.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T16:25"
+      },
+      {
+        "commentId": 3,
+        "content": "Fixed assign, resolve, and close status transition.",
+        "authorId": 13,
+        "writtenDate": "2026-05-21T17:30"
+      },
+      {
+        "commentId": 4,
+        "content": "Verified workflow status after assign and resolve.",
+        "authorId": 10,
+        "writtenDate": "2026-05-21T18:00"
+      },
+      {
+        "commentId": 5,
+        "content": "Closed after workflow status test.",
+        "authorId": 2,
+        "writtenDate": "2026-05-21T18:20"
+      }
+    ]
+  },
+  {
+    "issueId": 1,
+    "projectId": 2,
+    "title": "dffd",
+    "description": "sd",
+    "reportedDate": "2026-05-27T17:13:19.465411200",
+    "reporterId": 11,
+    "priority": "MAJOR",
+    "status": "NEW",
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "sd",
+        "authorId": 11,
+        "writtenDate": "2026-05-27T17:13:19.465411200"
       }
     ]
   }

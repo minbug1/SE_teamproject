@@ -14,6 +14,12 @@ public class Issue {
     private Priority priority;
     private IssueStatus status;
     private User reporter;
+    private LocalDateTime reportedDate;
+    private LocalDateTime assignedDate;
+    private LocalDateTime fixedDate;
+    private LocalDateTime resolvedDate;
+    private LocalDateTime closedDate;
+    private int reopenCount;
     private User assignee;
     private User fixer;
     private LocalDateTime reportedDate;
@@ -33,6 +39,7 @@ public class Issue {
         this.description = description;
         this.reporter = reporter;
         this.reportedDate = reportedDate;
+        this.reopenCount = 0;
         this.priority = Priority.MAJOR; 
         this.status = IssueStatus.NEW;
     }
@@ -79,6 +86,26 @@ public class Issue {
 
     public LocalDateTime getReportedDate() {
         return reportedDate;
+    }  
+
+    public LocalDateTime getAssignedDate() {
+        return assignedDate;
+    }
+
+    public LocalDateTime getFixedDate() {
+        return fixedDate;
+    }
+
+    public LocalDateTime getResolvedDate() {
+        return resolvedDate;
+    }
+
+    public LocalDateTime getClosedDate() {
+        return closedDate;
+    }
+
+    public int getReopenCount() {
+        return reopenCount;
     }
 
     public LocalDateTime getAssignedDate() {
@@ -146,6 +173,14 @@ public class Issue {
         this.fixedDate = fixedDate;
     }
 
+    public void setAssignedDate(LocalDateTime assignedDate) {
+        this.assignedDate = assignedDate;
+    }
+
+    public void setFixedDate(LocalDateTime fixedDate) {
+        this.fixedDate = fixedDate;
+    }
+
     public void setResolvedDate(LocalDateTime resolvedDate) {
         this.resolvedDate = resolvedDate;
     }
@@ -154,37 +189,12 @@ public class Issue {
         this.closedDate = closedDate;
     }
 
-    public void setReopenedDates(List<LocalDateTime> reopenedDates) {
-        if (reopenedDates == null) {
-            this.reopenedDates = new ArrayList<>();
-            return;
-        }
-
-        this.reopenedDates = new ArrayList<>(reopenedDates);
-    }
-
-    public void addReopenedDate(LocalDateTime reopenedDate) {
-        if (reopenedDate == null) {
-            return;
-        }
-
-        this.reopenedDates.add(reopenedDate);
-    }
-
     public void setReopenCount(int reopenCount) {
-        if (reopenCount < 0) {
-            throw new IllegalArgumentException("Reopen count must not be negative.");
-        }
-
         this.reopenCount = reopenCount;
     }
 
-    public void setCategoryId(int categoryId) {
-        if (categoryId < 0) {
-            throw new IllegalArgumentException("Category ID must not be negative.");
-        }
-
-        this.categoryId = categoryId;
+    public void addComment(Comment comment) {
+        comments.add(comment);
     }
 
     public List<Comment> getComments() {
@@ -192,6 +202,10 @@ public class Issue {
             this.comments = new ArrayList<>();
         }
         return new ArrayList<>(this.comments);
+    }
+
+    public void incrementReopenCount() {
+        this.reopenCount++;
     }
 
     // 여거 테스트용도

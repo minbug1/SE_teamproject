@@ -250,8 +250,12 @@ public class FileIssueRepository implements IssueRepository {
         private int projectId;
         private String title;
         private String description;
-        private String priority;
-        private String status;
+        private String reportedDate;
+        private String assignedDate;
+        private String fixedDate;
+        private String resolvedDate;
+        private String closedDate;
+        private int reopenCount;
         private Long reporterId;
         private Long assigneeId;
         private Long fixerId;
@@ -279,6 +283,11 @@ public class FileIssueRepository implements IssueRepository {
             Issue issue = new Issue(issueId, projectId, title, description, reporter, date);
             issue.setProjectId(projectId);
 
+            if (assignedDate != null) issue.setAssignedDate(LocalDateTime.parse(assignedDate));
+            if (fixedDate != null)    issue.setFixedDate(LocalDateTime.parse(fixedDate));
+            if (resolvedDate != null) issue.setResolvedDate(LocalDateTime.parse(resolvedDate));
+            if (closedDate != null)   issue.setClosedDate(LocalDateTime.parse(closedDate));
+            issue.setReopenCount(reopenCount);
             if (priority != null) issue.setPriority(Priority.valueOf(priority));
             if (status != null)   issue.setStatus(IssueStatus.valueOf(status));
 
@@ -339,8 +348,15 @@ public class FileIssueRepository implements IssueRepository {
             r.description = issue.getDescription();
             r.reportedDate = issue.getReportedDate() != null
                     ? issue.getReportedDate().toString() : null;
-            r.priority    = issue.getPriority()  != null ? issue.getPriority().name()  : null;
-            r.status      = issue.getStatus()    != null ? issue.getStatus().name()    : null;
+            r.assignedDate = issue.getAssignedDate() != null
+                    ? issue.getAssignedDate().toString() : null;
+            r.fixedDate    = issue.getFixedDate() != null
+                    ? issue.getFixedDate().toString() : null;
+            r.resolvedDate = issue.getResolvedDate() != null
+                    ? issue.getResolvedDate().toString() : null;
+            r.closedDate   = issue.getClosedDate() != null
+                    ? issue.getClosedDate().toString() : null;
+            r.reopenCount = issue.getReopenCount();
             r.reporterId  = issue.getReporter()  != null ? issue.getReporter().getUserId()  : null;
             r.assigneeId  = issue.getAssignee()  != null ? issue.getAssignee().getUserId()  : null;
             r.fixerId     = issue.getFixer()     != null ? issue.getFixer().getUserId()     : null;

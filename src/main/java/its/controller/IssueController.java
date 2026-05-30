@@ -47,12 +47,6 @@ public class IssueController {
 
     //Report Issue
     public Issue reportIssue(Project project, String title, String description, User reporter, Priority priority, String commentContent) {
-        
-        
-        // 기존 이슈 ID 목록
-        for (Issue i : issueRepository.findAll()) {
-            System.out.println("  기존 이슈 id=" + i.getIssueId() + " projectId=" + i.getProjectId());
-        }
 
         //user가 project 멤버인지
         validateMember(project, reporter);
@@ -123,6 +117,7 @@ public class IssueController {
 
         issue.setStatus(IssueStatus.FIXED);
         issue.setFixer(dev);
+        issue.setFixedDate(LocalDateTime.now());
 
         issueRepository.update(issue);
         
@@ -148,9 +143,11 @@ public class IssueController {
         }
 
         if (isResolved) {
-            issue.setStatus(IssueStatus.RESOLVED);
+            issue.setStatus(Status.RESOLVED);
+            issue.setResolvedDate(LocalDateTime.now());
         } else {
-            issue.setStatus(IssueStatus.REOPENED);
+            issue.setStatus(Status.REOPENED);
+            issue.incrementReopenCount();
         }
 
         addCommentIfPresent(issue, commentContent, tester);
@@ -176,7 +173,8 @@ public class IssueController {
 
         addCommentIfPresent(issue, commentContent, pl);
 
-        issue.setStatus(IssueStatus.CLOSED);
+        issue.setStatus(Status.CLOSED);
+        issue.setClosedDate(LocalDateTime.now());
         
         issueRepository.update(issue);
 
@@ -203,7 +201,8 @@ public class IssueController {
         }
 
         issue.setAssignee(assignee);
-        issue.setStatus(IssueStatus.ASSIGNED);
+        issue.setStatus(Status.ASSIGNED);
+        issue.setAssignedDate(LocalDateTime.now());
 
         addCommentIfPresent(issue, commentContent, pl);
 
@@ -286,6 +285,46 @@ public class IssueController {
         );
 
         issue.addComment(comment);
+    }
+
+    public Issue addComment(Project project, long issueId, String commentContent, User author) {
+        validateProject(project);
+        validateUser(author, "Author must not be null.");
+        validateMember(project, author);
+        validateIssueId(issueId);
+
+        if (commentContent == null || commentContent.trim().isEmpty()) {
+            throw new IllegalArgumentException("Comment must not be empty.");
+        }
+
+        Issue issue = getProjectIssueOrNull(project, issueId);
+        if (issue == null) {
+            throw new IllegalArgumentException("Issue not found.");
+        }
+
+        addCommentIfPresent(issue, commentContent, author);
+        issueRepository.update(issue);
+
+        return issue;
+    }
+
+    public void changePriority(Project project, long issueId, Priority priority, User user) {
+        validateProject(project);
+        validateUser(user, "User must not be null.");
+        validateMember(project, user);
+        validateIssueId(issueId);
+
+        if (priority == null) {
+            throw new IllegalArgumentException("Priority must not be null.");
+        }
+
+        Issue issue = getProjectIssueOrNull(project, issueId);
+        if (issue == null) {
+            throw new IllegalArgumentException("Issue not found.");
+        }
+
+        issue.setPriority(priority);
+        issueRepository.update(issue);
     }
 
     private void validateProject(Project project) {
@@ -395,6 +434,12 @@ public class IssueController {
                 "이슈 상태가 올바르지 않습니다. 현재 상태: " + issue.getStatus()
             );
         }
+    }
+
+    public Issue getIssue(Project project, long issueId) {
+        validateProject(project);
+        validateIssueId(issueId);
+        return getProjectIssueOrNull(project, issueId);
     }
 
 }

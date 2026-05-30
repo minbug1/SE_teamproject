@@ -3,6 +3,7 @@ package its.view.swing;
 import its.controller.AuthController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.UserController;
 import its.model.AccountStatus;
 import its.model.Project;
 import its.model.UserRole;
@@ -32,16 +33,16 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AdminView extends JFrame {
 
-    private static final String USERS_LABEL = "Users";
-
     private final AuthController authController;
     private final ProjectController projectController;
+    private final IssueController issueController;
+    private final UserController userController;
+    
     private final User adminUser;
     private final List<Project> projects;
     private final List<User> allUsers;
@@ -62,11 +63,14 @@ public class AdminView extends JFrame {
     public AdminView(AuthController authController,
                      ProjectController projectController,
                      IssueController issueController,
+                     UserController userController,
                      User adminUser,
                      List<Project> projects,
                      List<User> allUsers) {
         this.authController = authController;
         this.projectController = projectController;
+        this.issueController = issueController;
+        this.userController = userController;
         this.adminUser = adminUser;
         this.projects = projects;
         this.allUsers = allUsers;
@@ -88,8 +92,6 @@ public class AdminView extends JFrame {
         refreshProjectList();
         if (!projects.isEmpty()) {
             projectList.setSelectedIndex(0);
-        } else {
-            showUsers();
         }
     }
 
@@ -203,7 +205,7 @@ public class AdminView extends JFrame {
         memberPanel.add(new JScrollPane(memberTable), BorderLayout.CENTER);
 
         JPanel unassignedPanel = new JPanel(new BorderLayout());
-        unassignedPanel.setBorder(BorderFactory.createTitledBorder(USERS_LABEL));
+        unassignedPanel.setBorder(BorderFactory.createTitledBorder("Users"));
         unassignedPanel.add(new JScrollPane(unassignedTable), BorderLayout.CENTER);
 
         panel.add(memberPanel);
@@ -229,9 +231,7 @@ public class AdminView extends JFrame {
         if (index < projects.size()) {
             selectedProject = projects.get(index);
             refreshProjectPanel();
-        } else {
-            showUsers();
-        }
+        } 
     }
 
     private void refreshProjectList() {
@@ -241,7 +241,6 @@ public class AdminView extends JFrame {
         for (Project project : projects) {
             projectListModel.addElement(project.getName());
         }
-        projectListModel.addElement(USERS_LABEL);
 
         if (previousIndex >= 0 && previousIndex < projectListModel.size()) {
             projectList.setSelectedIndex(previousIndex);
@@ -269,16 +268,6 @@ public class AdminView extends JFrame {
             });
         }
 
-        refreshUserTable();
-        refreshingTables = false;
-    }
-
-    private void showUsers() {
-        selectedProject = null;
-        projectTitleLabel.setText(USERS_LABEL);
-        projectDescriptionLabel.setText("Pending users and project assignment.");
-        refreshingTables = true;
-        memberTableModel.setRowCount(0);
         refreshUserTable();
         refreshingTables = false;
     }
@@ -362,12 +351,7 @@ public class AdminView extends JFrame {
     }
 
     private void updateUserFromTable(User user, DefaultTableModel model, int row, int column) {
-            // 임시 디버그 — 어디서 호출되는지 추적
-        System.out.println("=== updateUserFromTable 호출 ===");
-        System.out.println("user: " + user.getLoginId());
-        System.out.println("column: " + column);
-        System.out.println("value: " + model.getValueAt(row, column));
-        new Exception("호출 스택").printStackTrace();
+        
         try {
             if (column == 1) {
                 UserRole role = toRole(model.getValueAt(row, column));
@@ -381,8 +365,6 @@ public class AdminView extends JFrame {
             refreshProjectList();
             if (selectedProject != null) {
                 refreshProjectPanel();
-            } else {
-                showUsers();
             }
         } catch (IllegalArgumentException ex) {
             showWarning(ex.getMessage());
@@ -489,8 +471,6 @@ public class AdminView extends JFrame {
         refreshProjectList();
         if (!projects.isEmpty()) {
             projectList.setSelectedIndex(0);
-        } else {
-            showUsers();
         }
     }
 
@@ -590,8 +570,6 @@ public class AdminView extends JFrame {
         refreshProjectList();
         if (selectedProject != null) {
             refreshProjectPanel();
-        } else {
-            showUsers();
         }
     }
 
@@ -599,7 +577,7 @@ public class AdminView extends JFrame {
         int result = JOptionPane.showConfirmDialog(this, "Logout?", "Logout", JOptionPane.YES_NO_OPTION);
         if (result == JOptionPane.YES_OPTION) {
             dispose();
-            new LoginView().setVisible(true);
+            new LoginView(authController, issueController, userController, projectController).setVisible(true);
         }
     }
 
