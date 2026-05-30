@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class IssueControllerTest {
 
-    // ── 인메모리 IssueRepository 스텁 ────────────────────────────────────────
+    // ?? ?몃찓紐⑤━ IssueRepository ?ㅽ뀅 ????????????????????????????????????????
     static class MemoryIssueRepository implements IssueRepository {
 
         private final List<Issue> issues = new ArrayList<>();
@@ -69,7 +69,7 @@ class IssueControllerTest {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // ?????????????????????????????????????????????????????????????????????????
 
     private MemoryIssueRepository issueRepository;
     private IssueController issueController;
@@ -85,10 +85,10 @@ class IssueControllerTest {
         issueRepository = new MemoryIssueRepository();
         issueController = new IssueController(issueRepository);
 
-        pl      = new User(1L, "pl",      "pw", AccountStatus.ACTIVE, Role.PL);
-        dev     = new User(2L, "dev",     "pw", AccountStatus.ACTIVE, Role.DEVELOPER);
-        tester  = new User(3L, "tester",  "pw", AccountStatus.ACTIVE, Role.TESTER);
-        outsider= new User(4L, "outside", "pw", AccountStatus.ACTIVE, Role.DEVELOPER);
+        pl      = new User(1L, "pl",      "pw", AccountStatus.ACTIVE, UserRole.PL);
+        dev     = new User(2L, "dev",     "pw", AccountStatus.ACTIVE, UserRole.DEVELOPER);
+        tester  = new User(3L, "tester",  "pw", AccountStatus.ACTIVE, UserRole.TESTER);
+        outsider= new User(4L, "outside", "pw", AccountStatus.ACTIVE, UserRole.DEVELOPER);
 
         project = new Project(1, "TestProject", "desc");
         project.addMember(pl);
@@ -96,7 +96,7 @@ class IssueControllerTest {
         project.addMember(tester);
     }
 
-    // ── reportIssue ───────────────────────────────────────────────────────────
+    // ?? reportIssue ???????????????????????????????????????????????????????????
 
     @Test
     void reportIssueShouldSucceedForProjectMember() {
@@ -105,7 +105,7 @@ class IssueControllerTest {
 
         assertNotNull(issue);
         assertEquals("Bug title", issue.getTitle());
-        assertEquals(Status.NEW, issue.getStatus());
+        assertEquals(IssueStatus.NEW, issue.getStatus());
         assertEquals(Priority.MAJOR, issue.getPriority());
         assertEquals(tester, issue.getReporter());
         assertEquals(project.getProjectId(), issue.getProjectId());
@@ -157,7 +157,7 @@ class IssueControllerTest {
                         null, "Title", "Desc", tester, Priority.MAJOR, ""));
     }
 
-    // ── assignIssue ───────────────────────────────────────────────────────────
+    // ?? assignIssue ???????????????????????????????????????????????????????????
 
     @Test
     void assignIssueShouldSucceedWhenPlAssignsDev() {
@@ -166,7 +166,7 @@ class IssueControllerTest {
         Issue assigned = issueController.assignIssue(project, issue.getIssueId(), dev, pl, "Assigned");
 
         assertNotNull(assigned);
-        assertEquals(Status.ASSIGNED, assigned.getStatus());
+        assertEquals(IssueStatus.ASSIGNED, assigned.getStatus());
         assertEquals(dev, assigned.getAssignee());
     }
 
@@ -188,12 +188,12 @@ class IssueControllerTest {
     void assignIssueShouldReturnNullWhenStatusIsNotNewOrReopened() {
         Issue issue = reportSampleIssue();
         issueController.assignIssue(project, issue.getIssueId(), dev, pl, "");
-        // 이미 ASSIGNED 상태에서 다시 시도
+        // ?대? ASSIGNED ?곹깭?먯꽌 ?ㅼ떆 ?쒕룄
         Issue result = issueController.assignIssue(project, issue.getIssueId(), dev, pl, "");
         assertNull(result);
     }
 
-    // ── fixIssue ──────────────────────────────────────────────────────────────
+    // ?? fixIssue ??????????????????????????????????????????????????????????????
 
     @Test
     void fixIssueShouldSucceedWhenAssignedDevFixes() {
@@ -202,7 +202,7 @@ class IssueControllerTest {
         Issue fixed = issueController.fixIssue(project, issue.getIssueId(), "Fixed it", dev);
 
         assertNotNull(fixed);
-        assertEquals(Status.FIXED, fixed.getStatus());
+        assertEquals(IssueStatus.FIXED, fixed.getStatus());
         assertEquals(dev, fixed.getFixer());
     }
 
@@ -210,7 +210,7 @@ class IssueControllerTest {
     void fixIssueShouldFailWhenDifferentDevTriesToFix() {
         Issue issue = reportAndAssign();
 
-        User anotherDev = new User(5L, "dev2", "pw", AccountStatus.ACTIVE, Role.DEVELOPER);
+        User anotherDev = new User(5L, "dev2", "pw", AccountStatus.ACTIVE, UserRole.DEVELOPER);
         project.addMember(anotherDev);
 
         assertThrows(SecurityException.class, () ->
@@ -219,23 +219,23 @@ class IssueControllerTest {
 
     @Test
     void fixIssueShouldThrowWhenStatusIsNotAssigned() {
-        Issue issue = reportSampleIssue(); // Status.NEW
+        Issue issue = reportSampleIssue(); // IssueStatus.NEW
 
         assertThrows(IllegalStateException.class, () ->
             issueController.fixIssue(project, issue.getIssueId(), "", dev));
     }
-    // ── verifyIssue ───────────────────────────────────────────────────────────
+    // ?? verifyIssue ???????????????????????????????????????????????????????????
 
     @Test
     void verifyIssueShouldResolveWhenTesterApproves() {
-        // tester가 reporter이어야 함
+        // tester媛 reporter?댁뼱????
         Issue issue = reportSampleIssueBy(tester);
         assignAndFix(issue);
 
         Issue verified = issueController.verifyIssue(project, issue.getIssueId(), "Looks good", tester, true);
 
         assertNotNull(verified);
-        assertEquals(Status.RESOLVED, verified.getStatus());
+        assertEquals(IssueStatus.RESOLVED, verified.getStatus());
     }
 
     @Test
@@ -246,7 +246,7 @@ class IssueControllerTest {
         Issue verified = issueController.verifyIssue(project, issue.getIssueId(), "Still broken", tester, false);
 
         assertNotNull(verified);
-        assertEquals(Status.REOPENED, verified.getStatus());
+        assertEquals(IssueStatus.REOPENED, verified.getStatus());
     }
 
     @Test
@@ -260,7 +260,7 @@ class IssueControllerTest {
 
     @Test
     void verifyIssueShouldFailWhenVerifierIsNotReporter() {
-        // pl이 reporter, tester가 verify 시도 → reporter가 아님
+        // pl??reporter, tester媛 verify ?쒕룄 ??reporter媛 ?꾨떂
         Issue issue = reportSampleIssueBy(pl);
         assignAndFix(issue);
 
@@ -270,12 +270,12 @@ class IssueControllerTest {
 
     @Test
     void verifyIssueShouldReturnNullWhenStatusIsNotFixed() {
-        Issue issue = reportSampleIssueBy(tester); // Status.NEW
+        Issue issue = reportSampleIssueBy(tester); // IssueStatus.NEW
         Issue result = issueController.verifyIssue(project, issue.getIssueId(), "", tester, true);
         assertNull(result);
     }
 
-    // ── closeIssue ────────────────────────────────────────────────────────────
+    // ?? closeIssue ????????????????????????????????????????????????????????????
 
     @Test
     void closeIssueShouldSucceedWhenPlClosesResolvedIssue() {
@@ -286,7 +286,7 @@ class IssueControllerTest {
         Issue closed = issueController.closeIssue(project, issue.getIssueId(), "Closing", pl);
 
         assertNotNull(closed);
-        assertEquals(Status.CLOSED, closed.getStatus());
+        assertEquals(IssueStatus.CLOSED, closed.getStatus());
     }
 
     @Test
@@ -301,12 +301,12 @@ class IssueControllerTest {
 
     @Test
     void closeIssueShouldReturnNullWhenStatusIsNotResolved() {
-        Issue issue = reportSampleIssue(); // Status.NEW
+        Issue issue = reportSampleIssue(); // IssueStatus.NEW
         Issue result = issueController.closeIssue(project, issue.getIssueId(), "", pl);
         assertNull(result);
     }
 
-    // ── deleteIssue ───────────────────────────────────────────────────────────
+    // ?? deleteIssue ???????????????????????????????????????????????????????????
 
     @Test
     void deleteIssueShouldRemoveIssueForMember() {
@@ -325,7 +325,7 @@ class IssueControllerTest {
                 issueController.deleteIssue(project, issue.getIssueId(), outsider));
     }
 
-    // ── addComment ────────────────────────────────────────────────────────────
+    // ?? addComment ????????????????????????????????????????????????????????????
 
     @Test
     void addCommentShouldSucceedForMember() {
@@ -353,7 +353,7 @@ class IssueControllerTest {
                 issueController.addComment(project, issue.getIssueId(), "comment", outsider));
     }
 
-    // ── getAllIssues ───────────────────────────────────────────────────────────
+    // ?? getAllIssues ???????????????????????????????????????????????????????????
 
     @Test
     void getAllIssuesShouldReturnAllIssues() {
@@ -363,7 +363,7 @@ class IssueControllerTest {
         assertEquals(2, issueController.getAllIssues().size());
     }
 
-    // ── 헬퍼 메서드 ───────────────────────────────────────────────────────────
+    // ?? ?ы띁 硫붿꽌?????????????????????????????????????????????????????????????
 
     private Issue reportSampleIssue() {
         return reportSampleIssueBy(tester);
@@ -377,7 +377,7 @@ class IssueControllerTest {
     private Issue reportAndAssign() {
         Issue issue = reportSampleIssue();
         issueController.assignIssue(project, issue.getIssueId(), dev, pl, "");
-        // repository에서 최신 상태 가져오기
+        // repository?먯꽌 理쒖떊 ?곹깭 媛?몄삤湲?
         return issueRepository.findByProjectIdAndIssueId(project.getProjectId(), (int) issue.getIssueId());
     }
 

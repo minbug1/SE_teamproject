@@ -116,7 +116,7 @@ class AuthControllerTest {
 
         userRepository.save(user);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(IllegalStateException.class, () -> {
             authController.login("pendingUser", "1234");
         });
     }
@@ -133,7 +133,7 @@ class AuthControllerTest {
 
         userRepository.save(user);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(IllegalStateException.class, () -> {
             authController.login("disabledUser", "1234");
         });
     }

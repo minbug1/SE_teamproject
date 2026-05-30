@@ -11,8 +11,8 @@ import java.util.Objects;
 /**
  * Test-only in-memory implementation of UserRepository.
  *
- * FileUserRepository를 테스트에 직접 쓰면 users.json이 계속 바뀌므로,
- * Controller 단위 테스트에서는 MemoryUserRepository를 사용한다.
+ * FileUserRepository�??�스?�에 직접 ?�면 users.json??계속 바뀌�?�?
+ * Controller ?�위 ?�스?�에?�는 MemoryUserRepository�??�용?�다.
  */
 public class MemoryUserRepository implements UserRepository {
 
@@ -118,7 +118,7 @@ public class MemoryUserRepository implements UserRepository {
     @Override
     public List<User> findByAccountStatus(AccountStatus accountStatus) {
         if (accountStatus == null) {
-            throw new IllegalArgumentException("Account status must not be null.");
+            throw new IllegalArgumentException("Account IssueStatus must not be null.");
         }
 
         List<User> result = new ArrayList<>();
@@ -133,15 +133,15 @@ public class MemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> findByRole(UserRole role) {
-        if (role == null) {
-            throw new IllegalArgumentException("Role must not be null.");
+    public List<User> findByRole(UserRole UserRole) {
+        if (UserRole == null) {
+            throw new IllegalArgumentException("UserRole must not be null.");
         }
 
         List<User> result = new ArrayList<>();
 
         for (User user : users) {
-            if (user.getRole() == role) {
+            if (user.getRole() == UserRole) {
                 result.add(user);
             }
         }
@@ -190,11 +190,11 @@ public class MemoryUserRepository implements UserRepository {
         }
 
         if (user.getAccountStatus() == null) {
-            throw new IllegalArgumentException("Account status must not be null.");
+            throw new IllegalArgumentException("Account IssueStatus must not be null.");
         }
 
         if (user.getRole() == null) {
-            throw new IllegalArgumentException("Role must not be null.");
+            throw new IllegalArgumentException("UserRole must not be null.");
         }
     }
 }

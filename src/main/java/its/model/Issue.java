@@ -14,12 +14,6 @@ public class Issue {
     private Priority priority;
     private IssueStatus status;
     private User reporter;
-    private LocalDateTime reportedDate;
-    private LocalDateTime assignedDate;
-    private LocalDateTime fixedDate;
-    private LocalDateTime resolvedDate;
-    private LocalDateTime closedDate;
-    private int reopenCount;
     private User assignee;
     private User fixer;
     private LocalDateTime reportedDate;
@@ -104,26 +98,6 @@ public class Issue {
         return closedDate;
     }
 
-    public int getReopenCount() {
-        return reopenCount;
-    }
-
-    public LocalDateTime getAssignedDate() {
-        return assignedDate;
-    }
-
-    public LocalDateTime getFixedDate() {
-        return fixedDate;
-    }
-
-    public LocalDateTime getResolvedDate() {
-        return resolvedDate;
-    }
-
-    public LocalDateTime getClosedDate() {
-        return closedDate;
-    }
-
     public List<LocalDateTime> getReopenedDates() {
         return new ArrayList<>(reopenedDates);
     }
@@ -131,6 +105,7 @@ public class Issue {
     public int getReopenCount() {
         return reopenCount;
     }
+
 
     public int getCategoryId() {
         return categoryId;
@@ -173,14 +148,6 @@ public class Issue {
         this.fixedDate = fixedDate;
     }
 
-    public void setAssignedDate(LocalDateTime assignedDate) {
-        this.assignedDate = assignedDate;
-    }
-
-    public void setFixedDate(LocalDateTime fixedDate) {
-        this.fixedDate = fixedDate;
-    }
-
     public void setResolvedDate(LocalDateTime resolvedDate) {
         this.resolvedDate = resolvedDate;
     }
@@ -193,8 +160,12 @@ public class Issue {
         this.reopenCount = reopenCount;
     }
 
-    public void addComment(Comment comment) {
-        comments.add(comment);
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public void setReopenedDates(List<LocalDateTime> reopenedDates) {
+        this.reopenedDates = reopenedDates;
     }
 
     public List<Comment> getComments() {

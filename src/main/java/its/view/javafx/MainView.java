@@ -7,7 +7,7 @@ import its.controller.UserController;
 import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
-import its.model.Status;
+import its.model.IssueStatus;
 import its.model.User;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -219,7 +219,7 @@ public class MainView {
         final long issueId;
         final String title;
         final Priority priority;
-        final Status status;
+        final IssueStatus status;
         final String reporter;
         final String assignee;
         final Project project;

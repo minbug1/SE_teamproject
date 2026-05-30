@@ -1,7 +1,7 @@
 package its.view.javafx;
 
 import its.model.Priority;
-import its.model.Status;
+import its.model.IssueStatus;
 import its.model.User;
 import javafx.geometry.Side;
 import javafx.scene.control.*;
@@ -36,7 +36,7 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
 
     private void showActionMenu() {
         MainView.IssueRow row = currentRow();
-        Status status = row.status;
+        IssueStatus status = row.status;
         ContextMenu menu = new ContextMenu();
 
         addItem(menu, "상세 보기",  () -> showIssueDetail(row));
@@ -44,27 +44,27 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
 
         if (currentUser != null && currentUser.isAdmin()) {
             addItem(menu, "이슈 삭제", () -> deleteIssue(row));
-            if (status != null && status != Status.NEW)
+            if (status != null && status != IssueStatus.NEW)
                 addItem(menu, "담당자 강제 변경", () -> changeAssignee(row));
             addItem(menu, "우선순위 변경", () -> changePriority(row));
         }
 
         if (currentUser != null && currentUser.isPL()) {
-            if (status == Status.NEW)
+            if (status == IssueStatus.NEW)
                 addItem(menu, "담당자 지정", () -> changeAssignee(row));
             addItem(menu, "우선순위 변경", () -> changePriority(row));
-            if (status == Status.RESOLVED)
-                addItem(menu, "이슈 닫기", () -> updateStatus(row, Status.CLOSED));
+            if (status == IssueStatus.RESOLVED)
+                addItem(menu, "이슈 닫기", () -> updateStatus(row, IssueStatus.CLOSED));
         }
 
         if (currentUser != null && currentUser.isDev()
-                && status == Status.ASSIGNED && isCurrentUser(row.assignee))
-            addItem(menu, "수정 완료", () -> updateStatus(row, Status.FIXED));
+                && status == IssueStatus.ASSIGNED && isCurrentUser(row.assignee))
+            addItem(menu, "수정 완료", () -> updateStatus(row, IssueStatus.FIXED));
 
         if (currentUser != null && currentUser.isTester()
-                && status == Status.FIXED && isCurrentUser(row.reporter)) {
-            addItem(menu, "검증 통과", () -> updateStatus(row, Status.RESOLVED));
-            addItem(menu, "재오픈",    () -> updateStatus(row, Status.REOPENED));
+                && status == IssueStatus.FIXED && isCurrentUser(row.reporter)) {
+            addItem(menu, "검증 통과", () -> updateStatus(row, IssueStatus.RESOLVED));
+            addItem(menu, "재오픈",    () -> updateStatus(row, IssueStatus.REOPENED));
         }
 
         menu.show(button, Side.BOTTOM, 0, 0);
@@ -139,7 +139,7 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
         });
     }
 
-    private void updateStatus(MainView.IssueRow row, Status status) {
+    private void updateStatus(MainView.IssueRow row, IssueStatus status) {
         // TODO: IssueController의 해당 메서드 호출 (assignIssue, fixIssue, verifyIssue, closeIssue)
         if (refreshCallback != null) refreshCallback.run();
     }

@@ -22,8 +22,8 @@ import its.controller.IssueController;
 import its.controller.ProjectController;
 import its.controller.UserController;
 import its.model.Issue;
+import its.model.IssueStatus;
 import its.model.Project;
-import its.model.Status;
 import its.model.User;
 
 public class MainView extends JFrame {
@@ -123,34 +123,34 @@ public class MainView extends JFrame {
 
         if (currentUser.isAdmin()) {
             // Admin: 전체 상태
-            for (Status s : Status.values()) {
+            for (IssueStatus s : IssueStatus.values()) {
                 statusFilterComboBox.addItem(StatusFilterItem.of(s));
             }
         } else if (currentUser.isPL()) {
             // PL: 담당자 지정 / 닫기 대상 위주
-            for (Status s : new Status[]{
-                    Status.NEW, Status.ASSIGNED, Status.FIXED,
-                    Status.RESOLVED, Status.REOPENED, Status.CLOSED}) {
+            for (IssueStatus s : new IssueStatus[]{
+                    IssueStatus.NEW, IssueStatus.ASSIGNED, IssueStatus.FIXED,
+                    IssueStatus.RESOLVED, IssueStatus.REOPENED, IssueStatus.CLOSED}) {
                 statusFilterComboBox.addItem(StatusFilterItem.of(s));
             }
             // PL 기본값: NEW
-            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(Status.NEW));
+            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(IssueStatus.NEW));
         } else if (currentUser.isDev()) {
             // Developer: 본인 관련 상태 위주
-            for (Status s : new Status[]{
-                    Status.ASSIGNED, Status.FIXED, Status.REOPENED}) {
+            for (IssueStatus s : new IssueStatus[]{
+                    IssueStatus.ASSIGNED, IssueStatus.FIXED, IssueStatus.REOPENED}) {
                 statusFilterComboBox.addItem(StatusFilterItem.of(s));
             }
             // Dev 기본값: ASSIGNED
-            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(Status.ASSIGNED));
+            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(IssueStatus.ASSIGNED));
         } else if (currentUser.isTester()) {
             // Tester: 검증 / 등록 관련
-            for (Status s : new Status[]{
-                    Status.NEW, Status.FIXED, Status.RESOLVED, Status.REOPENED}) {
+            for (IssueStatus s : new IssueStatus[]{
+                    IssueStatus.NEW, IssueStatus.FIXED, IssueStatus.RESOLVED, IssueStatus.REOPENED}) {
                 statusFilterComboBox.addItem(StatusFilterItem.of(s));
             }
             // Tester 기본값: FIXED
-            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(Status.FIXED));
+            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(IssueStatus.FIXED));
         }
     }
 
@@ -366,9 +366,9 @@ public class MainView extends JFrame {
     }
 
     private static class StatusFilterItem {
-        private final Status status;
+        private final IssueStatus status;
 
-        private StatusFilterItem(Status status) {
+        private StatusFilterItem(IssueStatus status) {
             this.status = status;
         }
 
@@ -376,7 +376,7 @@ public class MainView extends JFrame {
             return new StatusFilterItem(null);
         }
 
-        private static StatusFilterItem of(Status status) {
+        private static StatusFilterItem of(IssueStatus status) {
             return new StatusFilterItem(status);
         }
 
@@ -384,7 +384,7 @@ public class MainView extends JFrame {
             return status == null;
         }
 
-        private Status getStatus() {
+        private IssueStatus getStatus() {
             return status;
         }
 

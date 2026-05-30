@@ -6,8 +6,8 @@ import its.controller.ProjectController;
 import its.controller.UserController;
 import its.model.AccountStatus;
 import its.model.Project;
-import its.model.Role;
 import its.model.User;
+import its.model.UserRole;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -179,16 +179,16 @@ public class AdminView {
         loginIdCol.setEditable(false);
         loginIdCol.setPrefWidth(150);
 
-        TableColumn<UserRow, Role> roleCol = new TableColumn<>("Role");
+        TableColumn<UserRow, UserRole> roleCol = new TableColumn<>("Role");
         roleCol.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().user.getRole()));
-        roleCol.setCellFactory(ComboBoxTableCell.forTableColumn(Role.values()));
+        roleCol.setCellFactory(ComboBoxTableCell.forTableColumn(UserRole.values()));
         roleCol.setPrefWidth(120);
         roleCol.setOnEditCommit(event -> {
             if (refreshing) return;
             UserRow row = event.getRowValue();
             try {
                 authController.changeRole(adminUser, row.user.getUserId(), event.getNewValue());
-                row.user.changeRole(event.getNewValue());
+                row.user.setRole(event.getNewValue());
                 refreshAfterUpdate();
             } catch (Exception ex) {
                 showWarning(ex.getMessage());
@@ -205,7 +205,7 @@ public class AdminView {
             UserRow row = event.getRowValue();
             try {
                 authController.changeAccountStatus(adminUser, row.user.getUserId(), event.getNewValue());
-                row.user.changeAccountStatus(event.getNewValue());
+                row.user.setAccountStatus(event.getNewValue());
                 refreshAfterUpdate();
             } catch (Exception ex) {
                 showWarning(ex.getMessage());

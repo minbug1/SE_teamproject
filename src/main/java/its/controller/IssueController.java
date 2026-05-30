@@ -143,10 +143,10 @@ public class IssueController {
         }
 
         if (isResolved) {
-            issue.setStatus(Status.RESOLVED);
+            issue.setStatus(IssueStatus.RESOLVED);
             issue.setResolvedDate(LocalDateTime.now());
         } else {
-            issue.setStatus(Status.REOPENED);
+            issue.setStatus(IssueStatus.REOPENED);
             issue.incrementReopenCount();
         }
 
@@ -173,7 +173,7 @@ public class IssueController {
 
         addCommentIfPresent(issue, commentContent, pl);
 
-        issue.setStatus(Status.CLOSED);
+        issue.setStatus(IssueStatus.CLOSED);
         issue.setClosedDate(LocalDateTime.now());
         
         issueRepository.update(issue);
@@ -201,7 +201,7 @@ public class IssueController {
         }
 
         issue.setAssignee(assignee);
-        issue.setStatus(Status.ASSIGNED);
+        issue.setStatus(IssueStatus.ASSIGNED);
         issue.setAssignedDate(LocalDateTime.now());
 
         addCommentIfPresent(issue, commentContent, pl);

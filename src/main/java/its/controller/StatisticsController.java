@@ -3,7 +3,7 @@ package its.controller;
 import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
-import its.model.Status;
+import its.model.IssueStatus;
 import its.model.User;
 import its.repository.IssueRepository;
 
@@ -78,7 +78,7 @@ public class StatisticsController {
         validateProjectId(projectId);
  
         Map<User, Long> result = new LinkedHashMap<>();
-        Set<Status> resolvedStatuses = EnumSet.of(Status.FIXED, Status.RESOLVED, Status.CLOSED);
+        Set<IssueStatus> resolvedStatuses = EnumSet.of(IssueStatus.FIXED, IssueStatus.RESOLVED, IssueStatus.CLOSED);
  
         for (Issue issue : getProjectIssues(projectId)) {
             if (issue.getFixer() != null && resolvedStatuses.contains(issue.getStatus())) {
