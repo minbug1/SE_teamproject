@@ -1,8 +1,10 @@
 package its.view.javafx;
 
 import its.controller.AuthController;
+import its.controller.CategoryController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.StatisticsController;
 import its.controller.UserController;
 import its.model.AccountStatus;
 import its.model.Project;
@@ -31,6 +33,8 @@ public class AdminView {
     private final ProjectController projectController;
     private final IssueController issueController;
     private final UserController userController;
+    private final StatisticsController statisticsController;
+    private final CategoryController categoryController;
     private final User adminUser;
     private final List<Project> projects;
     private final List<User> allUsers;
@@ -49,11 +53,14 @@ public class AdminView {
 
     public AdminView(AuthController authController, ProjectController projectController,
                      IssueController issueController, UserController userController,
+                     StatisticsController statisticsController, CategoryController categoryController,
                      User adminUser, List<Project> projects, List<User> allUsers) {
         this.authController = authController;
         this.projectController = projectController;
         this.issueController = issueController;
         this.userController = userController;
+        this.statisticsController = statisticsController;
+        this.categoryController = categoryController;
         this.adminUser = adminUser;
         this.projects = projects;
         this.allUsers = allUsers;
@@ -447,7 +454,7 @@ public class AdminView {
         confirm.initOwner(stage);
         confirm.showAndWait().ifPresent(bt -> {
             if (bt == ButtonType.YES) new LoginView(authController, issueController,
-                        userController, projectController).show(stage);
+                        userController, projectController, statisticsController, categoryController).show(stage);
         });
     }
 

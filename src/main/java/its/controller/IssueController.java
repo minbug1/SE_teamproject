@@ -45,6 +45,10 @@ public class IssueController {
         return issueRepository.findAll();
     }
 
+    public IssueRepository getIssueRepository() {
+        return issueRepository;
+    }
+
     //Report Issue
     public Issue reportIssue(Project project, String title, String description, User reporter, Priority priority, String commentContent) {
 

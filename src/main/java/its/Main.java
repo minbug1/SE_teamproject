@@ -4,9 +4,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import its.controller.AuthController;
+import its.controller.CategoryController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.StatisticsController;
 import its.controller.UserController;
+import its.repository.CategoryRepository;
+import its.repository.FileCategoryRepository;
 import its.repository.FileIssueRepository;
 import its.repository.FileProjectRepository;
 import its.repository.FileUserRepository;
@@ -41,13 +45,17 @@ public class Main {
             UserRepository userRepository = new FileUserRepository(USER_FILE);
             IssueRepository issueRepository = new FileIssueRepository(ISSUE_FILE, userRepository);
             ProjectRepository projectRepository = new FileProjectRepository(PROJECT_FILE, userRepository, issueRepository);
+            CategoryRepository categoryRepository = new FileCategoryRepository(issueRepository);
 
             IssueController issueController = new IssueController(issueRepository, projectRepository);
             AuthController authController = new AuthController(userRepository);
             UserController userController = new UserController(userRepository);
             ProjectController projectController = new ProjectController(projectRepository);
+            StatisticsController statisticsController = new StatisticsController(issueRepository);
+            CategoryController categoryController = new CategoryController(issueRepository, categoryRepository);
 
-            new LoginView(authController, issueController, userController, projectController).setVisible(true);
+            new LoginView(authController, issueController, userController, projectController,
+                    statisticsController, categoryController).setVisible(true);
         });
     }
 }

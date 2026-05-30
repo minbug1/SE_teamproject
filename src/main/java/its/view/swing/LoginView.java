@@ -16,9 +16,12 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import its.controller.AuthController;
+import its.controller.CategoryController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.StatisticsController;
 import its.controller.UserController;
+import its.repository.FileCategoryRepository;
 import its.model.Project;
 import its.model.User;
 
@@ -28,20 +31,31 @@ public class LoginView extends JFrame {
     private final IssueController issueController;
     private final ProjectController projectController;
     private final UserController userController;
+    private final StatisticsController statisticsController;
+    private final CategoryController categoryController;
 
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel errorLabel;
 
     public LoginView() {
-        this(new AuthController(), new IssueController(), new UserController(), new ProjectController());
+        this(new AuthController(), new IssueController(), new UserController(), new ProjectController(), null, null);
     }
 
-    public LoginView(AuthController authController, IssueController issueController, UserController userController, ProjectController projectController) {
+    public LoginView(AuthController authController, IssueController issueController,
+                     UserController userController, ProjectController projectController,
+                     StatisticsController statisticsController, CategoryController categoryController) {
         this.authController = authController;
         this.issueController = issueController;
         this.userController = userController;
         this.projectController = projectController;
+        this.statisticsController = statisticsController != null
+                ? statisticsController
+                : new StatisticsController(issueController.getIssueRepository());
+        this.categoryController = categoryController != null
+                ? categoryController
+                : new CategoryController(issueController.getIssueRepository(),
+                        new FileCategoryRepository(issueController.getIssueRepository()));
         initUI();
     }
 
@@ -117,9 +131,10 @@ public class LoginView extends JFrame {
         dispose();
         if (user.isAdmin()) {
             new AdminView(authController, projectController, issueController, userController,
-                          user, projects, allUsers).setVisible(true);
+                          statisticsController, categoryController, user, projects, allUsers).setVisible(true);
         } else {
-            new MainView(authController, issueController, projectController, userController, user).setVisible(true);
+            new MainView(authController, issueController, projectController, userController,
+                    statisticsController, categoryController, user).setVisible(true);
         }
     } catch (IllegalArgumentException | IllegalStateException e) {
         String msg = e.getMessage();

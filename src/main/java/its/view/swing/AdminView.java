@@ -1,8 +1,10 @@
 package its.view.swing;
 
 import its.controller.AuthController;
+import its.controller.CategoryController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.StatisticsController;
 import its.controller.UserController;
 import its.model.AccountStatus;
 import its.model.Project;
@@ -42,6 +44,8 @@ public class AdminView extends JFrame {
     private final ProjectController projectController;
     private final IssueController issueController;
     private final UserController userController;
+    private final StatisticsController statisticsController;
+    private final CategoryController categoryController;
     
     private final User adminUser;
     private final List<Project> projects;
@@ -64,6 +68,8 @@ public class AdminView extends JFrame {
                      ProjectController projectController,
                      IssueController issueController,
                      UserController userController,
+                     StatisticsController statisticsController,
+                     CategoryController categoryController,
                      User adminUser,
                      List<Project> projects,
                      List<User> allUsers) {
@@ -71,6 +77,8 @@ public class AdminView extends JFrame {
         this.projectController = projectController;
         this.issueController = issueController;
         this.userController = userController;
+        this.statisticsController = statisticsController;
+        this.categoryController = categoryController;
         this.adminUser = adminUser;
         this.projects = projects;
         this.allUsers = allUsers;
@@ -577,7 +585,8 @@ public class AdminView extends JFrame {
         int result = JOptionPane.showConfirmDialog(this, "Logout?", "Logout", JOptionPane.YES_NO_OPTION);
         if (result == JOptionPane.YES_OPTION) {
             dispose();
-            new LoginView(authController, issueController, userController, projectController).setVisible(true);
+            new LoginView(authController, issueController, userController, projectController,
+                    statisticsController, categoryController).setVisible(true);
         }
     }
 

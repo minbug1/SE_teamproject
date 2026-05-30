@@ -1,6 +1,10 @@
 package its.view.swing;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.EventObject;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,10 +14,13 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
@@ -23,6 +30,7 @@ import javax.swing.table.TableModel;
 
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.model.DeveloperRecommendation;
 import its.model.Issue;
 import its.model.IssueStatus;
 import its.model.Priority;
@@ -241,7 +249,7 @@ public class ActionButtonEditor implements TableCellEditor {
         }
     }
     
-     private void changeAssignee() {
+    private void changeAssignee() {
         Project project = getCurrentProject();
         long issueId    = getIssueId();
         if (project == null || issueId <= 0) return;
@@ -276,11 +284,14 @@ public class ActionButtonEditor implements TableCellEditor {
             return label;
         });
         combo.setSelectedItem(defaultDev);
- 
+
+        JTable recommendationTable = createRecommendationTable(project, issueId, combo);
+        JPanel assignPanel = buildAssigneePanel(combo, recommendationTable);
+
         String comment = JOptionPane.showInputDialog(button, "코멘트 (선택):");
         if (comment == null) return; 
  
-        if (JOptionPane.showConfirmDialog(button, combo, "담당자 지정",
+        if (JOptionPane.showConfirmDialog(button, assignPanel, "담당자 지정",
                 JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
  
         User selected = (User) combo.getSelectedItem();
@@ -292,6 +303,113 @@ public class ActionButtonEditor implements TableCellEditor {
             setValue(COL_STATUS, IssueStatus.ASSIGNED.name());
         } catch (Exception ex) {
             showError(ex.getMessage());
+        }
+    }
+
+    private JPanel buildAssigneePanel(JComboBox<User> combo, JTable recommendationTable) {
+        JPanel leftPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(0, 0, 6, 0);
+        leftPanel.add(new JLabel("담당자"), gbc);
+
+        gbc.gridy = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        leftPanel.add(combo, gbc);
+        leftPanel.setPreferredSize(new Dimension(180, 220));
+
+        JPanel rightPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints rightGbc = new GridBagConstraints();
+        rightGbc.gridx = 0;
+        rightGbc.gridy = 0;
+        rightGbc.anchor = GridBagConstraints.WEST;
+        rightGbc.insets = new Insets(0, 0, 6, 0);
+        rightPanel.add(new JLabel("담당자 추천"), rightGbc);
+
+        rightGbc.gridy = 1;
+        rightGbc.fill = GridBagConstraints.BOTH;
+        rightGbc.weightx = 1.0;
+        rightGbc.weighty = 1.0;
+        rightPanel.add(new JScrollPane(recommendationTable), rightGbc);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
+        splitPane.setResizeWeight(0.32);
+        splitPane.setDividerLocation(180);
+        splitPane.setPreferredSize(new Dimension(620, 260));
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints panelGbc = new GridBagConstraints();
+        panelGbc.gridx = 0;
+        panelGbc.gridy = 0;
+        panelGbc.fill = GridBagConstraints.BOTH;
+        panelGbc.weightx = 1.0;
+        panelGbc.weighty = 1.0;
+        panel.add(splitPane, panelGbc);
+        return panel;
+    }
+
+    private JTable createRecommendationTable(Project project, long issueId, JComboBox<User> assigneeCombo) {
+        DefaultTableModel model = new DefaultTableModel(
+                new String[]{"Developer", "Score", "Matched", "Solved"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        try {
+            List<DeveloperRecommendation> recommendations =
+                    issueController.recommendAssignees(project, issueId, currentUser);
+
+            for (DeveloperRecommendation recommendation : recommendations) {
+                User developer = recommendation.getDeveloper();
+                model.addRow(new Object[]{
+                        developer != null ? developer.getLoginId() : "-",
+                        String.format("%.3f", recommendation.getScore()),
+                        recommendation.getMatchedIssueCount(),
+                        recommendation.getTotalSolvedIssueCount()
+                });
+            }
+        } catch (Exception ex) {
+            model.addRow(new Object[]{"추천 실패", ex.getMessage(), "", ""});
+        }
+
+        if (model.getRowCount() == 0) {
+            model.addRow(new Object[]{"추천 없음", "분류 후 사용 가능", "", ""});
+        }
+
+        JTable recommendationTable = new JTable(model);
+        recommendationTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        recommendationTable.setPreferredScrollableViewportSize(new Dimension(390, 190));
+        recommendationTable.getSelectionModel().addListSelectionListener(event -> {
+            if (event.getValueIsAdjusting()) {
+                return;
+            }
+            int row = recommendationTable.getSelectedRow();
+            if (row < 0) {
+                return;
+            }
+            String loginId = String.valueOf(recommendationTable.getValueAt(row, 0));
+            selectDeveloperByLoginId(assigneeCombo, loginId);
+        });
+
+        return recommendationTable;
+    }
+
+    private void selectDeveloperByLoginId(JComboBox<User> combo, String loginId) {
+        if (combo == null || loginId == null || loginId.trim().isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < combo.getItemCount(); i++) {
+            User user = combo.getItemAt(i);
+            if (user != null && loginId.equals(user.getLoginId())) {
+                combo.setSelectedItem(user);
+                return;
+            }
         }
     }
 

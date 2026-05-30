@@ -1,8 +1,10 @@
 package its.view.javafx;
 
 import its.controller.AuthController;
+import its.controller.CategoryController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.StatisticsController;
 import its.controller.UserController;
 import its.model.Issue;
 import its.model.Priority;
@@ -28,6 +30,8 @@ public class MainView {
 
     private final IssueController issueController;
     private final ProjectController projectController;
+    private final StatisticsController statisticsController;
+    private final CategoryController categoryController;
     private final AuthController authController;
     private final UserController userController;
     private final User currentUser;
@@ -40,9 +44,13 @@ public class MainView {
 
     public MainView(IssueController issueController, ProjectController projectController,
                     AuthController authController, UserController userController,
+                    StatisticsController statisticsController,
+                    CategoryController categoryController,
                     User currentUser) {
         this.issueController = issueController;
         this.projectController = projectController;
+        this.statisticsController = statisticsController;
+        this.categoryController = categoryController;
         this.authController = authController;
         this.userController = userController;
         this.currentUser = currentUser;
@@ -75,11 +83,15 @@ public class MainView {
         centerBox.setAlignment(Pos.CENTER);
 
         Button reportBtn = new Button("+ Report Issue");
+        Button statisticsBtn = new Button("Statistics");
         Button logoutBtn = new Button("Logout");
         reportBtn.setOnAction(e -> onReportIssue());
+        statisticsBtn.setOnAction(e -> onShowStatistics());
+        statisticsBtn.setVisible(currentUser != null && currentUser.isPL());
+        statisticsBtn.setManaged(currentUser != null && currentUser.isPL());
         logoutBtn.setOnAction(e -> onLogout());
 
-        HBox rightBox = new HBox(8, reportBtn, logoutBtn);
+        HBox rightBox = new HBox(8, reportBtn, statisticsBtn, logoutBtn);
         rightBox.setAlignment(Pos.CENTER_RIGHT);
 
         HBox bar = new HBox();
@@ -196,12 +208,22 @@ public class MainView {
                 selected.project, this::refreshTable).show();
     }
 
+    private void onShowStatistics() {
+        ProjectItem selected = projectFilterBox.getSelectionModel().getSelectedItem();
+        if (selected == null || selected.isAll()) {
+            new Alert(Alert.AlertType.WARNING,
+                    "Select a project before viewing statistics.").showAndWait();
+            return;
+        }
+        new StatisticsView(stage, statisticsController, categoryController, selected.project, currentUser).show();
+    }
+
     private void onLogout() {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Logout?", ButtonType.YES, ButtonType.NO);
         confirm.initOwner(stage);
         confirm.showAndWait().ifPresent(bt -> {
             if (bt == ButtonType.YES) new LoginView(authController, issueController,
-                        userController, projectController).show(stage);
+                        userController, projectController, statisticsController, categoryController).show(stage);
         });
     }
 

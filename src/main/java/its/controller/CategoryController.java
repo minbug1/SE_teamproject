@@ -10,8 +10,11 @@ import its.repository.CategoryRepository;
 import its.repository.IssueRepository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * controller for category management
@@ -51,11 +54,126 @@ public class CategoryController {
         return categories;
     }
 
+    public List<Category> previewCategories(Project project, double threshold, User pl) {
+        validatePL(project, pl);
+        validateThreshold(threshold);
+
+        List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
+        if (projectIssues == null || projectIssues.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Integer> originalCategoryIds = new ArrayList<>();
+        for (Issue issue : projectIssues) {
+            originalCategoryIds.add(issue != null ? issue.getCategoryId() : 0);
+        }
+
+        List<Category> categories = categoryEngine.createCategoriesByThreshold(projectIssues, threshold);
+
+        for (int i = 0; i < projectIssues.size(); i++) {
+            Issue issue = projectIssues.get(i);
+            if (issue != null) {
+                issue.setCategoryId(originalCategoryIds.get(i));
+            }
+        }
+
+        return categories;
+    }
+
     // find categories
     public List<Category> findCategories(Project project, User pl) {
         validatePL(project, pl);
 
         return categoryRepository.findByProjectId(project.getProjectId());
+    }
+
+    public List<Category> saveCategories(Project project, List<Category> categories, User pl) {
+        validatePL(project, pl);
+        if (categories == null) {
+            throw new IllegalArgumentException("Categories must not be null.");
+        }
+
+        List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
+        Map<Long, Issue> projectIssueMap = new HashMap<>();
+        for (Issue issue : projectIssues) {
+            if (issue != null) {
+                issue.setCategoryId(0);
+                projectIssueMap.put(issue.getIssueId(), issue);
+            }
+        }
+
+        Set<Long> assignedIssueIds = new HashSet<>();
+        for (Category category : categories) {
+            if (category == null) {
+                continue;
+            }
+
+            validateCategoryId(category.getCategoryId());
+            if (category.getIssues() == null) {
+                continue;
+            }
+
+            for (Issue issue : category.getIssues()) {
+                if (issue == null) {
+                    continue;
+                }
+
+                Issue projectIssue = projectIssueMap.get(issue.getIssueId());
+                if (projectIssue == null) {
+                    throw new IllegalArgumentException("Issue does not belong to this project.");
+                }
+                if (!assignedIssueIds.add(issue.getIssueId())) {
+                    throw new IllegalArgumentException("Issue belongs to multiple categories.");
+                }
+
+                issue.setCategoryId(category.getCategoryId());
+                projectIssue.setCategoryId(category.getCategoryId());
+            }
+        }
+
+        saveAndSync(project.getProjectId(), categories, projectIssues);
+        if (categories.isEmpty()) {
+            categoryRepository.clearByProjectId(project.getProjectId());
+        }
+
+        return categories;
+    }
+
+    public Category createCategory(Project project, String categoryName, User pl) {
+        validatePL(project, pl);
+
+        if (categoryName == null || categoryName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid category name.");
+        }
+
+        List<Category> savedCategories = categoryRepository.findByProjectId(project.getProjectId());
+        String trimmedName = categoryName.trim();
+        for (Category category : savedCategories) {
+            if (category != null && trimmedName.equalsIgnoreCase(category.getCategoryName())) {
+                throw new IllegalArgumentException("Category name already exists.");
+            }
+        }
+
+        int nextCategoryId = 1;
+        for (Category category : savedCategories) {
+            if (category != null && category.getCategoryId() >= nextCategoryId) {
+                nextCategoryId = category.getCategoryId() + 1;
+            }
+        }
+
+        Category category = new Category(
+                project.getProjectId(),
+                nextCategoryId,
+                extractThreshold(savedCategories),
+                new ArrayList<>(),
+                new java.util.HashMap<>()
+        );
+        category.setCategoryName(trimmedName);
+
+        savedCategories.add(category);
+        categoryRepository.saveAll(project.getProjectId(), savedCategories);
+
+        return category;
     }
 
     // reset categories
@@ -109,6 +227,46 @@ public class CategoryController {
         }
 
         saveAndSync(project.getProjectId(), result, projectIssues);
+
+        return result;
+    }
+
+    public List<Category> previewMergeCategories(Project project, List<Category> categories,
+                                                 int categoryIdA, int categoryIdB, User pl) {
+        validatePL(project, pl);
+        validateCategoryId(categoryIdA);
+        validateCategoryId(categoryIdB);
+        if (categoryIdA == categoryIdB) {
+            throw new IllegalArgumentException("Cannot merge same category.");
+        }
+        if (categories == null || categories.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Category targetCategory = findCategoryById(categories, categoryIdA);
+        String targetName = targetCategory != null ? targetCategory.getCategoryName() : null;
+        List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
+        Map<Long, Map<String, Double>> tfIdfVectors = categoryEngine.getTfIdf().calculateTfIdfByIssue(projectIssues);
+        Category mergedCategory = categoryEngine.mergeCategories(categoryIdA, categoryIdB, categories, tfIdfVectors);
+
+        if (mergedCategory == null) {
+            return categories;
+        }
+        mergedCategory.setCategoryName(targetName);
+
+        List<Category> result = new ArrayList<>();
+        for (Category category : categories) {
+            if (category == null) {
+                continue;
+            }
+
+            if (category.getCategoryId() == categoryIdA) {
+                result.add(mergedCategory);
+            }
+            else if (category.getCategoryId() != categoryIdB) {
+                result.add(category);
+            }
+        }
 
         return result;
     }
@@ -172,6 +330,70 @@ public class CategoryController {
         }
 
         saveAndSync(project.getProjectId(), result, projectIssues);
+
+        return result;
+    }
+
+    public List<Category> previewPartitionCategory(Project project, List<Category> categories,
+                                                   int targetCategoryId, List<Long> separatingIssueIds, User pl) {
+        validatePL(project, pl);
+        validateCategoryId(targetCategoryId);
+        if (separatingIssueIds == null || separatingIssueIds.isEmpty()) {
+            throw new IllegalArgumentException("Issue IDs empty.");
+        }
+        if (categories == null || categories.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Category targetCategory = findCategoryById(categories, targetCategoryId);
+        if (targetCategory == null) {
+            throw new IllegalArgumentException("Target category does not exist.");
+        }
+
+        List<Issue> remainingIssues = new ArrayList<>();
+        List<Issue> separatingIssues = new ArrayList<>();
+        for (Issue issue : targetCategory.getIssues()) {
+            if (issue == null) {
+                continue;
+            }
+
+            if (separatingIssueIds.contains(issue.getIssueId())) {
+                separatingIssues.add(issue);
+            }
+            else {
+                remainingIssues.add(issue);
+            }
+        }
+
+        if (separatingIssues.isEmpty()) {
+            throw new IllegalArgumentException("No issue selected.");
+        }
+
+        if (remainingIssues.isEmpty()) {
+            throw new IllegalArgumentException("Original category cannot be empty.");
+        }
+
+        List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
+        Map<Long, Map<String, Double>> tfIdfVectors = categoryEngine.getTfIdf().calculateTfIdfByIssue(projectIssues);
+        List<Category> partitioned = categoryEngine.partitionCategoryA(
+                targetCategoryId, remainingIssues, separatingIssues, categories, tfIdfVectors);
+        if (!partitioned.isEmpty()) {
+            partitioned.get(0).setCategoryName(targetCategory.getCategoryName());
+        }
+
+        List<Category> result = new ArrayList<>();
+        for (Category category : categories) {
+            if (category == null) {
+                continue;
+            }
+
+            if (category.getCategoryId() == targetCategoryId) {
+                result.addAll(partitioned);
+            }
+            else {
+                result.add(category);
+            }
+        }
 
         return result;
     }

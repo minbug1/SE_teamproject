@@ -18,8 +18,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
 import its.controller.AuthController;
+import its.controller.CategoryController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.StatisticsController;
 import its.controller.UserController;
 import its.model.Issue;
 import its.model.IssueStatus;
@@ -37,6 +39,8 @@ public class MainView extends JFrame {
 
     private IssueController issueController;
     private ProjectController projectController;
+    private StatisticsController statisticsController;
+    private CategoryController categoryController;
     private AuthController authController;
     private UserController userController;
     
@@ -61,10 +65,14 @@ public class MainView extends JFrame {
                     IssueController issueController,
                     ProjectController projectController,
                     UserController userController,
+                    StatisticsController statisticsController,
+                    CategoryController categoryController,
                     User currentUser) {
         this.authController = authController;
         this.issueController = issueController;
         this.projectController = projectController;
+        this.statisticsController = statisticsController;
+        this.categoryController = categoryController;
         this.userController = userController;
         this.currentUser = currentUser;
         initUI();
@@ -87,9 +95,12 @@ public class MainView extends JFrame {
         JLabel title = new JLabel("Issue Tracker");
         JButton logoutBtn = new JButton("Logout");
         JButton reportBtn = new JButton("+ Report Issue");
+        JButton statisticsBtn = new JButton("Statistics");
 
         logoutBtn.addActionListener(e -> onLogout());
         reportBtn.addActionListener(e -> onReportIssue());
+        statisticsBtn.addActionListener(e -> onShowStatistics());
+        statisticsBtn.setVisible(currentUser != null && currentUser.isPL());
 
         JPanel centerPanel = new JPanel();
         centerPanel.add(new JLabel("Project"));
@@ -109,6 +120,7 @@ public class MainView extends JFrame {
 
         JPanel rightPanel = new JPanel();
         rightPanel.add(reportBtn);
+        rightPanel.add(statisticsBtn);
         rightPanel.add(logoutBtn);
 
         panel.add(title, BorderLayout.WEST);
@@ -314,6 +326,21 @@ public class MainView extends JFrame {
         refreshTable();
     }   
 
+    private void onShowStatistics() {
+        ProjectFilterItem selectedItem = (ProjectFilterItem) projectFilterComboBox.getSelectedItem();
+        Project selectedProject = selectedItem == null ? null : selectedItem.getProject();
+        if (selectedProject == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Select a project before viewing statistics.",
+                    "Project Required",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        new StatisticsView(this, statisticsController, categoryController, selectedProject, currentUser).setVisible(true);
+    }
+
     private void onLogout() {
     int confirm = JOptionPane.showConfirmDialog(
         this, "Logout?", "Logout", JOptionPane.YES_NO_OPTION
@@ -321,7 +348,7 @@ public class MainView extends JFrame {
     if (confirm == JOptionPane.YES_OPTION) {
         dispose();
         new LoginView(authController, issueController,
-                      userController, projectController).setVisible(true);
+                      userController, projectController, statisticsController, categoryController).setVisible(true);
     }
 }
 
