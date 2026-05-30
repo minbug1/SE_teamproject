@@ -1,7 +1,7 @@
 package its.controller;
 
 import its.model.AccountStatus;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 import its.repository.MemoryUserRepository;
 import its.repository.UserRepository;
@@ -31,7 +31,7 @@ class UserControllerTest {
                 "admin",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.ADMIN
+                UserRole.ADMIN
         );
         userRepository.save(admin);
 
@@ -40,7 +40,7 @@ class UserControllerTest {
                 "normal",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
         userRepository.save(normalUser);
     }
@@ -52,13 +52,13 @@ class UserControllerTest {
                 "dev1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         assertNotNull(createdUser);
         assertEquals("dev1", createdUser.getLoginId());
         assertEquals(AccountStatus.ACTIVE, createdUser.getAccountStatus());
-        assertEquals(Role.DEVELOPER, createdUser.getRole());
+        assertEquals(UserRole.DEVELOPER, createdUser.getRole());
 
         User savedUser = userRepository.findByLoginId("dev1");
         assertNotNull(savedUser);
@@ -73,7 +73,7 @@ class UserControllerTest {
                     "dev1",
                     "1234",
                     AccountStatus.ACTIVE,
-                    Role.DEVELOPER
+                    UserRole.DEVELOPER
             );
         });
     }
@@ -86,7 +86,7 @@ class UserControllerTest {
                     "user1",
                     "1234",
                     AccountStatus.ACTIVE,
-                    Role.UNASSIGNED
+                    UserRole.UNASSIGNED
             );
         });
     }
@@ -100,13 +100,13 @@ class UserControllerTest {
         );
         userRepository.save(pendingUser);
 
-        userController.approveUser(admin, pendingUser.getUserId(), Role.DEVELOPER);
+        userController.approveUser(admin, pendingUser.getUserId(), UserRole.DEVELOPER);
 
         User approvedUser = userRepository.findByUserId(pendingUser.getUserId());
 
         assertNotNull(approvedUser);
         assertEquals(AccountStatus.ACTIVE, approvedUser.getAccountStatus());
-        assertEquals(Role.DEVELOPER, approvedUser.getRole());
+        assertEquals(UserRole.DEVELOPER, approvedUser.getRole());
     }
 
     @Test
@@ -119,7 +119,7 @@ class UserControllerTest {
         userRepository.save(pendingUser);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            userController.approveUser(admin, pendingUser.getUserId(), Role.UNASSIGNED);
+            userController.approveUser(admin, pendingUser.getUserId(), UserRole.UNASSIGNED);
         });
     }
 
@@ -152,12 +152,12 @@ class UserControllerTest {
 
     @Test
     void changeRoleShouldChangeUserRole() {
-        userController.changeRole(admin, normalUser.getUserId(), Role.DEVELOPER);
+        userController.changeRole(admin, normalUser.getUserId(), UserRole.DEVELOPER);
 
         User changedUser = userRepository.findByUserId(normalUser.getUserId());
 
         assertNotNull(changedUser);
-        assertEquals(Role.DEVELOPER, changedUser.getRole());
+        assertEquals(UserRole.DEVELOPER, changedUser.getRole());
     }
 
     @Test
@@ -224,7 +224,7 @@ class UserControllerTest {
 
     @Test
     void findUsersByRoleShouldReturnMatchingUsers() {
-        List<User> testers = userController.findUsersByRole(admin, Role.TESTER);
+        List<User> testers = userController.findUsersByRole(admin, UserRole.TESTER);
 
         assertEquals(1, testers.size());
         assertEquals("normal", testers.get(0).getLoginId());

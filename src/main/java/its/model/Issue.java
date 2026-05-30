@@ -11,6 +11,8 @@ public class Issue {
     private int projectId;
     private String title;
     private String description;
+    private Priority priority;
+    private IssueStatus status;
     private User reporter;
     private LocalDateTime reportedDate;
     private LocalDateTime assignedDate;
@@ -20,8 +22,14 @@ public class Issue {
     private int reopenCount;
     private User assignee;
     private User fixer;
-    private Priority priority;
-    private Status status;
+    private LocalDateTime reportedDate;
+    private LocalDateTime assignedDate;
+    private LocalDateTime fixedDate;
+    private LocalDateTime resolvedDate;
+    private LocalDateTime closedDate;
+    private List<LocalDateTime> reopenedDates = new ArrayList<>();
+    private int reopenCount;
+    private int categoryId;
     private List<Comment> comments = new ArrayList<>();
 
     public Issue(long issueId,int projectId, String title, String description, User reporter, LocalDateTime reportedDate) {
@@ -33,7 +41,7 @@ public class Issue {
         this.reportedDate = reportedDate;
         this.reopenCount = 0;
         this.priority = Priority.MAJOR; 
-        this.status = Status.NEW;
+        this.status = IssueStatus.NEW;
     }
 
     public long getIssueId() {
@@ -56,8 +64,24 @@ public class Issue {
         return description;
     }
 
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public IssueStatus getStatus() {
+        return status;
+    }
+
     public User getReporter() {
         return reporter;
+    }   
+
+    public User getAssignee() {
+        return assignee;
+    }
+
+    public User getFixer() {
+        return fixer;
     }
 
     public LocalDateTime getReportedDate() {
@@ -84,20 +108,32 @@ public class Issue {
         return reopenCount;
     }
 
-    public User getAssignee() {
-        return assignee;
+    public LocalDateTime getAssignedDate() {
+        return assignedDate;
     }
 
-    public Status getStatus() {
-        return status;
+    public LocalDateTime getFixedDate() {
+        return fixedDate;
     }
 
-    public User getFixer() {
-        return fixer;
+    public LocalDateTime getResolvedDate() {
+        return resolvedDate;
     }
 
-    public Priority getPriority() {
-        return priority;
+    public LocalDateTime getClosedDate() {
+        return closedDate;
+    }
+
+    public List<LocalDateTime> getReopenedDates() {
+        return new ArrayList<>(reopenedDates);
+    }
+
+    public int getReopenCount() {
+        return reopenCount;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
     }
 
     //comment 새로 생성할때 commentid = 현재 comment개수+1
@@ -105,24 +141,36 @@ public class Issue {
         return this.comments.size() + 1;
     }
 
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public void setStatus(IssueStatus status) {
+        this.status = status;
+    }
+
     public void setReporter(User reporter) {
         this.reporter = reporter;
+    }
+
+    public void setAssignee(User assignee) {
+        this.assignee = assignee;
     }
     
     public void setFixer(User fixer) {
         this.fixer = fixer;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public void addComment(Comment comment) {
+        comments.add(comment);
     }
 
-    public void setPriority(Priority priority) {
-        this.priority = priority;
+    public void setAssignedDate(LocalDateTime assignedDate) {
+        this.assignedDate = assignedDate;
     }
 
-    public void setAssignee(User assignee) {
-        this.assignee = assignee;
+    public void setFixedDate(LocalDateTime fixedDate) {
+        this.fixedDate = fixedDate;
     }
 
     public void setAssignedDate(LocalDateTime assignedDate) {

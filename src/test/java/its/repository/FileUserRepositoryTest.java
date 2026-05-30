@@ -1,7 +1,7 @@
 package its.repository;
 
 import its.model.AccountStatus;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +41,7 @@ class FileUserRepositoryTest {
                 "tester1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         userRepository.save(user);
@@ -52,7 +52,7 @@ class FileUserRepositoryTest {
         assertEquals(user.getUserId(), foundUser.getUserId());
         assertEquals("tester1", foundUser.getLoginId());
         assertEquals(AccountStatus.ACTIVE, foundUser.getAccountStatus());
-        assertEquals(Role.TESTER, foundUser.getRole());
+        assertEquals(UserRole.TESTER, foundUser.getRole());
     }
 
     @Test
@@ -62,7 +62,7 @@ class FileUserRepositoryTest {
                 "tester1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         User user2 = new User(
@@ -70,7 +70,7 @@ class FileUserRepositoryTest {
                 "tester2",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         userRepository.save(user1);
@@ -87,7 +87,7 @@ class FileUserRepositoryTest {
                 "sameId",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         User user2 = new User(
@@ -95,7 +95,7 @@ class FileUserRepositoryTest {
                 "sameId",
                 "5678",
                 AccountStatus.ACTIVE,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         userRepository.save(user1);
@@ -112,14 +112,14 @@ class FileUserRepositoryTest {
                 "tester1",
                 "1234",
                 AccountStatus.PENDING,
-                Role.UNASSIGNED
+                UserRole.UNASSIGNED
         );
 
         userRepository.save(user);
 
-        user.changeAccountStatus(AccountStatus.ACTIVE);
-        user.changeRole(Role.TESTER);
-        user.changeLoginId("testerChanged");
+        user.setAccountStatus(AccountStatus.ACTIVE);
+        user.setRole(UserRole.TESTER);
+        user.setLoginId("testerChanged");
 
         userRepository.update(user);
 
@@ -128,7 +128,7 @@ class FileUserRepositoryTest {
         assertNotNull(updatedUser);
         assertEquals("testerChanged", updatedUser.getLoginId());
         assertEquals(AccountStatus.ACTIVE, updatedUser.getAccountStatus());
-        assertEquals(Role.TESTER, updatedUser.getRole());
+        assertEquals(UserRole.TESTER, updatedUser.getRole());
     }
 
     @Test
@@ -138,7 +138,7 @@ class FileUserRepositoryTest {
                 "ghost",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -153,7 +153,7 @@ class FileUserRepositoryTest {
                 "user1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         User user2 = new User(
@@ -161,13 +161,13 @@ class FileUserRepositoryTest {
                 "user2",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         userRepository.save(user1);
         userRepository.save(user2);
 
-        user2.changeLoginId("user1");
+        user2.setLoginId("user1");
 
         assertThrows(IllegalArgumentException.class, () -> {
             userRepository.update(user2);
@@ -181,7 +181,7 @@ class FileUserRepositoryTest {
                 "tester1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         userRepository.save(user);
@@ -206,7 +206,7 @@ class FileUserRepositoryTest {
                 "tester1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         userRepository.save(user);
@@ -230,7 +230,7 @@ class FileUserRepositoryTest {
                 "tester1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         userRepository.save(user);
@@ -255,7 +255,7 @@ class FileUserRepositoryTest {
                 "pending",
                 "1234",
                 AccountStatus.PENDING,
-                Role.UNASSIGNED
+                UserRole.UNASSIGNED
         );
 
         User activeUser = new User(
@@ -263,7 +263,7 @@ class FileUserRepositoryTest {
                 "active",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         userRepository.save(pendingUser);
@@ -282,7 +282,7 @@ class FileUserRepositoryTest {
                 "tester1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         User developer = new User(
@@ -290,13 +290,13 @@ class FileUserRepositoryTest {
                 "dev1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         userRepository.save(tester);
         userRepository.save(developer);
 
-        List<User> developers = userRepository.findByRole(Role.DEVELOPER);
+        List<User> developers = userRepository.findByRole(UserRole.DEVELOPER);
 
         assertEquals(1, developers.size());
         assertEquals("dev1", developers.get(0).getLoginId());
@@ -309,7 +309,7 @@ class FileUserRepositoryTest {
                 "user1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         User user2 = new User(
@@ -317,7 +317,7 @@ class FileUserRepositoryTest {
                 "user2",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         userRepository.save(user1);
@@ -341,7 +341,7 @@ class FileUserRepositoryTest {
                 "active",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         userRepository.save(pendingUser);
@@ -361,7 +361,7 @@ class FileUserRepositoryTest {
                 "user10",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         User user2 = new User(
@@ -369,7 +369,7 @@ class FileUserRepositoryTest {
                 "user20",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         userRepository.save(user1);
@@ -391,7 +391,7 @@ class FileUserRepositoryTest {
                 "tester1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.TESTER
+                UserRole.TESTER
         );
 
         firstRepository.save(user);
@@ -404,7 +404,7 @@ class FileUserRepositoryTest {
         assertEquals(user.getUserId(), foundUser.getUserId());
         assertEquals("tester1", foundUser.getLoginId());
         assertEquals(AccountStatus.ACTIVE, foundUser.getAccountStatus());
-        assertEquals(Role.TESTER, foundUser.getRole());
+        assertEquals(UserRole.TESTER, foundUser.getRole());
     }
 
     @Test

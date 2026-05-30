@@ -112,7 +112,7 @@ public class ActionButtonEditor implements TableCellEditor {
         addItem(menu, "상세 보기", this::showIssueDetail);
         addItem(menu, "코멘트 추가", this::addComment);
 
-        Status status = getStatus();
+        IssueStatus status = getStatus();
         if (currentUser != null && currentUser.isAdmin()) {
             addItem(menu, "이슈 삭제", this::deleteIssue);
             if (isAssignedOrLater(status)) {
@@ -122,7 +122,7 @@ public class ActionButtonEditor implements TableCellEditor {
         }
 
         if (currentUser != null && currentUser.isPL()) {
-            if (status == Status.NEW) {
+            if (status == IssueStatus.NEW) {
                 addItem(menu, "담당자 지정", this::changeAssignee);
             }
             addItem(menu, "우선순위 변경", this::changePriority);
@@ -427,7 +427,7 @@ public class ActionButtonEditor implements TableCellEditor {
  
     private Status getStatus() {
         try {
-            return Status.valueOf(String.valueOf(getValue(COL_STATUS)));
+            return IssueStatus.valueOf(String.valueOf(getValue(COL_STATUS)));
         } catch (IllegalArgumentException e) {
             return null;
         }

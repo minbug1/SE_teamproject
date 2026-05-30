@@ -1,10 +1,11 @@
 package its.model;
 
-public enum Status {
+public enum CommentStatus {
+    GENERAL,
     NEW,
     ASSIGNED,
+    FIXED,
     RESOLVED,
     CLOSED,
-    REOPENED,
-    FIXED
+    REOPENED
 }

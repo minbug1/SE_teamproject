@@ -1,17 +1,20 @@
 package its.controller;
 
 import its.model.Comment;
+import its.model.DeveloperRecommendation;
 import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
-import its.model.Status;
-import its.model.Role;
+import its.model.RecommendEngine;
+import its.model.IssueStatus;
+import its.model.UserRole;
 import its.model.User;
 import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
 import its.repository.ProjectRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -69,7 +72,7 @@ public class IssueController {
         newIssue.setProjectId(project.getProjectId());
 
         newIssue.setPriority(priority);
-        newIssue.setStatus(Status.NEW);
+        newIssue.setStatus(IssueStatus.NEW);
 
         if (commentContent != null && !commentContent.trim().isEmpty()) {
             Comment comment = new Comment(
@@ -104,7 +107,7 @@ public class IssueController {
         validateIssueId(issueId);
         
         Issue issue = getProjectIssueOrNull(project, issueId);
-        validateIssueStatus(issue, Status.ASSIGNED);
+        validateIssueStatus(issue, IssueStatus.ASSIGNED);
 
         if (issue.getAssignee() == null || !issue.getAssignee().equals(dev)) {
             throw new SecurityException("Only assigned issues can be fixed.");
@@ -112,7 +115,7 @@ public class IssueController {
 
         addCommentIfPresent(issue, commentContent, dev);
 
-        issue.setStatus(Status.FIXED);
+        issue.setStatus(IssueStatus.FIXED);
         issue.setFixer(dev);
         issue.setFixedDate(LocalDateTime.now());
 
@@ -126,12 +129,12 @@ public class IssueController {
 
         validateProject(project);
         validateUser(tester, "Tester must not be null.");
-        validateRole(tester, Role.TESTER, "Only testers can verify issues.");
+        validateRole(tester, UserRole.TESTER, "Only testers can verify issues.");
         validateProjectMember(project, tester, "Need to be a member of the project to verify the issue.");
 
         Issue issue = getProjectIssueOrNull(project, issueId);
 
-        if (issue == null || issue.getStatus() != Status.FIXED) {
+        if (issue == null || issue.getStatus() != IssueStatus.FIXED) {
             return null;
         }
 
@@ -159,12 +162,12 @@ public class IssueController {
 
         validateProject(project);
         validateUser(pl, "PL must not be null.");
-        validateRole(pl, Role.PL, "Only PL can change the issue status to closed.");
+        validateRole(pl, UserRole.PL, "Only PL can change the issue status to closed.");
         validateProjectMember(project, pl, "Need to be a member of the project to close the issue.");
 
         Issue issue = getProjectIssueOrNull(project, issueId);
 
-        if (issue == null || issue.getStatus() != Status.RESOLVED) {
+        if (issue == null || issue.getStatus() != IssueStatus.RESOLVED) {
             return null;
         }
 
@@ -185,15 +188,15 @@ public class IssueController {
         validateUser(pl, "PL must not be null.");
         validateUser(assignee, "Assignee must not be null.");
 
-        validateRole(pl, Role.PL, "Only PL can assign issues.");
-        validateRole(assignee, Role.DEVELOPER, "Only developers can be assigned to issues.");
+        validateRole(pl, UserRole.PL, "Only PL can assign issues.");
+        validateRole(assignee, UserRole.DEVELOPER, "Only developers can be assigned to issues.");
 
         validateProjectMember(project, pl, "This user is not a PL member of the project.");
         validateProjectMember(project, assignee, "The assignee is not a member of the project.");
 
         Issue issue = getProjectIssueOrNull(project, issueId);
 
-        if (issue == null || (issue.getStatus() != Status.NEW && issue.getStatus() != Status.REOPENED)) {
+        if (issue == null || (issue.getStatus() != IssueStatus.NEW && issue.getStatus() != IssueStatus.REOPENED)) {
             return null;
         }
 
@@ -206,6 +209,34 @@ public class IssueController {
         issueRepository.update(issue);
 
         return issue;
+    }
+
+    // assign recommendation
+    public List<DeveloperRecommendation> recommendAssignees(Project project, long issueId, User pl) {
+        validateProject(project);
+        validateUser(pl, "PL must not be null.");
+        validateRole(pl, UserRole.PL, "Only PL can get recommendations.");
+        validateProjectMember(project, pl, "This user is not a PL member of the project.");
+
+        Issue targetIssue = getProjectIssueOrNull(project, issueId);
+
+        if (targetIssue == null ||
+            (targetIssue.getStatus() != IssueStatus.NEW &&
+            targetIssue.getStatus() != IssueStatus.REOPENED)) {
+            return new ArrayList<>();
+        }
+
+        List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
+
+        List<User> developers = new ArrayList<>();
+        for (User member : project.getMembers()) {
+            if (member != null && member.isDev()) {
+                developers.add(member);
+            }
+        }
+
+        RecommendEngine recommendEngine = new RecommendEngine();
+        return recommendEngine.recommendDevelopers(targetIssue, projectIssues, developers);
     }
 
     // helper
@@ -318,7 +349,7 @@ public class IssueController {
         }
     }
 
-   private void validateRole(User user, Role requiredRole, String message) {
+   private void validateRole(User user, UserRole requiredRole, String message) {
         validateUser(user, "User must not be null.");
         if (requiredRole == null) {
             throw new IllegalArgumentException("Required role must not be null.");
@@ -351,7 +382,7 @@ public class IssueController {
     }
 
     //이거 UI구현되면 수정필요
-    public void showIssues(Project project, Status filterStatus) {
+    public void showIssues(Project project, IssueStatus filterStatus) {
         validateProject(project);
 
         String statusText = (filterStatus == null) ? "전체" : filterStatus.toString();
@@ -394,7 +425,7 @@ public class IssueController {
         }
     }
 
-    private void validateIssueStatus(Issue issue, Status... validStatuses) {
+    private void validateIssueStatus(Issue issue, IssueStatus... validStatuses) {
         if (issue == null) {
             throw new IllegalArgumentException("Issue not found.");
         }

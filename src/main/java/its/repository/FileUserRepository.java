@@ -6,7 +6,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import its.model.AccountStatus;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 
 import java.io.File;
@@ -18,13 +18,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/*
+ * Repository implementation for user
+ * save, update, delete, find, generateUserId
+ *
+ * @author hanung
+ */
+
 public class FileUserRepository implements UserRepository {
 
-    // 테스트용 파일 경로
-    private static final String FILE_PATH = "data/test_users.json";
+    // file path for testing
+    // private static final String FILE_PATH = "data/test_users.json";
 
-    // 실제 파일 경로
-    // private static final String FILE_PATH = "data/users.json";
+    // actual file path
+    private static final String FILE_PATH = "data/users.json";
 
     private final File file;
     private final Gson gson;
@@ -99,7 +106,7 @@ public class FileUserRepository implements UserRepository {
 
             if (existingUser.getUserId() == user.getUserId()) {
 
-                // 본인을 제외한 다른 유저와 loginId가 겹치면 안 된다.
+                // login id duplication
                 for (User otherUser : users) {
                     if (otherUser.getUserId() != user.getUserId()
                             && Objects.equals(otherUser.getLoginId(), user.getLoginId())) {
@@ -198,7 +205,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> findByRole(Role role) {
+    public List<User> findByRole(UserRole role) {
         if (role == null) {
             throw new IllegalArgumentException("Role must not be null.");
         }
@@ -305,8 +312,7 @@ public class FileUserRepository implements UserRepository {
         }
     }
 
-    // 데이터 교환용 DTO.
-    // User 객체를 직접 저장하지 않고 필요한 값만 JSON에 저장한다.
+    // DTO
     private static class UserRecord {
         private long userId;
         private String loginId;
@@ -341,7 +347,7 @@ public class FileUserRepository implements UserRepository {
                         loginId,
                         password,
                         AccountStatus.valueOf(accountStatus),
-                        Role.valueOf(role)
+                        UserRole.valueOf(role)
                 );
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Saved account status or role value does not match the enum.", e);

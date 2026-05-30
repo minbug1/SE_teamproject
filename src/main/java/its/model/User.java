@@ -3,7 +3,7 @@ package its.model;
 
 import java.util.Objects;
 
-/**
+/*
  * model for user
  * 
  *
@@ -16,16 +16,14 @@ public class User {
     private String loginId;
     private String password;
     private AccountStatus accountStatus;
-    private Role role;
+    private UserRole role;
 
     // constructor 
     public User(Long userId, String loginId, String password) {
-       this(userId, loginId, password, AccountStatus.PENDING, Role.UNASSIGNED);
+       this(userId, loginId, password, AccountStatus.PENDING, UserRole.UNASSIGNED);
     }
 
-
-
-    public User(Long userId, String loginId, String password, AccountStatus accountStatus, Role role) {
+    public User(Long userId, String loginId, String password, AccountStatus accountStatus, UserRole role) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID must not be empty.");
         }
@@ -70,12 +68,12 @@ public class User {
         return accountStatus;
     }
 
-    public Role getRole() {
+    public UserRole getRole() {
         return role;
     }
 
-    // change
-    public void changeLoginId(String newLoginId) {
+    // set
+    public void setLoginId(String newLoginId) {
         if (newLoginId == null || newLoginId.trim().isEmpty()) {
             throw new IllegalArgumentException("Login ID must not be empty.");
         }
@@ -83,7 +81,7 @@ public class User {
         this.loginId = newLoginId;
     }
 
-    public void changePassword(String newPassword) {
+    public void setPassword(String newPassword) {
         if (newPassword == null || newPassword.trim().isEmpty()) {
             throw new IllegalArgumentException("Password must not be empty.");
         }
@@ -91,7 +89,7 @@ public class User {
         this.password = newPassword;
     }
 
-    public void changeAccountStatus(AccountStatus newAccountStatus) {
+    public void setAccountStatus(AccountStatus newAccountStatus) {
         if (newAccountStatus == null) {
             throw new IllegalArgumentException("Account Status must not be null.");
         }
@@ -99,7 +97,7 @@ public class User {
         this.accountStatus = newAccountStatus;
     }
 
-    public void changeRole(Role newRole) {
+    public void setRole(UserRole newRole) {
         if (newRole == null) {
             throw new IllegalArgumentException("Role must not be null.");
         }
@@ -133,23 +131,23 @@ public class User {
     }
 
     public boolean isAdmin() {
-        return role == Role.ADMIN;
+        return role == UserRole.ADMIN;
     }
 
     public boolean isPL() {
-        return role == Role.PL;
+        return role == UserRole.PL;
     }
 
     public boolean isDev() {
-        return role == Role.DEVELOPER;
+        return role == UserRole.DEVELOPER;
     }
 
     public boolean isTester() {
-        return role == Role.TESTER;
+        return role == UserRole.TESTER;
     }
 
     public boolean isUnassigned() {
-        return role == Role.UNASSIGNED;
+        return role == UserRole.UNASSIGNED;
     }
 
     @Override

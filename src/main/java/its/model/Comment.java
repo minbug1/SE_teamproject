@@ -7,6 +7,7 @@ public class Comment {
     private int commentId;
     private String content;
     private User author;
+    private CommentStatus commentStatus = CommentStatus.GENERAL;
     private LocalDateTime writtenDate;
 
     public Comment(int commentId, String content, User author, LocalDateTime writtenDate) {
@@ -14,6 +15,12 @@ public class Comment {
         this.content = content;
         this.author = author;
         this.writtenDate = writtenDate;
+    }
+
+    public Comment(int commentId, String content, User author,
+                LocalDateTime writtenDate, CommentStatus commentStatus) {
+        this(commentId, content, author, writtenDate);
+        setCommentStatus(commentStatus);
     }
 
     public int getCommentId() {
@@ -28,6 +35,10 @@ public class Comment {
         return author;
     }
 
+    public CommentStatus getCommentStatus() {
+        return commentStatus;
+    }
+
     public LocalDateTime getWrittenDate() {
         return writtenDate;
     }
@@ -38,6 +49,13 @@ public class Comment {
 
     public void setAuthor(User author) {
         this.author = author;
+    }
+
+    public void setCommentStatus(CommentStatus commentStatus) {
+        if (commentStatus == null) {
+            throw new IllegalArgumentException("Comment Status must not be null.");
+        }
+        this.commentStatus = commentStatus;
     }
 
     public void setWrittenDate(LocalDateTime writtenDate) {
