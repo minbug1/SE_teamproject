@@ -130,7 +130,7 @@ public class ActionButtonEditor implements TableCellEditor {
         }
 
         if (currentUser != null && currentUser.isPL()) {
-            if (status == IssueStatus.NEW) {
+            if (status == IssueStatus.NEW || status == IssueStatus.REOPENED) {
                 addItem(menu, "담당자 지정", this::changeAssignee);
             }
             addItem(menu, "우선순위 변경", this::changePriority);
