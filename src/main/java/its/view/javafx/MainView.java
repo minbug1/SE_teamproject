@@ -132,7 +132,7 @@ public class MainView {
         TableColumn<IssueRow, Void> actionCol = new TableColumn<>("");
         actionCol.setPrefWidth(50);
         actionCol.setMaxWidth(60);
-        actionCol.setCellFactory(new ActionButtonCellFactory(currentUser, this::refreshTable));
+        actionCol.setCellFactory(new ActionButtonCellFactory(currentUser, issueController, this::refreshTable));
 
         table.getColumns().addAll(
                 projectCol, idCol, nameCol, priorityCol, statusCol, reporterCol, assigneeCol, actionCol);
@@ -154,7 +154,7 @@ public class MainView {
             project.getIssues().clear();
             for (long issueId : project.getIssueIds()) {
                 allIssues.stream()
-                        .filter(i -> i.getIssueId() == issueId)
+                        .filter(i -> i.getIssueId() == issueId && i.getProjectId() == project.getProjectId())
                         .findFirst()
                         .ifPresent(project::addIssue);
             }

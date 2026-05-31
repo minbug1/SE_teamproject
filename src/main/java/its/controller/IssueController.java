@@ -208,6 +208,39 @@ public class IssueController {
         return issue;
     }
 
+    public void changePriority(Project project, long issueId, Priority newPriority, User user) {
+        validateProject(project);
+        validateUser(user, "User must not be null.");
+        validateProjectMember(project, user, "Need to be a member of the project.");
+        if (newPriority == null) throw new IllegalArgumentException("Priority must not be null.");
+
+        Issue issue = getProjectIssueOrNull(project, issueId);
+        if (issue == null) throw new IllegalArgumentException("Issue not found.");
+
+        issue.setPriority(newPriority);
+        issueRepository.update(issue);
+    }
+
+    public Issue forceAssignIssue(Project project, long issueId, User assignee, User admin, String commentContent) {
+        validateProject(project);
+        validateUser(admin, "Admin must not be null.");
+        validateUser(assignee, "Assignee must not be null.");
+        validateProjectMember(project, assignee, "The assignee is not a member of the project.");
+        if (!admin.isAdmin()) throw new SecurityException("Only admin can force assign issues.");
+
+        Issue issue = getProjectIssueOrNull(project, issueId);
+        if (issue == null) throw new IllegalArgumentException("Issue not found.");
+
+        issue.setAssignee(assignee);
+        if (issue.getStatus() == Status.NEW || issue.getStatus() == Status.REOPENED)
+            issue.setStatus(Status.ASSIGNED);
+
+        addCommentIfPresent(issue, commentContent, admin);
+        issueRepository.update(issue);
+        return issue;
+    }
+
+
     // helper
     private long generateIssueIdInProject(Project project) {
         long maxId = 0;

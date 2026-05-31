@@ -8,6 +8,7 @@ import its.model.AccountStatus;
 import its.model.Project;
 import its.model.Role;
 import its.model.User;
+import its.model.Issue;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -370,6 +371,15 @@ public class AdminView {
         confirm.initOwner(stage);
         confirm.showAndWait().ifPresent(bt -> {
             if (bt != ButtonType.YES) return;
+
+            for (its.model.Issue issue : new ArrayList<>(selectedProject.getIssues())) {
+                try {
+                    issueController.deleteIssue(selectedProject, issue.getIssueId(), adminUser);
+                } catch (Exception e) {
+                    System.err.println("이슈 삭제 실패: " + e.getMessage());
+                }
+            }
+
             projectController.deleteProject(selectedProject.getProjectId(), adminUser);
             projects.remove(selectedProject);
             selectedProject = null;

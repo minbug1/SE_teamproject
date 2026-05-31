@@ -124,5 +124,12 @@
     "password": "1234",
     "accountStatus": "ACTIVE",
     "role": "TESTER"
+  },
+  {
+    "userId": 24,
+    "loginId": "dev12",
+    "password": "1234",
+    "accountStatus": "ACTIVE",
+    "role": "UNASSIGNED"
   }
 ]
