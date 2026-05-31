@@ -1,12 +1,14 @@
 package its.view.swing;
 
 import its.controller.AuthController;
+import its.controller.CategoryController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.StatisticsController;
 import its.controller.UserController;
 import its.model.AccountStatus;
 import its.model.Project;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 
 import javax.swing.BorderFactory;
@@ -42,6 +44,8 @@ public class AdminView extends JFrame {
     private final ProjectController projectController;
     private final IssueController issueController;
     private final UserController userController;
+    private final StatisticsController statisticsController;
+    private final CategoryController categoryController;
     
     private final User adminUser;
     private final List<Project> projects;
@@ -64,6 +68,8 @@ public class AdminView extends JFrame {
                      ProjectController projectController,
                      IssueController issueController,
                      UserController userController,
+                     StatisticsController statisticsController,
+                     CategoryController categoryController,
                      User adminUser,
                      List<Project> projects,
                      List<User> allUsers) {
@@ -71,6 +77,8 @@ public class AdminView extends JFrame {
         this.projectController = projectController;
         this.issueController = issueController;
         this.userController = userController;
+        this.statisticsController = statisticsController;
+        this.categoryController = categoryController;
         this.adminUser = adminUser;
         this.projects = projects;
         this.allUsers = allUsers;
@@ -180,7 +188,7 @@ public class AdminView extends JFrame {
             }
         };
         memberTable = createTable(memberTableModel);
-        memberTable.getColumn("Role").setCellEditor(new EnumCellEditor<>(Role.class));
+        memberTable.getColumn("Role").setCellEditor(new EnumCellEditor<>(UserRole.class));
         memberTable.getColumn("Account Status").setCellEditor(new EnumCellEditor<>(AccountStatus.class));
         memberTable.getColumn("").setCellRenderer(new ButtonRenderer("Remove"));
         memberTable.getColumn("").setCellEditor(new RemoveMemberEditor());
@@ -194,7 +202,7 @@ public class AdminView extends JFrame {
             }
         };
         unassignedTable = createTable(unassignedTableModel);
-        unassignedTable.getColumn("Role").setCellEditor(new EnumCellEditor<>(Role.class));
+        unassignedTable.getColumn("Role").setCellEditor(new EnumCellEditor<>(UserRole.class));
         unassignedTable.getColumn("Account Status").setCellEditor(new EnumCellEditor<>(AccountStatus.class));
         unassignedTable.getColumn("").setCellRenderer(new ButtonRenderer("Assign"));
         unassignedTable.getColumn("").setCellEditor(new AssignUserEditor());
@@ -354,13 +362,13 @@ public class AdminView extends JFrame {
         
         try {
             if (column == 1) {
-                Role role = toRole(model.getValueAt(row, column));
+                UserRole role = toRole(model.getValueAt(row, column));
                 authController.changeRole(adminUser, user.getUserId(), role);
-                user.changeRole(role);
+                user.setRole(role);
             } else if (column == 2) {
                 AccountStatus status = toAccountStatus(model.getValueAt(row, column));
                 authController.changeAccountStatus(adminUser, user.getUserId(), status);
-                user.changeAccountStatus(status);
+                user.setAccountStatus(status);
             }
             refreshProjectList();
             if (selectedProject != null) {
@@ -371,11 +379,11 @@ public class AdminView extends JFrame {
         }
     }
 
-    private Role toRole(Object value) {
-        if (value instanceof Role) {
-            return (Role) value;
+    private UserRole toRole(Object value) {
+        if (value instanceof UserRole) {
+            return (UserRole) value;
         }
-        return Role.valueOf(String.valueOf(value));
+        return UserRole.valueOf(String.valueOf(value));
     }
 
     private AccountStatus toAccountStatus(Object value) {
@@ -577,7 +585,8 @@ public class AdminView extends JFrame {
         int result = JOptionPane.showConfirmDialog(this, "Logout?", "Logout", JOptionPane.YES_NO_OPTION);
         if (result == JOptionPane.YES_OPTION) {
             dispose();
-            new LoginView(authController, issueController, userController, projectController).setVisible(true);
+            new LoginView(authController, issueController, userController, projectController,
+                    statisticsController, categoryController).setVisible(true);
         }
     }
 

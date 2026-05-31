@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StatisticsControllerTest {
 
-    // ── 인메모리 IssueRepository 스텁 ────────────────────────────────────────
+    // ?? ?몃찓紐⑤━ IssueRepository ?ㅽ뀅 ????????????????????????????????????????
     static class MemoryIssueRepository implements IssueRepository {
         private final List<Issue> issues = new ArrayList<>();
 
@@ -47,7 +47,7 @@ class StatisticsControllerTest {
         @Override public long generateIssueId(int projectId) { return generateIssueId(); }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // ?????????????????????????????????????????????????????????????????????????
 
     private MemoryIssueRepository issueRepository;
     private StatisticsController statisticsController;
@@ -63,14 +63,14 @@ class StatisticsControllerTest {
         issueRepository = new MemoryIssueRepository();
         statisticsController = new StatisticsController(issueRepository);
 
-        reporter = new User(1L, "reporter", "pw", AccountStatus.ACTIVE, Role.TESTER);
-        dev1     = new User(2L, "dev1",     "pw", AccountStatus.ACTIVE, Role.DEVELOPER);
-        dev2     = new User(3L, "dev2",     "pw", AccountStatus.ACTIVE, Role.DEVELOPER);
+        reporter = new User(1L, "reporter", "pw", AccountStatus.ACTIVE, UserRole.TESTER);
+        dev1     = new User(2L, "dev1",     "pw", AccountStatus.ACTIVE, UserRole.DEVELOPER);
+        dev2     = new User(3L, "dev2",     "pw", AccountStatus.ACTIVE, UserRole.DEVELOPER);
     }
 
-    // ── 헬퍼: 이슈 생성 ───────────────────────────────────────────────────────
+    // ?? ?ы띁: ?댁뒋 ?앹꽦 ???????????????????????????????????????????????????????
 
-    private Issue makeIssue(int id, LocalDateTime date, Priority priority, Status status, User fixer) {
+    private Issue makeIssue(int id, LocalDateTime date, Priority priority, IssueStatus status, User fixer) {
         Issue issue = new Issue((long) id, PROJECT_ID, "Title" + id, "Desc", reporter, date);
         issue.setProjectId(PROJECT_ID);
         issue.setPriority(priority);
@@ -80,21 +80,21 @@ class StatisticsControllerTest {
         return issue;
     }
 
-    // ── getIssueCountByDay ────────────────────────────────────────────────────
+    // ?? getIssueCountByDay ????????????????????????????????????????????????????
 
     @Test
     void getIssueCountByDayShouldReturnZeroWhenNoIssues() {
         Map<Integer, Long> result = statisticsController.getIssueCountByDay(PROJECT_ID, 2026, 5);
 
-        assertEquals(31, result.size()); // 5월은 31일
+        assertEquals(31, result.size()); // 5?붿? 31??
         result.values().forEach(count -> assertEquals(0L, count));
     }
 
     @Test
     void getIssueCountByDayShouldCountCorrectly() {
-        makeIssue(1, LocalDateTime.of(2026, 5, 10, 9, 0), Priority.MAJOR, Status.NEW, null);
-        makeIssue(2, LocalDateTime.of(2026, 5, 10, 15, 0), Priority.MINOR, Status.NEW, null);
-        makeIssue(3, LocalDateTime.of(2026, 5, 20, 9, 0), Priority.BLOCKER, Status.NEW, null);
+        makeIssue(1, LocalDateTime.of(2026, 5, 10, 9, 0), Priority.MAJOR, IssueStatus.NEW, null);
+        makeIssue(2, LocalDateTime.of(2026, 5, 10, 15, 0), Priority.MINOR, IssueStatus.NEW, null);
+        makeIssue(3, LocalDateTime.of(2026, 5, 20, 9, 0), Priority.BLOCKER, IssueStatus.NEW, null);
 
         Map<Integer, Long> result = statisticsController.getIssueCountByDay(PROJECT_ID, 2026, 5);
 
@@ -105,19 +105,19 @@ class StatisticsControllerTest {
 
     @Test
     void getIssueCountByDayShouldIgnoreOtherMonths() {
-        makeIssue(1, LocalDateTime.of(2026, 4, 10, 9, 0), Priority.MAJOR, Status.NEW, null); // 4월
-        makeIssue(2, LocalDateTime.of(2026, 5, 10, 9, 0), Priority.MAJOR, Status.NEW, null); // 5월
+        makeIssue(1, LocalDateTime.of(2026, 4, 10, 9, 0), Priority.MAJOR, IssueStatus.NEW, null); // 4??
+        makeIssue(2, LocalDateTime.of(2026, 5, 10, 9, 0), Priority.MAJOR, IssueStatus.NEW, null); // 5??
 
         Map<Integer, Long> result = statisticsController.getIssueCountByDay(PROJECT_ID, 2026, 5);
 
-        assertEquals(1L, result.get(10)); // 5월 것만 카운트
+        assertEquals(1L, result.get(10)); // 5??寃껊쭔 移댁슫??
     }
 
     @Test
     void getIssueCountByDayShouldIgnoreOtherProjects() {
-        Issue issue = new Issue(1L, 999, "Title", "Desc", reporter, LocalDateTime.of(2026, 5, 10, 9, 0)); // 다른 프로젝트
+        Issue issue = new Issue(1L, 999, "Title", "Desc", reporter, LocalDateTime.of(2026, 5, 10, 9, 0)); // ?ㅻⅨ ?꾨줈?앺듃
         issue.setPriority(Priority.MAJOR);
-        issue.setStatus(Status.NEW);
+        issue.setStatus(IssueStatus.NEW);
         issueRepository.save(issue);
 
         Map<Integer, Long> result = statisticsController.getIssueCountByDay(PROJECT_ID, 2026, 5);
@@ -131,7 +131,7 @@ class StatisticsControllerTest {
                 statisticsController.getIssueCountByDay(0, 2026, 5));
     }
 
-    // ── getIssueCountByMonth ──────────────────────────────────────────────────
+    // ?? getIssueCountByMonth ??????????????????????????????????????????????????
 
     @Test
     void getIssueCountByMonthShouldReturnAllTwelveMonths() {
@@ -141,9 +141,9 @@ class StatisticsControllerTest {
 
     @Test
     void getIssueCountByMonthShouldCountCorrectly() {
-        makeIssue(1, LocalDateTime.of(2026, 1, 5, 9, 0), Priority.MAJOR, Status.NEW, null);
-        makeIssue(2, LocalDateTime.of(2026, 1, 20, 9, 0), Priority.MINOR, Status.NEW, null);
-        makeIssue(3, LocalDateTime.of(2026, 3, 15, 9, 0), Priority.BLOCKER, Status.NEW, null);
+        makeIssue(1, LocalDateTime.of(2026, 1, 5, 9, 0), Priority.MAJOR, IssueStatus.NEW, null);
+        makeIssue(2, LocalDateTime.of(2026, 1, 20, 9, 0), Priority.MINOR, IssueStatus.NEW, null);
+        makeIssue(3, LocalDateTime.of(2026, 3, 15, 9, 0), Priority.BLOCKER, IssueStatus.NEW, null);
 
         Map<Integer, Long> result = statisticsController.getIssueCountByMonth(PROJECT_ID, 2026);
 
@@ -154,8 +154,8 @@ class StatisticsControllerTest {
 
     @Test
     void getIssueCountByMonthShouldIgnoreOtherYears() {
-        makeIssue(1, LocalDateTime.of(2025, 5, 10, 9, 0), Priority.MAJOR, Status.NEW, null); // 2025
-        makeIssue(2, LocalDateTime.of(2026, 5, 10, 9, 0), Priority.MAJOR, Status.NEW, null); // 2026
+        makeIssue(1, LocalDateTime.of(2025, 5, 10, 9, 0), Priority.MAJOR, IssueStatus.NEW, null); // 2025
+        makeIssue(2, LocalDateTime.of(2026, 5, 10, 9, 0), Priority.MAJOR, IssueStatus.NEW, null); // 2026
 
         Map<Integer, Long> result = statisticsController.getIssueCountByMonth(PROJECT_ID, 2026);
 
@@ -168,7 +168,7 @@ class StatisticsControllerTest {
                 statisticsController.getIssueCountByMonth(-1, 2026));
     }
 
-    // ── getIssueCountByPriority ───────────────────────────────────────────────
+    // ?? getIssueCountByPriority ???????????????????????????????????????????????
 
     @Test
     void getIssueCountByPriorityShouldReturnAllPriorities() {
@@ -178,10 +178,10 @@ class StatisticsControllerTest {
 
     @Test
     void getIssueCountByPriorityShouldCountCorrectly() {
-        makeIssue(1, LocalDateTime.now(), Priority.BLOCKER, Status.NEW, null);
-        makeIssue(2, LocalDateTime.now(), Priority.BLOCKER, Status.NEW, null);
-        makeIssue(3, LocalDateTime.now(), Priority.MAJOR,   Status.NEW, null);
-        makeIssue(4, LocalDateTime.now(), Priority.TRIVIAL, Status.NEW, null);
+        makeIssue(1, LocalDateTime.now(), Priority.BLOCKER, IssueStatus.NEW, null);
+        makeIssue(2, LocalDateTime.now(), Priority.BLOCKER, IssueStatus.NEW, null);
+        makeIssue(3, LocalDateTime.now(), Priority.MAJOR,   IssueStatus.NEW, null);
+        makeIssue(4, LocalDateTime.now(), Priority.TRIVIAL, IssueStatus.NEW, null);
 
         Map<Priority, Long> result = statisticsController.getIssueCountByPriority(PROJECT_ID);
 
@@ -204,11 +204,11 @@ class StatisticsControllerTest {
                 statisticsController.getIssueCountByPriority(0));
     }
 
-    // ── getResolvedCountByDeveloper ───────────────────────────────────────────
+    // ?? getResolvedCountByDeveloper ???????????????????????????????????????????
 
     @Test
     void getResolvedCountByDeveloperShouldReturnEmptyWhenNoResolvedIssues() {
-        makeIssue(1, LocalDateTime.now(), Priority.MAJOR, Status.NEW, null);
+        makeIssue(1, LocalDateTime.now(), Priority.MAJOR, IssueStatus.NEW, null);
 
         Map<User, Long> result = statisticsController.getResolvedCountByDeveloper(PROJECT_ID);
 
@@ -217,11 +217,11 @@ class StatisticsControllerTest {
 
     @Test
     void getResolvedCountByDeveloperShouldCountFixedResolvedClosed() {
-        makeIssue(1, LocalDateTime.now(), Priority.MAJOR, Status.FIXED,    dev1);
-        makeIssue(2, LocalDateTime.now(), Priority.MAJOR, Status.RESOLVED, dev1);
-        makeIssue(3, LocalDateTime.now(), Priority.MAJOR, Status.CLOSED,   dev1);
-        makeIssue(4, LocalDateTime.now(), Priority.MAJOR, Status.FIXED,    dev2);
-        makeIssue(5, LocalDateTime.now(), Priority.MAJOR, Status.NEW,      dev1); // 카운트 제외
+        makeIssue(1, LocalDateTime.now(), Priority.MAJOR, IssueStatus.FIXED,    dev1);
+        makeIssue(2, LocalDateTime.now(), Priority.MAJOR, IssueStatus.RESOLVED, dev1);
+        makeIssue(3, LocalDateTime.now(), Priority.MAJOR, IssueStatus.CLOSED,   dev1);
+        makeIssue(4, LocalDateTime.now(), Priority.MAJOR, IssueStatus.FIXED,    dev2);
+        makeIssue(5, LocalDateTime.now(), Priority.MAJOR, IssueStatus.NEW,      dev1); // 移댁슫???쒖쇅
 
         Map<User, Long> result = statisticsController.getResolvedCountByDeveloper(PROJECT_ID);
 
@@ -231,7 +231,7 @@ class StatisticsControllerTest {
 
     @Test
     void getResolvedCountByDeveloperShouldIgnoreIssuesWithNoFixer() {
-        makeIssue(1, LocalDateTime.now(), Priority.MAJOR, Status.RESOLVED, null); // fixer 없음
+        makeIssue(1, LocalDateTime.now(), Priority.MAJOR, IssueStatus.RESOLVED, null); // fixer ?놁쓬
 
         Map<User, Long> result = statisticsController.getResolvedCountByDeveloper(PROJECT_ID);
 
@@ -244,7 +244,7 @@ class StatisticsControllerTest {
                 statisticsController.getResolvedCountByDeveloper(0));
     }
 
-    // ── getAvailableYears ─────────────────────────────────────────────────────
+    // ?? getAvailableYears ?????????????????????????????????????????????????????
 
     @Test
     void getAvailableYearsShouldReturnCurrentYearWhenNoIssues() {
@@ -256,9 +256,9 @@ class StatisticsControllerTest {
 
     @Test
     void getAvailableYearsShouldReturnSortedUniqueYears() {
-        makeIssue(1, LocalDateTime.of(2024, 3, 1, 9, 0), Priority.MAJOR, Status.NEW, null);
-        makeIssue(2, LocalDateTime.of(2026, 5, 1, 9, 0), Priority.MAJOR, Status.NEW, null);
-        makeIssue(3, LocalDateTime.of(2026, 8, 1, 9, 0), Priority.MAJOR, Status.NEW, null); // 2026 중복
+        makeIssue(1, LocalDateTime.of(2024, 3, 1, 9, 0), Priority.MAJOR, IssueStatus.NEW, null);
+        makeIssue(2, LocalDateTime.of(2026, 5, 1, 9, 0), Priority.MAJOR, IssueStatus.NEW, null);
+        makeIssue(3, LocalDateTime.of(2026, 8, 1, 9, 0), Priority.MAJOR, IssueStatus.NEW, null); // 2026 以묐났
 
         List<Integer> years = statisticsController.getAvailableYears(PROJECT_ID);
 
@@ -271,7 +271,7 @@ class StatisticsControllerTest {
                 statisticsController.getAvailableYears(-5));
     }
 
-    // ── 생성자 검증 ────────────────────────────────────────────────────────────
+    // ?? ?앹꽦??寃利?????????????????????????????????????????????????????????????
 
     @Test
     void constructorShouldFailWhenRepositoryIsNull() {

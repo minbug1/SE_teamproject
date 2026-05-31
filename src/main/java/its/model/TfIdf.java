@@ -1,0 +1,334 @@
+package its.model;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/*
+ * model for TF-IDF
+ * 
+ *
+ * @author hanung
+ */
+
+public class TfIdf {
+    
+    // for cut
+    private static final int MIN_WORD_COUNT = 3;
+    // for weight
+    private static final int titleWeight = 3;
+    private static final int descriptionWeight = 2;
+    private static final int commentWeight = 1;
+    private static final int generalWeight = 1;
+    // for vocabulary
+    private Set<String> vocabulary = new HashSet<>();
+    // for IDF
+    private Map<String, Double> idf = new HashMap<>();
+
+    // build vocabulary
+    public void buildVocabulary(List<Issue> issues) {
+        if (issues == null) {
+            return;
+        }
+
+        for (Issue issue : issues) {
+            vocabulary.addAll(tokenize(issue.getTitle()));
+            vocabulary.addAll(tokenize(issue.getDescription()));
+
+            for (Comment comment : issue.getComments()) {
+                if (comment == null) {
+                    continue;
+                }
+
+                vocabulary.addAll(tokenize(comment.getContent()));
+            }
+        }
+    }
+
+    // TF-IDF
+    public Map<Long, Map<String, Double>> calculateTfIdfByIssue(List<Issue> issues) {
+        // build vocabulary
+        this.vocabulary.clear();
+        buildVocabulary(issues);
+
+        // {issueId1:{"word1": tf-idf, "word1": tf-idf, ...}, issueId2:{"word1":tf-idf, ...}, ...}
+        Map<Long, Map<String, Double>> tfIdfByIssue = new HashMap<>();
+
+        // TF, IDF
+        Map<Long, Map<String, Double>> tfByIssue = calculateTfByIssue(issues);
+        Map<String, Double> idfByDocument = calculateIdfByDocument(issues);
+
+        // TF * IDF
+        for (Map.Entry<Long, Map<String, Double>> issueEntry : tfByIssue.entrySet()) {
+            long issueId = issueEntry.getKey();
+            Map<String, Double> tfVector = issueEntry.getValue();
+
+            Map<String, Double> tfIdfVector = new HashMap<>();
+            
+            // vocabulary dimension
+            for (String word : vocabulary) {
+                double tfValue = tfVector.getOrDefault(word, 0.0);
+                double idfValue = idfByDocument.getOrDefault(word, 1.0);
+
+                tfIdfVector.put(word, tfValue * idfValue);
+            }
+
+            tfIdfByIssue.put(issueId, tfIdfVector);
+        }
+
+        return tfIdfByIssue;
+    }
+
+    // TF
+    public Map<Long, Map<String, Double>> calculateTfByIssue(List<Issue> issues) {
+        // {issueId1: {"word1": tf, ...}, {issueId2: {"word2": tf, ...}, ...}
+        Map<Long, Map<String, Double>> tfByIssue = new HashMap<>();
+
+        if (issues == null) {
+            return tfByIssue;
+        }
+
+        for (Issue issue : issues) {
+            if (issue == null) {
+                continue;
+            }
+
+            // count
+            Map<String, Integer> issueWordCounts = countWordsByIssue(issue);
+
+            // cut
+            cutWords(issueWordCounts, MIN_WORD_COUNT);
+
+            // total
+            int totalWeightCount = 0;
+            for (int count : issueWordCounts.values()) {
+                totalWeightCount += count;
+            }
+
+            // calculate TF with mapping onto vocabulary
+            Map<String, Double> tfVector = new HashMap<>();
+            for (String word : vocabulary) {
+                if (totalWeightCount > 0 && issueWordCounts.containsKey(word)) {
+                    int count = issueWordCounts.get(word);
+                    // tf value
+                    tfVector.put(word, (double) count / totalWeightCount);
+                } else {
+                    // 0 value for sparse vector (vocabulary)
+                    tfVector.put(word, 0.0);
+                }
+            }
+
+            tfByIssue.put(issue.getIssueId(), tfVector);
+        }
+
+        return tfByIssue;
+    }
+
+    // IDF
+    public Map<String, Double> calculateIdfByDocument(List<Issue> issues) {
+        // {"word1": idf, "word2": idf, ...}
+        Map<String, Double> idfByDocument = new HashMap<>();
+
+        if (issues == null || issues.isEmpty()) {
+            for (String word : vocabulary) {
+                idfByDocument.put(word, 1.0);
+            }
+            return idfByDocument;
+        }
+
+        // count
+        //{document1:{"word1":count, "word2":count, ...}, document2:{"word1":count, "word2":count, ...}, ...}
+        Map<Integer, Map<String, Integer>> documentWordCounts = countWordsByDocument(issues);
+
+        // cut
+        for (Map<String, Integer> wordCount : documentWordCounts.values()) {
+            cutWords(wordCount, MIN_WORD_COUNT);
+        }
+
+        // total document
+        int totalDocumentCount = documentWordCounts.size();
+
+        // document frequency
+        // {"word1":count, "word2":count, ...}
+        Map<String, Integer> documentFrequency = new HashMap<>();
+        for (Map<String, Integer> wordCount : documentWordCounts.values()) {
+            for (String word : wordCount.keySet()) {
+                documentFrequency.put(
+                        word,
+                        documentFrequency.getOrDefault(word, 0) + 1
+                );
+            }
+        }
+
+        // calculate IDF with mapping onto vocabulary
+        for (String word : vocabulary) {
+            int df = documentFrequency.getOrDefault(word, 0);
+
+            // Smoothing
+            double idfValue = Math.log((totalDocumentCount + 1.0) / (df + 1.0)) + 1.0;
+
+            idfByDocument.put(word, idfValue);
+        }
+
+        this.idf = idfByDocument;
+
+        return idfByDocument;
+    }
+    
+    // count for tf
+    public Map<String, Integer> countWordsByIssue(Issue issue) {
+        // {"word1":count, "word2":count, ...}
+        Map<String, Integer> wordCount = new HashMap<>();
+
+        if (issue == null) {
+            return wordCount;
+        }
+
+        addText(wordCount, issue.getTitle(), titleWeight);
+        addText(wordCount, issue.getDescription(), descriptionWeight);
+
+        for (Comment comment : issue.getComments()) {
+            if (comment == null) {
+                continue;
+            }
+
+            addText(wordCount, comment.getContent(), commentWeight);
+        }
+
+        return wordCount;
+    }
+
+    // count for idf
+    private Map<Integer, Map<String, Integer>> countWordsByDocument(List<Issue> issues) {
+        // {categoryId1:{"word1": count, "word2": count, ...}, categoryId2:{"word1": count, ...}}
+        Map<Integer, Map<String, Integer>> documentWordCounts = new HashMap<>();
+        
+        // for uncategorized issue
+        int virtualCategory = -1;
+
+        for (Issue issue : issues) {
+            if (issue == null) {
+                continue;
+            }
+
+            int targetKey = issue.getCategoryId();
+
+            // regrad uncategorized issue as separate document
+            if (targetKey <= 0) {
+                targetKey = virtualCategory;
+                virtualCategory--; 
+            }
+
+            // documentWordCounts.value를 변수 wordCount로 관리, 있으면 그대로 사용, 없으면 생성
+            Map<String, Integer> wordCount = documentWordCounts.computeIfAbsent(
+                    targetKey,
+                    key -> new HashMap<>()
+            );
+
+            // wordCount에 generalWeight 사용
+            addText(wordCount, issue.getTitle(), generalWeight);
+            addText(wordCount, issue.getDescription(), generalWeight);
+
+            if (issue.getComments() != null) {
+                for (Comment comment : issue.getComments()) {
+                    if (comment == null) {
+                        continue;
+                    }
+                    addText(wordCount, comment.getContent(), generalWeight);
+                }
+            }
+        }
+
+        return documentWordCounts;
+    }
+
+    // add Text with weight
+    private void addText(Map<String, Integer> wordCount, String text, int weight) {
+        if (wordCount == null) {
+            return;
+        }
+
+        if (text == null || text.trim().isEmpty()) {
+            return;
+        }
+
+        if (weight <= 0) {
+            return;
+        }
+        // tokenize
+        List<String> words = tokenize(text);
+        // add weighted count
+        for (String word : words) {
+            wordCount.put(word, wordCount.getOrDefault(word, 0) + weight);
+        }
+    }
+
+    // tokenizer
+    private List<String> tokenize(String text) {
+        // ["word1", "word2", "word3", ...]
+        List<String> result = new ArrayList<>();
+
+        if (text == null || text.trim().isEmpty()) {
+            return result;
+        }
+
+        // lowercase
+        String normalizedText = text.toLowerCase();
+        // alphabet and number only
+        normalizedText = normalizedText.replaceAll("[^a-z0-9]", " ");
+        // split by space
+        String[] tokens = normalizedText.split("\\s+");
+
+        for (String token : tokens) {
+            if (token == null || token.trim().isEmpty()) {
+                continue;
+            }
+            
+            result.add(token);
+        }
+
+        return result;
+    }
+
+    // cut
+    public void cutWords(Map<String, Integer> wordCount, int minCount) {
+        if (wordCount == null) {
+            return;
+        }
+
+        wordCount.entrySet().removeIf(entry -> entry.getValue() < minCount);
+    }
+
+    // get
+    public Set<String> getVocabulary() {
+        return vocabulary;
+    }
+
+    public Map<String, Double> getIdf() {
+        return idf;
+    }
+
+    // cosine similarity
+    public double cosineSimilarity(Map<String, Double> vectorA, Map<String, Double> vectorB) {
+        if (vectorA == null || vectorB == null || vectorA.isEmpty() || vectorB.isEmpty()) return 0.0;
+
+        double dotProduct = 0.0;
+        double normA = 0.0;
+        double normB = 0.0;
+
+        for (String word : this.vocabulary) {
+            double valA = vectorA.getOrDefault(word, 0.0);
+            double valB = vectorB.getOrDefault(word, 0.0);
+
+            dotProduct += valA * valB;
+            normA += valA * valA;
+            normB += valB * valB;
+        }
+
+        if (normA == 0.0 || normB == 0.0) return 0.0;
+        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+    }
+}

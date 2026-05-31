@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -17,10 +18,13 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
 import its.controller.AuthController;
+import its.controller.CategoryController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.StatisticsController;
 import its.controller.UserController;
 import its.model.Issue;
+import its.model.IssueStatus;
 import its.model.Project;
 import its.model.User;
 
@@ -30,9 +34,13 @@ public class MainView extends JFrame {
     private DefaultTableModel tableModel;
     private TableRowSorter<DefaultTableModel> tableSorter;
     private JComboBox<ProjectFilterItem> projectFilterComboBox;
+    private JComboBox<StatusFilterItem> statusFilterComboBox;
+    private JCheckBox myIssuesCheckBox;
 
     private IssueController issueController;
     private ProjectController projectController;
+    private StatisticsController statisticsController;
+    private CategoryController categoryController;
     private AuthController authController;
     private UserController userController;
     
@@ -57,10 +65,14 @@ public class MainView extends JFrame {
                     IssueController issueController,
                     ProjectController projectController,
                     UserController userController,
+                    StatisticsController statisticsController,
+                    CategoryController categoryController,
                     User currentUser) {
         this.authController = authController;
         this.issueController = issueController;
         this.projectController = projectController;
+        this.statisticsController = statisticsController;
+        this.categoryController = categoryController;
         this.userController = userController;
         this.currentUser = currentUser;
         initUI();
@@ -83,24 +95,75 @@ public class MainView extends JFrame {
         JLabel title = new JLabel("Issue Tracker");
         JButton logoutBtn = new JButton("Logout");
         JButton reportBtn = new JButton("+ Report Issue");
+        JButton statisticsBtn = new JButton("Statistics");
 
         logoutBtn.addActionListener(e -> onLogout());
         reportBtn.addActionListener(e -> onReportIssue());
+        statisticsBtn.addActionListener(e -> onShowStatistics());
+        statisticsBtn.setVisible(currentUser != null && currentUser.isPL());
 
         JPanel centerPanel = new JPanel();
         centerPanel.add(new JLabel("Project"));
         projectFilterComboBox = new JComboBox<>();
-        projectFilterComboBox.addActionListener(e -> applyProjectFilter());
+        projectFilterComboBox.addActionListener(e -> applyFilters());
         centerPanel.add(projectFilterComboBox);
+
+        centerPanel.add(new JLabel("Status"));
+        statusFilterComboBox = new JComboBox<>();
+        buildStatusFilter();  // 역할에 따라 항목 구성
+        statusFilterComboBox.addActionListener(e -> applyFilters());
+        centerPanel.add(statusFilterComboBox);
+
+        myIssuesCheckBox = new JCheckBox("My Issues");
+        myIssuesCheckBox.addActionListener(e -> applyFilters());
+        centerPanel.add(myIssuesCheckBox);
 
         JPanel rightPanel = new JPanel();
         rightPanel.add(reportBtn);
+        rightPanel.add(statisticsBtn);
         rightPanel.add(logoutBtn);
 
         panel.add(title, BorderLayout.WEST);
         panel.add(centerPanel, BorderLayout.CENTER);
         panel.add(rightPanel, BorderLayout.EAST);
         return panel;
+    }
+
+    private void buildStatusFilter() {
+        statusFilterComboBox.removeAllItems();
+        statusFilterComboBox.addItem(StatusFilterItem.all()); // 항상 "All" 포함
+
+        if (currentUser.isAdmin()) {
+            // Admin: 전체 상태
+            for (IssueStatus s : IssueStatus.values()) {
+                statusFilterComboBox.addItem(StatusFilterItem.of(s));
+            }
+        } else if (currentUser.isPL()) {
+            // PL: 담당자 지정 / 닫기 대상 위주
+            for (IssueStatus s : new IssueStatus[]{
+                    IssueStatus.NEW, IssueStatus.ASSIGNED, IssueStatus.FIXED,
+                    IssueStatus.RESOLVED, IssueStatus.REOPENED, IssueStatus.CLOSED}) {
+                statusFilterComboBox.addItem(StatusFilterItem.of(s));
+            }
+            // PL 기본값: NEW
+            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(IssueStatus.NEW));
+        } else if (currentUser.isDev()) {
+            // Developer: 본인 관련 상태 위주
+            for (IssueStatus s : new IssueStatus[]{
+                    IssueStatus.ASSIGNED, IssueStatus.FIXED, IssueStatus.REOPENED}) {
+                statusFilterComboBox.addItem(StatusFilterItem.of(s));
+            }
+            // Dev 기본값: ASSIGNED
+            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(IssueStatus.ASSIGNED));
+        } else if (currentUser.isTester()) {
+            // Tester: 검증 / 등록 관련
+            for (IssueStatus s : new IssueStatus[]{
+                    IssueStatus.NEW, IssueStatus.FIXED, IssueStatus.RESOLVED, IssueStatus.REOPENED}) {
+                statusFilterComboBox.addItem(StatusFilterItem.of(s));
+            }
+            // Tester 기본값: FIXED
+            statusFilterComboBox.setSelectedItem(StatusFilterItem.of(IssueStatus.FIXED));
+        }
     }
 
     private JPanel createTablePanel() {
@@ -120,7 +183,7 @@ public class MainView extends JFrame {
         issueTable.getTableHeader().setReorderingAllowed(false);
 
         issueTable.getColumn("").setCellRenderer(new ActionButtonRenderer());
-        issueTable.getColumn("").setCellEditor(new ActionButtonEditor(userController, issueController, projectController, authController, currentUser));
+        issueTable.getColumn("").setCellEditor(new ActionButtonEditor(projects, issueController, projectController, currentUser));
 
         issueTable.getColumnModel().getColumn(COL_PROJECT_ID).setMinWidth(0);
         issueTable.getColumnModel().getColumn(COL_PROJECT_ID).setMaxWidth(0);
@@ -174,7 +237,8 @@ public class MainView extends JFrame {
             project.getIssues().clear();
             for (long issueId : project.getIssueIds()) {
                 allIssues.stream()
-                        .filter(i -> i.getIssueId() == issueId)
+                        .filter(i -> i.getProjectId() == project.getProjectId()
+                                && i.getIssueId() == issueId)
                         .findFirst()
                         .ifPresent(project::addIssue);
             }
@@ -194,30 +258,53 @@ public class MainView extends JFrame {
         projectFilterComboBox.setSelectedIndex(0);
     }
 
-    private void applyProjectFilter() {
-        if (tableSorter == null || projectFilterComboBox == null) {
-            return;
-        }
+    private void applyFilters() {
+        if (tableSorter == null) return;
 
-        ProjectFilterItem selectedItem = (ProjectFilterItem) projectFilterComboBox.getSelectedItem();
-        if (selectedItem == null || selectedItem.isAll()) {
+        ProjectFilterItem projectItem = (ProjectFilterItem) projectFilterComboBox.getSelectedItem();
+        StatusFilterItem  statusItem  = (StatusFilterItem)  statusFilterComboBox.getSelectedItem();
+
+        boolean allProjects = projectItem == null || projectItem.isAll();
+        boolean allStatuses = statusItem  == null || statusItem.isAll();
+        boolean myIssuesOnly = myIssuesCheckBox != null && myIssuesCheckBox.isSelected();
+
+
+        if (allProjects && allStatuses && !myIssuesOnly) {
             tableSorter.setRowFilter(null);
             return;
         }
 
-        int projectId = selectedItem.getProject().getProjectId();
         tableSorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
             @Override
             public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
-                Object id = entry.getValue(COL_PROJECT_ID);
-                if (id instanceof Number) {
-                    return ((Number) id).intValue() == projectId;
+                // Project
+                if (!allProjects) {
+                    int projectId = projectItem.getProject().getProjectId();
+                    Object id = entry.getValue(COL_PROJECT_ID);
+                    int rowProjectId = (id instanceof Number)
+                            ? ((Number) id).intValue()
+                            : Integer.parseInt(id.toString());
+                    if (rowProjectId != projectId) return false;
                 }
-                try {
-                    return Integer.parseInt(id.toString()) == projectId;
-                } catch (NumberFormatException e) {
-                    return false;
+
+                // Status
+                if (!allStatuses) {
+                    String rowStatus = String.valueOf(entry.getValue(COL_STATUS));
+                    if (!rowStatus.equals(statusItem.getStatus().name())) return false;
                 }
+
+                // My Issues (본인이 Reporter 또는 Assignee)
+                if (myIssuesOnly) {
+                    String reporter = String.valueOf(entry.getValue(COL_REPORTER));
+                    String assignee = String.valueOf(entry.getValue(COL_ASSIGNEE));
+                    String myLoginId = currentUser.getLoginId();
+                    
+                    if (!reporter.equals(myLoginId) && !assignee.equals(myLoginId)) {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         });
     }
@@ -240,6 +327,21 @@ public class MainView extends JFrame {
         refreshTable();
     }   
 
+    private void onShowStatistics() {
+        ProjectFilterItem selectedItem = (ProjectFilterItem) projectFilterComboBox.getSelectedItem();
+        Project selectedProject = selectedItem == null ? null : selectedItem.getProject();
+        if (selectedProject == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Select a project before viewing statistics.",
+                    "Project Required",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        new StatisticsView(this, statisticsController, categoryController, selectedProject, currentUser).setVisible(true);
+    }
+
     private void onLogout() {
     int confirm = JOptionPane.showConfirmDialog(
         this, "Logout?", "Logout", JOptionPane.YES_NO_OPTION
@@ -247,7 +349,7 @@ public class MainView extends JFrame {
     if (confirm == JOptionPane.YES_OPTION) {
         dispose();
         new LoginView(authController, issueController,
-                      userController, projectController).setVisible(true);
+                      userController, projectController, statisticsController, categoryController).setVisible(true);
     }
 }
 
@@ -255,7 +357,7 @@ public class MainView extends JFrame {
         loadProjects();
         loadIssues();
         refreshProjectFilter();
-        applyProjectFilter();
+        applyFilters();
     }
 
     public void open() {
@@ -288,6 +390,35 @@ public class MainView extends JFrame {
         @Override
         public String toString() {
             return isAll() ? "All Projects" : project.getName();
+        }
+    }
+
+    private static class StatusFilterItem {
+        private final IssueStatus status;
+
+        private StatusFilterItem(IssueStatus status) {
+            this.status = status;
+        }
+
+        private static StatusFilterItem all() {
+            return new StatusFilterItem(null);
+        }
+
+        private static StatusFilterItem of(IssueStatus status) {
+            return new StatusFilterItem(status);
+        }
+
+        private boolean isAll() {
+            return status == null;
+        }
+
+        private IssueStatus getStatus() {
+            return status;
+        }
+
+        @Override
+        public String toString() {
+            return status == null ? "All Status" : status.name();
         }
     }
 }

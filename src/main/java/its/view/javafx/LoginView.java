@@ -1,11 +1,14 @@
 package its.view.javafx;
 
 import its.controller.AuthController;
+import its.controller.CategoryController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.StatisticsController;
 import its.controller.UserController;
 import its.model.Project;
 import its.model.User;
+import its.repository.FileCategoryRepository;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -21,6 +24,8 @@ public class LoginView {
     private final IssueController issueController;
     private final ProjectController projectController;
     private final UserController userController;
+    private final StatisticsController statisticsController;
+    private final CategoryController categoryController;
 
     private TextField usernameField;
     private PasswordField passwordField;
@@ -28,15 +33,23 @@ public class LoginView {
     private Stage stage;
 
     public LoginView() {
-        this(new AuthController(), new IssueController(), new UserController(), new ProjectController());
+        this(new AuthController(), new IssueController(), new UserController(), new ProjectController(), null, null);
     }
 
     public LoginView(AuthController authController, IssueController issueController,
-                     UserController userController, ProjectController projectController) {
+                     UserController userController, ProjectController projectController,
+                     StatisticsController statisticsController, CategoryController categoryController) {
         this.authController = authController;
         this.issueController = issueController;
         this.userController = userController;
         this.projectController = projectController;
+        this.statisticsController = statisticsController != null
+                ? statisticsController
+                : new StatisticsController(issueController.getIssueRepository());
+        this.categoryController = categoryController != null
+                ? categoryController
+                : new CategoryController(issueController.getIssueRepository(),
+                        new FileCategoryRepository(issueController.getIssueRepository()));
     }
 
     public void show(Stage stage) {
@@ -108,10 +121,10 @@ public class LoginView {
 
             if (user.isAdmin()) {
                 new AdminView(authController, projectController, issueController, userController,
-                        user, projects, allUsers).show(stage);
+                        statisticsController, categoryController, user, projects, allUsers).show(stage);
             } else {
                 new MainView(issueController, projectController, authController, userController,
-                        user).show(stage);
+                        statisticsController, categoryController, user).show(stage);
             }
         } catch (IllegalArgumentException | IllegalStateException e) {
             String msg = e.getMessage();

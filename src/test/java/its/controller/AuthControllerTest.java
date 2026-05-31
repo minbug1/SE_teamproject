@@ -1,7 +1,7 @@
 package its.controller;
 
 import its.model.AccountStatus;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 import its.repository.MemoryUserRepository;
 import its.repository.UserRepository;
@@ -30,7 +30,7 @@ class AuthControllerTest {
         assertEquals(1L, user.getUserId());
         assertEquals("tester1", user.getLoginId());
         assertEquals(AccountStatus.PENDING, user.getAccountStatus());
-        assertEquals(Role.UNASSIGNED, user.getRole());
+        assertEquals(UserRole.UNASSIGNED, user.getRole());
 
         User savedUser = userRepository.findByLoginId("tester1");
         assertNotNull(savedUser);
@@ -67,7 +67,7 @@ class AuthControllerTest {
                 "dev1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         userRepository.save(user);
@@ -94,7 +94,7 @@ class AuthControllerTest {
                 "dev1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         userRepository.save(user);
@@ -111,12 +111,12 @@ class AuthControllerTest {
                 "pendingUser",
                 "1234",
                 AccountStatus.PENDING,
-                Role.UNASSIGNED
+                UserRole.UNASSIGNED
         );
 
         userRepository.save(user);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(IllegalStateException.class, () -> {
             authController.login("pendingUser", "1234");
         });
     }
@@ -128,12 +128,12 @@ class AuthControllerTest {
                 "disabledUser",
                 "1234",
                 AccountStatus.DISABLED,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         userRepository.save(user);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(IllegalStateException.class, () -> {
             authController.login("disabledUser", "1234");
         });
     }
@@ -145,7 +145,7 @@ class AuthControllerTest {
                 "dev1",
                 "1234",
                 AccountStatus.ACTIVE,
-                Role.DEVELOPER
+                UserRole.DEVELOPER
         );
 
         userRepository.save(user);

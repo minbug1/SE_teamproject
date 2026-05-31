@@ -122,7 +122,7 @@ public class ReportIssueView extends JDialog {
         gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0;
         panel.add(new JLabel("Reporter"), gbc);
         JTextField reporterField = 
-            new JTextField(String.valueOf(currentUser.getUserId()));
+            new JTextField(String.valueOf(currentUser.getLoginId()));
         reporterField.setEditable(false);
         reporterField.setBackground(Color.LIGHT_GRAY);
         gbc.gridx = 1; gbc.weightx = 1.0;

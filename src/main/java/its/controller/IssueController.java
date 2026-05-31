@@ -1,17 +1,23 @@
 package its.controller;
 
 import its.model.Comment;
+import its.model.Category;
+import its.model.CategoryEngine;
+import its.model.DeveloperRecommendation;
 import its.model.Issue;
 import its.model.Priority;
 import its.model.Project;
-import its.model.Status;
-import its.model.Role;
+import its.model.RecommendEngine;
+import its.model.IssueStatus;
+import its.model.UserRole;
 import its.model.User;
+import its.repository.CategoryRepository;
 import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
 import its.repository.ProjectRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,6 +25,7 @@ public class IssueController {
 
     private IssueRepository issueRepository;
     private ProjectRepository projectRepository;
+    private CategoryRepository categoryRepository;
 
     // 기본 생성자에서 FileIssueRepository를 사용하도록 설정
     public IssueController() {
@@ -31,15 +38,25 @@ public class IssueController {
     }
 
     public IssueController(IssueRepository issueRepository, ProjectRepository projectRepository) {
+        this(issueRepository, projectRepository, null);
+    }
+
+    public IssueController(IssueRepository issueRepository, ProjectRepository projectRepository,
+                           CategoryRepository categoryRepository) {
         if (issueRepository == null) {
             throw new IllegalArgumentException("Issue repository must not be null.");
         }
         this.issueRepository = issueRepository;
         this.projectRepository = projectRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     public List<Issue> getAllIssues() {
         return issueRepository.findAll();
+    }
+
+    public IssueRepository getIssueRepository() {
+        return issueRepository;
     }
 
     //Report Issue
@@ -69,7 +86,7 @@ public class IssueController {
         newIssue.setProjectId(project.getProjectId());
 
         newIssue.setPriority(priority);
-        newIssue.setStatus(Status.NEW);
+        newIssue.setStatus(IssueStatus.NEW);
 
         if (commentContent != null && !commentContent.trim().isEmpty()) {
             Comment comment = new Comment(
@@ -104,7 +121,7 @@ public class IssueController {
         validateIssueId(issueId);
         
         Issue issue = getProjectIssueOrNull(project, issueId);
-        validateIssueStatus(issue, Status.ASSIGNED);
+        validateIssueStatus(issue, IssueStatus.ASSIGNED);
 
         if (issue.getAssignee() == null || !issue.getAssignee().equals(dev)) {
             throw new SecurityException("Only assigned issues can be fixed.");
@@ -112,7 +129,7 @@ public class IssueController {
 
         addCommentIfPresent(issue, commentContent, dev);
 
-        issue.setStatus(Status.FIXED);
+        issue.setStatus(IssueStatus.FIXED);
         issue.setFixer(dev);
         issue.setFixedDate(LocalDateTime.now());
 
@@ -126,12 +143,12 @@ public class IssueController {
 
         validateProject(project);
         validateUser(tester, "Tester must not be null.");
-        validateRole(tester, Role.TESTER, "Only testers can verify issues.");
+        validateRole(tester, UserRole.TESTER, "Only testers can verify issues.");
         validateProjectMember(project, tester, "Need to be a member of the project to verify the issue.");
 
         Issue issue = getProjectIssueOrNull(project, issueId);
 
-        if (issue == null || issue.getStatus() != Status.FIXED) {
+        if (issue == null || issue.getStatus() != IssueStatus.FIXED) {
             return null;
         }
 
@@ -140,10 +157,10 @@ public class IssueController {
         }
 
         if (isResolved) {
-            issue.setStatus(Status.RESOLVED);
+            issue.setStatus(IssueStatus.RESOLVED);
             issue.setResolvedDate(LocalDateTime.now());
         } else {
-            issue.setStatus(Status.REOPENED);
+            issue.setStatus(IssueStatus.REOPENED);
             issue.incrementReopenCount();
         }
 
@@ -159,18 +176,18 @@ public class IssueController {
 
         validateProject(project);
         validateUser(pl, "PL must not be null.");
-        validateRole(pl, Role.PL, "Only PL can change the issue status to closed.");
+        validateRole(pl, UserRole.PL, "Only PL can change the issue status to closed.");
         validateProjectMember(project, pl, "Need to be a member of the project to close the issue.");
 
         Issue issue = getProjectIssueOrNull(project, issueId);
 
-        if (issue == null || issue.getStatus() != Status.RESOLVED) {
+        if (issue == null || issue.getStatus() != IssueStatus.RESOLVED) {
             return null;
         }
 
         addCommentIfPresent(issue, commentContent, pl);
 
-        issue.setStatus(Status.CLOSED);
+        issue.setStatus(IssueStatus.CLOSED);
         issue.setClosedDate(LocalDateTime.now());
         
         issueRepository.update(issue);
@@ -185,20 +202,20 @@ public class IssueController {
         validateUser(pl, "PL must not be null.");
         validateUser(assignee, "Assignee must not be null.");
 
-        validateRole(pl, Role.PL, "Only PL can assign issues.");
-        validateRole(assignee, Role.DEVELOPER, "Only developers can be assigned to issues.");
+        validateRole(pl, UserRole.PL, "Only PL can assign issues.");
+        validateRole(assignee, UserRole.DEVELOPER, "Only developers can be assigned to issues.");
 
         validateProjectMember(project, pl, "This user is not a PL member of the project.");
         validateProjectMember(project, assignee, "The assignee is not a member of the project.");
 
         Issue issue = getProjectIssueOrNull(project, issueId);
 
-        if (issue == null || (issue.getStatus() != Status.NEW && issue.getStatus() != Status.REOPENED)) {
+        if (issue == null || (issue.getStatus() != IssueStatus.NEW && issue.getStatus() != IssueStatus.REOPENED)) {
             return null;
         }
 
         issue.setAssignee(assignee);
-        issue.setStatus(Status.ASSIGNED);
+        issue.setStatus(IssueStatus.ASSIGNED);
         issue.setAssignedDate(LocalDateTime.now());
 
         addCommentIfPresent(issue, commentContent, pl);
@@ -207,39 +224,6 @@ public class IssueController {
 
         return issue;
     }
-
-    public void changePriority(Project project, long issueId, Priority newPriority, User user) {
-        validateProject(project);
-        validateUser(user, "User must not be null.");
-        validateProjectMember(project, user, "Need to be a member of the project.");
-        if (newPriority == null) throw new IllegalArgumentException("Priority must not be null.");
-
-        Issue issue = getProjectIssueOrNull(project, issueId);
-        if (issue == null) throw new IllegalArgumentException("Issue not found.");
-
-        issue.setPriority(newPriority);
-        issueRepository.update(issue);
-    }
-
-    public Issue forceAssignIssue(Project project, long issueId, User assignee, User admin, String commentContent) {
-        validateProject(project);
-        validateUser(admin, "Admin must not be null.");
-        validateUser(assignee, "Assignee must not be null.");
-        validateProjectMember(project, assignee, "The assignee is not a member of the project.");
-        if (!admin.isAdmin()) throw new SecurityException("Only admin can force assign issues.");
-
-        Issue issue = getProjectIssueOrNull(project, issueId);
-        if (issue == null) throw new IllegalArgumentException("Issue not found.");
-
-        issue.setAssignee(assignee);
-        if (issue.getStatus() == Status.NEW || issue.getStatus() == Status.REOPENED)
-            issue.setStatus(Status.ASSIGNED);
-
-        addCommentIfPresent(issue, commentContent, admin);
-        issueRepository.update(issue);
-        return issue;
-    }
-
 
     // helper
     private long generateIssueIdInProject(Project project) {
@@ -290,25 +274,44 @@ public class IssueController {
     }
 
     public Issue addComment(Project project, long issueId, String commentContent, User author) {
-    validateProject(project);
-    validateUser(author, "Author must not be null.");
-    validateMember(project, author);
-    validateIssueId(issueId);
+        validateProject(project);
+        validateUser(author, "Author must not be null.");
+        validateMember(project, author);
+        validateIssueId(issueId);
 
-    if (commentContent == null || commentContent.trim().isEmpty()) {
-        throw new IllegalArgumentException("Comment must not be empty.");
+        if (commentContent == null || commentContent.trim().isEmpty()) {
+            throw new IllegalArgumentException("Comment must not be empty.");
+        }
+
+        Issue issue = getProjectIssueOrNull(project, issueId);
+        if (issue == null) {
+            throw new IllegalArgumentException("Issue not found.");
+        }
+
+        addCommentIfPresent(issue, commentContent, author);
+        issueRepository.update(issue);
+
+        return issue;
     }
 
-    Issue issue = getProjectIssueOrNull(project, issueId);
-    if (issue == null) {
-        throw new IllegalArgumentException("Issue not found.");
+    public void changePriority(Project project, long issueId, Priority priority, User user) {
+        validateProject(project);
+        validateUser(user, "User must not be null.");
+        validateMember(project, user);
+        validateIssueId(issueId);
+
+        if (priority == null) {
+            throw new IllegalArgumentException("Priority must not be null.");
+        }
+
+        Issue issue = getProjectIssueOrNull(project, issueId);
+        if (issue == null) {
+            throw new IllegalArgumentException("Issue not found.");
+        }
+
+        issue.setPriority(priority);
+        issueRepository.update(issue);
     }
-
-    addCommentIfPresent(issue, commentContent, author);
-    issueRepository.update(issue);
-
-    return issue;
-}
 
     private void validateProject(Project project) {
         if (project == null) {
@@ -332,7 +335,7 @@ public class IssueController {
         }
     }
 
-   private void validateRole(User user, Role requiredRole, String message) {
+   private void validateRole(User user, UserRole requiredRole, String message) {
         validateUser(user, "User must not be null.");
         if (requiredRole == null) {
             throw new IllegalArgumentException("Required role must not be null.");
@@ -365,7 +368,7 @@ public class IssueController {
     }
 
     //이거 UI구현되면 수정필요
-    public void showIssues(Project project, Status filterStatus) {
+    public void showIssues(Project project, IssueStatus filterStatus) {
         validateProject(project);
 
         String statusText = (filterStatus == null) ? "전체" : filterStatus.toString();
@@ -408,7 +411,7 @@ public class IssueController {
         }
     }
 
-    private void validateIssueStatus(Issue issue, Status... validStatuses) {
+    private void validateIssueStatus(Issue issue, IssueStatus... validStatuses) {
         if (issue == null) {
             throw new IllegalArgumentException("Issue not found.");
         }
@@ -419,7 +422,7 @@ public class IssueController {
         }
     }
 
-    public Issue getIssues(Project project, long issueId) {
+    public Issue getIssue(Project project, long issueId) {
         validateProject(project);
         validateIssueId(issueId);
         return getProjectIssueOrNull(project, issueId);

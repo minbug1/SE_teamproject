@@ -1,14 +1,19 @@
 package its.view.javafx;
 
 import its.controller.AuthController;
+import its.controller.CategoryController;
 import its.controller.IssueController;
 import its.controller.ProjectController;
+import its.controller.StatisticsController;
 import its.controller.UserController;
 import its.model.AccountStatus;
 import its.model.Project;
-import its.model.Role;
 import its.model.User;
+<<<<<<< HEAD
 import its.model.Issue;
+=======
+import its.model.UserRole;
+>>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -32,6 +37,8 @@ public class AdminView {
     private final ProjectController projectController;
     private final IssueController issueController;
     private final UserController userController;
+    private final StatisticsController statisticsController;
+    private final CategoryController categoryController;
     private final User adminUser;
     private final List<Project> projects;
     private final List<User> allUsers;
@@ -50,11 +57,14 @@ public class AdminView {
 
     public AdminView(AuthController authController, ProjectController projectController,
                      IssueController issueController, UserController userController,
+                     StatisticsController statisticsController, CategoryController categoryController,
                      User adminUser, List<Project> projects, List<User> allUsers) {
         this.authController = authController;
         this.projectController = projectController;
         this.issueController = issueController;
         this.userController = userController;
+        this.statisticsController = statisticsController;
+        this.categoryController = categoryController;
         this.adminUser = adminUser;
         this.projects = projects;
         this.allUsers = allUsers;
@@ -180,16 +190,16 @@ public class AdminView {
         loginIdCol.setEditable(false);
         loginIdCol.setPrefWidth(150);
 
-        TableColumn<UserRow, Role> roleCol = new TableColumn<>("Role");
+        TableColumn<UserRow, UserRole> roleCol = new TableColumn<>("Role");
         roleCol.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().user.getRole()));
-        roleCol.setCellFactory(ComboBoxTableCell.forTableColumn(Role.values()));
+        roleCol.setCellFactory(ComboBoxTableCell.forTableColumn(UserRole.values()));
         roleCol.setPrefWidth(120);
         roleCol.setOnEditCommit(event -> {
             if (refreshing) return;
             UserRow row = event.getRowValue();
             try {
                 authController.changeRole(adminUser, row.user.getUserId(), event.getNewValue());
-                row.user.changeRole(event.getNewValue());
+                row.user.setRole(event.getNewValue());
                 refreshAfterUpdate();
             } catch (Exception ex) {
                 showWarning(ex.getMessage());
@@ -206,7 +216,7 @@ public class AdminView {
             UserRow row = event.getRowValue();
             try {
                 authController.changeAccountStatus(adminUser, row.user.getUserId(), event.getNewValue());
-                row.user.changeAccountStatus(event.getNewValue());
+                row.user.setAccountStatus(event.getNewValue());
                 refreshAfterUpdate();
             } catch (Exception ex) {
                 showWarning(ex.getMessage());
@@ -457,7 +467,7 @@ public class AdminView {
         confirm.initOwner(stage);
         confirm.showAndWait().ifPresent(bt -> {
             if (bt == ButtonType.YES) new LoginView(authController, issueController,
-                        userController, projectController).show(stage);
+                        userController, projectController, statisticsController, categoryController).show(stage);
         });
     }
 

@@ -3,14 +3,14 @@ package its.controller;
 
 
 import its.model.AccountStatus;
-import its.model.Role;
+import its.model.UserRole;
 import its.model.User;
 import its.repository.FileUserRepository;
 import its.repository.UserRepository;
 
 import java.util.List;
 
-/**
+/*
  * controller for authentication (before login)
  * register, login, logout, getCurrentUser, isLoggedIn
  *
@@ -104,7 +104,7 @@ public class AuthController {
         return userRepository.findAll();
     }
 
-    public void changeRole(User adminUser, long userId, Role newRole) {
+    public void changeRole(User adminUser, long userId, UserRole newRole) {
         validateAdmin(adminUser);
         validateUserId(userId);
 
@@ -113,7 +113,7 @@ public class AuthController {
         }
 
         User user = getExistingUser(userId);
-        user.changeRole(newRole);
+        user.setRole(newRole);
         userRepository.update(user);
     }
 
@@ -126,24 +126,24 @@ public class AuthController {
         }
 
         User user = getExistingUser(userId);
-        user.changeAccountStatus(newStatus);
+        user.setAccountStatus(newStatus);
         userRepository.update(user);
     }
 
-    public void approveUser(User adminUser, long userId, Role role) {
+    public void approveUser(User adminUser, long userId, UserRole role) {
         validateAdmin(adminUser);
         validateUserId(userId);
 
         if (role == null) {
             throw new IllegalArgumentException("Role must not be null.");
         }
-        if (role == Role.UNASSIGNED) {
+        if (role == UserRole.UNASSIGNED) {
             throw new IllegalArgumentException("Approved user must have a role.");
         }
 
         User user = getExistingUser(userId);
-        user.changeRole(role);
-        user.changeAccountStatus(AccountStatus.ACTIVE);
+        user.setRole(role);
+        user.setAccountStatus(AccountStatus.ACTIVE);
         userRepository.update(user);
     }
 
@@ -152,7 +152,7 @@ public class AuthController {
         validateUserId(userId);
 
         User user = getExistingUser(userId);
-        user.changeAccountStatus(AccountStatus.REJECTED);
+        user.setAccountStatus(AccountStatus.REJECTED);
         userRepository.update(user);
     }
 
@@ -161,7 +161,7 @@ public class AuthController {
         validateUserId(userId);
 
         User user = getExistingUser(userId);
-        user.changeAccountStatus(AccountStatus.DISABLED);
+        user.setAccountStatus(AccountStatus.DISABLED);
         userRepository.update(user);
     }
 
