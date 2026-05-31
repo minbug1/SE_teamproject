@@ -1,6 +1,8 @@
 package its.controller;
 
 import its.model.Comment;
+import its.model.Category;
+import its.model.CategoryEngine;
 import its.model.DeveloperRecommendation;
 import its.model.Issue;
 import its.model.Priority;
@@ -9,6 +11,7 @@ import its.model.RecommendEngine;
 import its.model.IssueStatus;
 import its.model.UserRole;
 import its.model.User;
+import its.repository.CategoryRepository;
 import its.repository.FileIssueRepository;
 import its.repository.IssueRepository;
 import its.repository.ProjectRepository;
@@ -22,6 +25,7 @@ public class IssueController {
 
     private IssueRepository issueRepository;
     private ProjectRepository projectRepository;
+    private CategoryRepository categoryRepository;
 
     // 기본 생성자에서 FileIssueRepository를 사용하도록 설정
     public IssueController() {
@@ -34,11 +38,17 @@ public class IssueController {
     }
 
     public IssueController(IssueRepository issueRepository, ProjectRepository projectRepository) {
+        this(issueRepository, projectRepository, null);
+    }
+
+    public IssueController(IssueRepository issueRepository, ProjectRepository projectRepository,
+                           CategoryRepository categoryRepository) {
         if (issueRepository == null) {
             throw new IllegalArgumentException("Issue repository must not be null.");
         }
         this.issueRepository = issueRepository;
         this.projectRepository = projectRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     public List<Issue> getAllIssues() {
@@ -231,6 +241,7 @@ public class IssueController {
         }
 
         List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
+        classifyTargetIssueIfNeeded(project, targetIssue, projectIssues);
 
         List<User> developers = new ArrayList<>();
         for (User member : project.getMembers()) {
@@ -241,6 +252,67 @@ public class IssueController {
 
         RecommendEngine recommendEngine = new RecommendEngine();
         return recommendEngine.recommendDevelopers(targetIssue, projectIssues, developers);
+    }
+
+    private void classifyTargetIssueIfNeeded(Project project, Issue targetIssue, List<Issue> projectIssues) {
+        if (categoryRepository == null || targetIssue == null || targetIssue.getCategoryId() > 0) {
+            return;
+        }
+        if (!hasCategorizedIssue(projectIssues)) {
+            return;
+        }
+
+        List<Category> savedCategories = categoryRepository.findByProjectId(project.getProjectId());
+        if (savedCategories == null || savedCategories.isEmpty()) {
+            return;
+        }
+
+        CategoryEngine categoryEngine = new CategoryEngine();
+        int categoryId = categoryEngine.categorizeSingleIssue(targetIssue, savedCategories, projectIssues);
+        if (categoryId <= 0) {
+            return;
+        }
+
+        targetIssue.setCategoryId(categoryId);
+        for (Issue issue : projectIssues) {
+            if (issue != null && issue.getIssueId() == targetIssue.getIssueId()) {
+                issue.setCategoryId(categoryId);
+                break;
+            }
+        }
+
+        issueRepository.update(targetIssue);
+        addIssueToSavedCategory(savedCategories, categoryId, targetIssue);
+        categoryRepository.saveAll(project.getProjectId(), savedCategories);
+    }
+
+    private void addIssueToSavedCategory(List<Category> categories, int categoryId, Issue issueToAdd) {
+        for (Category category : categories) {
+            if (category == null || category.getCategoryId() != categoryId) {
+                continue;
+            }
+
+            boolean alreadyExists = category.getIssues().stream()
+                    .anyMatch(issue -> issue != null && issue.getIssueId() == issueToAdd.getIssueId());
+            if (!alreadyExists) {
+                category.getIssues().add(issueToAdd);
+            }
+            return;
+        }
+    }
+
+    private boolean hasCategorizedIssue(List<Issue> issues) {
+        if (issues == null || issues.isEmpty()) {
+            return false;
+        }
+
+        for (Issue issue : issues) {
+            if (issue != null && issue.getCategoryId() > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // helper

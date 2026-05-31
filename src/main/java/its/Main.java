@@ -47,7 +47,7 @@ public class Main {
             ProjectRepository projectRepository = new FileProjectRepository(PROJECT_FILE, userRepository, issueRepository);
             CategoryRepository categoryRepository = new FileCategoryRepository(issueRepository);
 
-            IssueController issueController = new IssueController(issueRepository, projectRepository);
+            IssueController issueController = new IssueController(issueRepository, projectRepository, categoryRepository);
             AuthController authController = new AuthController(userRepository);
             UserController userController = new UserController(userRepository);
             ProjectController projectController = new ProjectController(projectRepository);

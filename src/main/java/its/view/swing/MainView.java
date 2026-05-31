@@ -237,7 +237,8 @@ public class MainView extends JFrame {
             project.getIssues().clear();
             for (long issueId : project.getIssueIds()) {
                 allIssues.stream()
-                        .filter(i -> i.getIssueId() == issueId)
+                        .filter(i -> i.getProjectId() == project.getProjectId()
+                                && i.getIssueId() == issueId)
                         .findFirst()
                         .ifPresent(project::addIssue);
             }

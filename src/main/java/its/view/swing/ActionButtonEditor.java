@@ -288,14 +288,14 @@ public class ActionButtonEditor implements TableCellEditor {
         JTable recommendationTable = createRecommendationTable(project, issueId, combo);
         JPanel assignPanel = buildAssigneePanel(combo, recommendationTable);
 
-        String comment = JOptionPane.showInputDialog(button, "코멘트 (선택):");
-        if (comment == null) return; 
- 
         if (JOptionPane.showConfirmDialog(button, assignPanel, "담당자 지정",
                 JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
  
         User selected = (User) combo.getSelectedItem();
         if (selected == null) return;
+
+        String comment = JOptionPane.showInputDialog(button, "코멘트 (선택):");
+        if (comment == null) return; 
  
         try {
             issueController.assignIssue(project, issueId, selected, currentUser, comment);
@@ -437,12 +437,15 @@ public class ActionButtonEditor implements TableCellEditor {
 
     // assigned -> fixed, assignee가 수정 완료 선택
     private void fixIssue() {
-        String comment = JOptionPane.showInputDialog(button, "수정 내용 코멘트:");
-        if (comment == null) return;
- 
         Project project = getCurrentProject();
         long issueId    = getIssueId();
         if (project == null || issueId <= 0) return;
+
+        if (JOptionPane.showConfirmDialog(button, "이슈를 수정 완료 처리하시겠습니까?", "수정 완료",
+                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
+
+        String comment = JOptionPane.showInputDialog(button, "수정 내용 코멘트:");
+        if (comment == null) return;
  
         try {
             issueController.fixIssue(project, issueId, comment, currentUser);
@@ -454,13 +457,18 @@ public class ActionButtonEditor implements TableCellEditor {
 
     // fixed -> resolved, reporter가 검증 통과/재오픈 선택
     private void verifyIssue(boolean isResolved) {
-        String comment = JOptionPane.showInputDialog(button,
-                isResolved ? "검증 통과 코멘트:" : "재오픈 사유:");
-        if (comment == null) return;
- 
         Project project = getCurrentProject();
         long issueId    = getIssueId();
         if (project == null || issueId <= 0) return;
+
+        String actionText = isResolved ? "검증 통과 처리하시겠습니까?" : "이슈를 재오픈하시겠습니까?";
+        String title = isResolved ? "검증 통과" : "재오픈";
+        if (JOptionPane.showConfirmDialog(button, actionText, title,
+                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
+
+        String comment = JOptionPane.showInputDialog(button,
+                isResolved ? "검증 통과 코멘트:" : "재오픈 사유:");
+        if (comment == null) return;
  
         try {
             issueController.verifyIssue(project, issueId, comment, currentUser, isResolved);
@@ -472,12 +480,15 @@ public class ActionButtonEditor implements TableCellEditor {
 
     // resolved -> closed, PL이 이슈 닫기 선택
     private void closeIssue() {
-        String comment = JOptionPane.showInputDialog(button, "종료 코멘트:");
-        if (comment == null) return;
- 
         Project project = getCurrentProject();
         long issueId    = getIssueId();
         if (project == null || issueId <= 0) return;
+
+        if (JOptionPane.showConfirmDialog(button, "이슈를 종료하시겠습니까?", "이슈 종료",
+                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
+
+        String comment = JOptionPane.showInputDialog(button, "종료 코멘트:");
+        if (comment == null) return;
  
         try {
             issueController.closeIssue(project, issueId, comment, currentUser);

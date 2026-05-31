@@ -1995,11 +1995,303 @@
   {
     "issueId": 1,
     "projectId": 2,
-    "title": "dffd",
-    "description": "sd",
+    "title": "API Token Refresh",
+    "description": "API token refresh fails after login authentication. Session token renewal returns an expired credential.",
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "reportedDate": "2026-05-22T09:10",
+    "assignedDate": "2026-05-22T09:30",
+    "fixedDate": "2026-05-22T11:00",
+    "resolvedDate": "2026-05-22T11:30",
+    "closedDate": "2026-05-22T12:00",
+    "reopenedDates": [],
+    "reopenCount": 0,
+    "categoryId": 1,
+    "reporterId": 11,
+    "assigneeId": 7,
+    "fixerId": 7,
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Authentication API token refresh fails after login.",
+        "authorId": 11,
+        "commentStatus": "NEW",
+        "writtenDate": "2026-05-22T09:10"
+      },
+      {
+        "commentId": 2,
+        "content": "Fixed token renewal and session authentication handling.",
+        "authorId": 7,
+        "commentStatus": "FIXED",
+        "writtenDate": "2026-05-22T11:00"
+      }
+    ]
+  },
+  {
+    "issueId": 2,
+    "projectId": 2,
+    "title": "API Login Redirect",
+    "description": "Login redirect loops when API authentication receives a stale session token.",
+    "priority": "CRITICAL",
+    "status": "RESOLVED",
+    "reportedDate": "2026-05-22T13:20",
+    "assignedDate": "2026-05-22T13:40",
+    "fixedDate": "2026-05-22T15:00",
+    "resolvedDate": "2026-05-22T15:40",
+    "reopenedDates": [],
+    "reopenCount": 0,
+    "categoryId": 1,
+    "reporterId": 22,
+    "assigneeId": 7,
+    "fixerId": 7,
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Login API redirect repeats with stale authentication token.",
+        "authorId": 22,
+        "commentStatus": "NEW",
+        "writtenDate": "2026-05-22T13:20"
+      },
+      {
+        "commentId": 2,
+        "content": "Resolved redirect loop by refreshing session token state.",
+        "authorId": 7,
+        "commentStatus": "RESOLVED",
+        "writtenDate": "2026-05-22T15:40"
+      }
+    ]
+  },
+  {
+    "issueId": 3,
+    "projectId": 2,
+    "title": "Session Cache Restore",
+    "description": "Session cache restore loses authentication data after API retry.",
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "reportedDate": "2026-05-23T10:15",
+    "assignedDate": "2026-05-23T10:35",
+    "fixedDate": "2026-05-23T12:10",
+    "resolvedDate": "2026-05-23T12:45",
+    "closedDate": "2026-05-23T13:10",
+    "reopenedDates": [],
+    "reopenCount": 0,
+    "categoryId": 1,
+    "reporterId": 23,
+    "assigneeId": 8,
+    "fixerId": 8,
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Session cache restore drops API authentication data.",
+        "authorId": 23,
+        "commentStatus": "NEW",
+        "writtenDate": "2026-05-23T10:15"
+      },
+      {
+        "commentId": 2,
+        "content": "Fixed cache restore for authentication session retry.",
+        "authorId": 8,
+        "commentStatus": "FIXED",
+        "writtenDate": "2026-05-23T12:10"
+      }
+    ]
+  },
+  {
+    "issueId": 4,
+    "projectId": 2,
+    "title": "Dashboard Button Layout",
+    "description": "Dashboard button layout overlaps on the statistics screen when the window is narrow.",
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "reportedDate": "2026-05-24T09:25",
+    "assignedDate": "2026-05-24T09:45",
+    "fixedDate": "2026-05-24T11:00",
+    "resolvedDate": "2026-05-24T11:30",
+    "closedDate": "2026-05-24T12:00",
+    "reopenedDates": [],
+    "reopenCount": 0,
+    "categoryId": 2,
+    "reporterId": 11,
+    "assigneeId": 9,
+    "fixerId": 9,
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Dashboard UI button layout overlaps in narrow view.",
+        "authorId": 11,
+        "commentStatus": "NEW",
+        "writtenDate": "2026-05-24T09:25"
+      },
+      {
+        "commentId": 2,
+        "content": "Fixed dashboard button spacing and layout sizing.",
+        "authorId": 9,
+        "commentStatus": "FIXED",
+        "writtenDate": "2026-05-24T11:00"
+      }
+    ]
+  },
+  {
+    "issueId": 5,
+    "projectId": 2,
+    "title": "Modal Form Alignment",
+    "description": "Modal form alignment is broken and input fields drift outside the dialog layout.",
+    "priority": "MINOR",
+    "status": "RESOLVED",
+    "reportedDate": "2026-05-24T14:00",
+    "assignedDate": "2026-05-24T14:20",
+    "fixedDate": "2026-05-24T15:30",
+    "resolvedDate": "2026-05-24T16:00",
+    "reopenedDates": [],
+    "reopenCount": 0,
+    "categoryId": 2,
+    "reporterId": 22,
+    "assigneeId": 9,
+    "fixerId": 9,
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Modal UI form alignment breaks input layout.",
+        "authorId": 22,
+        "commentStatus": "NEW",
+        "writtenDate": "2026-05-24T14:00"
+      },
+      {
+        "commentId": 2,
+        "content": "Resolved dialog layout and form alignment spacing.",
+        "authorId": 9,
+        "commentStatus": "RESOLVED",
+        "writtenDate": "2026-05-24T16:00"
+      }
+    ]
+  },
+  {
+    "issueId": 6,
+    "projectId": 2,
+    "title": "Table Scroll Header",
+    "description": "Table scroll header does not stay aligned with row columns in the issue list screen.",
+    "priority": "MAJOR",
+    "status": "CLOSED",
+    "reportedDate": "2026-05-25T10:40",
+    "assignedDate": "2026-05-25T11:00",
+    "fixedDate": "2026-05-25T12:20",
+    "resolvedDate": "2026-05-25T12:50",
+    "closedDate": "2026-05-25T13:20",
+    "reopenedDates": [],
+    "reopenCount": 0,
+    "categoryId": 2,
+    "reporterId": 23,
+    "assigneeId": 8,
+    "fixerId": 8,
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "Issue table scroll header and columns are misaligned.",
+        "authorId": 23,
+        "commentStatus": "NEW",
+        "writtenDate": "2026-05-25T10:40"
+      },
+      {
+        "commentId": 2,
+        "content": "Fixed table header layout during scrolling.",
+        "authorId": 8,
+        "commentStatus": "FIXED",
+        "writtenDate": "2026-05-25T12:20"
+      }
+    ]
+  },
+  {
+    "issueId": 7,
+    "projectId": 2,
+    "title": "API Token Expiry",
+    "description": "API token expires immediately after login and the session authentication request fails.",
+    "priority": "CRITICAL",
+    "status": "ASSIGNED",
+    "reportedDate": "2026-05-26T09:00",
+    "assignedDate": "2026-05-31T15:52:49.155185900",
+    "reopenedDates": [],
+    "reopenCount": 0,
+    "categoryId": 1,
+    "reporterId": 11,
+    "assigneeId": 7,
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "New API authentication issue with token expiry and session login.",
+        "authorId": 11,
+        "commentStatus": "NEW",
+        "writtenDate": "2026-05-26T09:00"
+      }
+    ]
+  },
+  {
+    "issueId": 8,
+    "projectId": 2,
+    "title": "Dashboard Filter Glitch",
+    "description": "Dashboard filter panel jumps when the search input changes and the button layout is refreshed.",
     "priority": "MAJOR",
     "status": "NEW",
-    "reportedDate": "2026-05-27T17:13:19.465411200",
+    "reportedDate": "2026-05-26T10:30",
+    "reopenedDates": [],
+    "reopenCount": 0,
+    "categoryId": 0,
+    "reporterId": 22,
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "New dashboard UI filter and button layout issue.",
+        "authorId": 22,
+        "commentStatus": "NEW",
+        "writtenDate": "2026-05-26T10:30"
+      }
+    ]
+  },
+  {
+    "issueId": 9,
+    "projectId": 2,
+    "title": "API Rate Limit Retry",
+    "description": "API retry after rate limit loses the authentication session token and returns unauthorized.",
+    "priority": "MAJOR",
+    "status": "ASSIGNED",
+    "reportedDate": "2026-05-26T13:45",
+    "assignedDate": "2026-05-31T16:03:47.148437500",
+    "reopenedDates": [],
+    "reopenCount": 0,
+    "categoryId": 1,
+    "reporterId": 23,
+    "assigneeId": 7,
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "API rate limit retry breaks authentication token handling.",
+        "authorId": 23,
+        "commentStatus": "NEW",
+        "writtenDate": "2026-05-26T13:45"
+      },
+      {
+        "commentId": 2,
+        "content": "Reopened because retry still returns unauthorized.",
+        "authorId": 23,
+        "commentStatus": "REOPENED",
+        "writtenDate": "2026-05-26T14:20"
+      },
+      {
+        "commentId": 3,
+        "content": "코멘트",
+        "authorId": 3,
+        "commentStatus": "GENERAL",
+        "writtenDate": "2026-05-31T16:03:47.148437500"
+      }
+    ]
+  },
+  {
+    "issueId": 10,
+    "projectId": 2,
+    "title": "Notification Text Wrap",
+    "description": "Notification text wraps over the action button in the compact UI layout.",
+    "priority": "MINOR",
+    "status": "NEW",
+    "reportedDate": "2026-05-26T16:10",
     "reopenedDates": [],
     "reopenCount": 0,
     "categoryId": 0,
@@ -2007,10 +2299,10 @@
     "comments": [
       {
         "commentId": 1,
-        "content": "sd",
+        "content": "New notification UI text wrapping issue near action button.",
         "authorId": 11,
-        "commentStatus": "GENERAL",
-        "writtenDate": "2026-05-27T17:13:19.465411200"
+        "commentStatus": "NEW",
+        "writtenDate": "2026-05-26T16:10"
       }
     ]
   }
