@@ -56,6 +56,7 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
         if (currentUser != null && currentUser.isPL()) {
             if (status == IssueStatus.NEW || status == IssueStatus.REOPENED)
                 addItem(menu, "담당자 지정", () -> changeAssignee(row));
+            addItem(menu, "우선순위 변경", () -> changePriority(row));   // ← 추가
             if (status == IssueStatus.RESOLVED)
                 addItem(menu, "이슈 닫기", () -> updateStatus(row, IssueStatus.CLOSED));
         }
@@ -153,7 +154,6 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
             return;
         }
 
-        // 담당자 콤보박스
         ComboBox<User> assigneeCombo = new ComboBox<>();
         assigneeCombo.getItems().addAll(candidates);
         assigneeCombo.setCellFactory(lv -> new ListCell<>() {
@@ -172,18 +172,15 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
         });
         assigneeCombo.getSelectionModel().selectFirst();
 
-        // 왼쪽 패널 - 담당자 선택
         VBox leftPanel = new VBox(6, new Label("담당자"), assigneeCombo);
         leftPanel.setPadding(new Insets(8));
         leftPanel.setPrefWidth(180);
 
-        // 오른쪽 패널 - 추천 테이블
         TableView<DeveloperRecommendation> recTable = buildRecommendationTable(row, assigneeCombo);
         VBox rightPanel = new VBox(6, new Label("담당자 추천"), recTable);
         rightPanel.setPadding(new Insets(8));
         VBox.setVgrow(recTable, javafx.scene.layout.Priority.ALWAYS);
 
-        // SplitPane으로 좌우 배치
         SplitPane splitPane = new SplitPane(leftPanel, rightPanel);
         splitPane.setDividerPositions(0.32);
         splitPane.setPrefSize(620, 280);
@@ -232,7 +229,6 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
 
         table.getColumns().addAll(devCol, scoreCol, matchedCol, solvedCol);
 
-        // 추천 데이터 로드
         try {
             List<DeveloperRecommendation> recs =
                     issueController.recommendAssignees(row.project, row.issueId, currentUser);
@@ -245,7 +241,6 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
             table.setPlaceholder(new Label("추천 없음 (이슈 분류 후 사용 가능)"));
         }
 
-        // 추천 행 선택 시 콤보박스 자동 변경
         table.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null || newVal.getDeveloper() == null) return;
             assigneeCombo.getItems().stream()
@@ -255,6 +250,29 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
         });
 
         return table;
+    }
+
+    // ── 우선순위 변경 (PL 전용) ───────────────────
+    private void changePriority(MainView.IssueRow row) {
+        ComboBox<Priority> combo = new ComboBox<>();
+        combo.getItems().addAll(Priority.values());
+        combo.setValue(row.priority != null ? row.priority : Priority.MAJOR);
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("우선순위 변경");
+        dialog.setHeaderText(null);
+        dialog.getDialogPane().setContent(combo);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(bt -> {
+            if (bt != ButtonType.OK) return;
+            Priority selected = combo.getValue();
+            if (selected == null) return;
+            try {
+                issueController.changePriority(row.project, row.issueId, selected, currentUser);
+                refresh();
+            } catch (Exception ex) { showError(ex.getMessage()); }
+        });
     }
 
     // ── 상태 변경 ─────────────────────────────────
