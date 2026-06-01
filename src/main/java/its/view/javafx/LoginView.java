@@ -57,6 +57,9 @@ public class LoginView {
         stage.setTitle("Issue Tracker Login");
         stage.setScene(buildScene());
         stage.setResizable(false);
+        stage.setWidth(360);
+        stage.setHeight(230);
+        stage.centerOnScreen();
         stage.show();
     }
 

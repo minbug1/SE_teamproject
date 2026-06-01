@@ -251,8 +251,6 @@ public class AdminView {
         if (index < projects.size()) {
             selectedProject = projects.get(index);
             refreshProjectPanel();
-        } else {
-            showUsers();
         }
     }
 
@@ -261,7 +259,6 @@ public class AdminView {
         int prev = projectListView.getSelectionModel().getSelectedIndex();
         projectItems.clear();
         for (Project p : projects) projectItems.add(p.getName());
-        projectItems.add(USERS_LABEL);
         if (prev >= 0 && prev < projectItems.size())
             projectListView.getSelectionModel().select(prev);
         refreshing = false;
