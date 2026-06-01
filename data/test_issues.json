@@ -4,21 +4,17 @@
     "projectId": 1,
     "title": "Login Blank",
     "description": "Login Blank occurs during login authentication. The session state is not handled correctly and redirect behavior becomes unstable.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T16:18",
-    "reopenCount": 0,
-    "reporterId": 10,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "MAJOR",
-    "status": "ASSIGNED",
+    "status": "REOPENED",
     "reportedDate": "2026-05-20T16:18",
     "assignedDate": "2026-05-31T04:51:26.079473800",
+    "fixedDate": "2026-06-01T12:12:01.320500",
     "reopenedDates": [],
-    "reopenCount": 0,
+    "reopenCount": 1,
     "categoryId": 1,
     "reporterId": 10,
     "assigneeId": 8,
+    "fixerId": 8,
     "comments": [
       {
         "commentId": 1,
@@ -48,13 +44,6 @@
     "projectId": 1,
     "title": "Session Expire",
     "description": "Session Expire occurs during login authentication. The session state is not handled correctly and redirect behavior becomes unstable.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T16:31",
-    "reopenCount": 0,
-    "reporterId": 11,
-    "assigneeId": 6,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "CRITICAL",
     "status": "ASSIGNED",
     "reportedDate": "2026-05-20T16:31",
@@ -93,17 +82,14 @@
     "title": "Auth Redirect",
     "description": "Auth Redirect occurs during login authentication. The session state is not handled correctly and redirect behavior becomes unstable.",
     "priority": "MAJOR",
-    "status": "FIXED",
+    "status": "ASSIGNED",
     "reportedDate": "2026-05-20T16:44",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
+    "assignedDate": "2026-06-01T12:12:45.659976",
     "reopenedDates": [],
-    "reopenCount": 0,
+    "reopenCount": 1,
     "categoryId": 1,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "reporterId": 21,
-    "assigneeId": 7,
+    "assigneeId": 13,
     "fixerId": 7,
     "comments": [
       {
@@ -133,6 +119,13 @@
         "authorId": 7,
         "commentStatus": "GENERAL",
         "writtenDate": "2026-05-20T18:14"
+      },
+      {
+        "commentId": 5,
+        "content": ".",
+        "authorId": 21,
+        "commentStatus": "GENERAL",
+        "writtenDate": "2026-06-01T00:00:15.607681300"
       }
     ]
   },
@@ -142,15 +135,12 @@
     "title": "Login Lock",
     "description": "Login Lock occurs during login authentication. The session state is not handled correctly and redirect behavior becomes unstable.",
     "priority": "BLOCKER",
-    "status": "RESOLVED",
+    "status": "CLOSED",
     "reportedDate": "2026-05-20T16:57",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
+    "closedDate": "2026-06-01T12:12:50.182149200",
     "reopenedDates": [],
     "reopenCount": 0,
     "categoryId": 1,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "reporterId": 22,
     "assigneeId": 8,
     "fixerId": 8,
@@ -200,13 +190,9 @@
     "priority": "MAJOR",
     "status": "CLOSED",
     "reportedDate": "2026-05-20T17:10",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
     "categoryId": 1,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "reporterId": 23,
     "assigneeId": 9,
     "fixerId": 9,
@@ -260,18 +246,12 @@
     "projectId": 1,
     "title": "Account Approval",
     "description": "Account Approval occurs in user account management. The role or profile record is not updated consistently for the user.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T17:23",
-    "reopenCount": 0,
-    "reporterId": 10,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
-    "priority": "MAJOR",
+    "priority": "MINOR",
     "status": "NEW",
     "reportedDate": "2026-05-20T17:23",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 4,
+    "categoryId": 2,
     "reporterId": 10,
     "comments": [
       {
@@ -295,19 +275,12 @@
     "projectId": 1,
     "title": "Role Update",
     "description": "Role Update occurs in user account management. The role or profile record is not updated consistently for the user.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T17:36",
-    "reopenCount": 0,
-    "reporterId": 11,
-    "assigneeId": 13,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "CRITICAL",
     "status": "ASSIGNED",
     "reportedDate": "2026-05-20T17:36",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 4,
+    "categoryId": 2,
     "reporterId": 11,
     "assigneeId": 13,
     "comments": [
@@ -342,13 +315,9 @@
     "priority": "MAJOR",
     "status": "FIXED",
     "reportedDate": "2026-05-20T17:49",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 4,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 2,
     "reporterId": 21,
     "assigneeId": 14,
     "fixerId": 14,
@@ -391,13 +360,9 @@
     "priority": "MINOR",
     "status": "RESOLVED",
     "reportedDate": "2026-05-20T18:02",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 4,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 2,
     "reporterId": 22,
     "assigneeId": 15,
     "fixerId": 15,
@@ -447,13 +412,9 @@
     "priority": "MAJOR",
     "status": "CLOSED",
     "reportedDate": "2026-05-20T18:15",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 4,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 2,
     "reporterId": 23,
     "assigneeId": 16,
     "fixerId": 16,
@@ -507,18 +468,12 @@
     "projectId": 1,
     "title": "Project Member",
     "description": "Project Member occurs in project management. Project member permission and project setting data are not applied correctly.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T18:28",
-    "reopenCount": 0,
-    "reporterId": 10,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "MAJOR",
     "status": "ASSIGNED",
     "reportedDate": "2026-05-20T18:28",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 5,
+    "categoryId": 3,
     "reporterId": 10,
     "comments": [
       {
@@ -542,19 +497,12 @@
     "projectId": 1,
     "title": "Project Permission",
     "description": "Project Permission occurs in project management. Project member permission and project setting data are not applied correctly.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T18:41",
-    "reopenCount": 0,
-    "reporterId": 11,
-    "assigneeId": 19,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "CRITICAL",
     "status": "ASSIGNED",
     "reportedDate": "2026-05-20T18:41",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 5,
+    "categoryId": 3,
     "reporterId": 11,
     "assigneeId": 19,
     "comments": [
@@ -589,13 +537,9 @@
     "priority": "MAJOR",
     "status": "FIXED",
     "reportedDate": "2026-05-20T18:54",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 5,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 3,
     "reporterId": 21,
     "assigneeId": 20,
     "fixerId": 20,
@@ -638,13 +582,9 @@
     "priority": "MINOR",
     "status": "CLOSED",
     "reportedDate": "2026-05-20T19:07",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 5,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 3,
     "reporterId": 22,
     "assigneeId": 6,
     "fixerId": 6,
@@ -701,13 +641,9 @@
     "priority": "MAJOR",
     "status": "RESOLVED",
     "reportedDate": "2026-05-20T19:20",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 5,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 3,
     "reporterId": 23,
     "assigneeId": 7,
     "fixerId": 7,
@@ -754,18 +690,12 @@
     "projectId": 1,
     "title": "Button Align",
     "description": "Button Align occurs on the UI screen. The button, layout, and display behavior are inconsistent.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T19:33",
-    "reopenCount": 0,
-    "reporterId": 10,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "MINOR",
     "status": "NEW",
     "reportedDate": "2026-05-20T19:33",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 6,
+    "categoryId": 4,
     "reporterId": 10,
     "comments": [
       {
@@ -789,19 +719,12 @@
     "projectId": 1,
     "title": "Screen Freeze",
     "description": "Screen Freeze occurs on the UI screen. The button, layout, and display behavior are inconsistent.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T19:46",
-    "reopenCount": 0,
-    "reporterId": 11,
-    "assigneeId": 8,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "CRITICAL",
     "status": "ASSIGNED",
     "reportedDate": "2026-05-20T19:46",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 7,
+    "categoryId": 4,
     "reporterId": 11,
     "assigneeId": 8,
     "comments": [
@@ -836,13 +759,9 @@
     "priority": "MAJOR",
     "status": "FIXED",
     "reportedDate": "2026-05-20T19:59",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 7,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 4,
     "reporterId": 21,
     "assigneeId": 9,
     "fixerId": 9,
@@ -885,13 +804,9 @@
     "priority": "MAJOR",
     "status": "CLOSED",
     "reportedDate": "2026-05-20T20:12",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 7,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 4,
     "reporterId": 22,
     "assigneeId": 13,
     "fixerId": 13,
@@ -948,13 +863,9 @@
     "priority": "MINOR",
     "status": "RESOLVED",
     "reportedDate": "2026-05-20T20:25",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 7,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 4,
     "reporterId": 23,
     "assigneeId": 14,
     "fixerId": 14,
@@ -1001,18 +912,12 @@
     "projectId": 1,
     "title": "Database Save",
     "description": "Database Save occurs during database processing. The save, load, and record handling logic is inconsistent.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T20:38",
-    "reopenCount": 0,
-    "reporterId": 10,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "CRITICAL",
     "status": "NEW",
     "reportedDate": "2026-05-20T20:38",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 12,
+    "categoryId": 5,
     "reporterId": 10,
     "comments": [
       {
@@ -1036,19 +941,12 @@
     "projectId": 1,
     "title": "Record Load",
     "description": "Record Load occurs during database processing. The save, load, and record handling logic is inconsistent.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T20:51",
-    "reopenCount": 0,
-    "reporterId": 11,
-    "assigneeId": 15,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "MAJOR",
     "status": "ASSIGNED",
     "reportedDate": "2026-05-20T20:51",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 8,
+    "categoryId": 5,
     "reporterId": 11,
     "assigneeId": 15,
     "comments": [
@@ -1083,13 +981,9 @@
     "priority": "CRITICAL",
     "status": "FIXED",
     "reportedDate": "2026-05-20T21:04",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 12,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 5,
     "reporterId": 21,
     "assigneeId": 16,
     "fixerId": 16,
@@ -1132,13 +1026,9 @@
     "priority": "BLOCKER",
     "status": "CLOSED",
     "reportedDate": "2026-05-20T21:17",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 8,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 5,
     "reporterId": 22,
     "assigneeId": 19,
     "fixerId": 19,
@@ -1195,13 +1085,9 @@
     "priority": "MAJOR",
     "status": "RESOLVED",
     "reportedDate": "2026-05-20T21:30",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 8,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 5,
     "reporterId": 23,
     "assigneeId": 20,
     "fixerId": 20,
@@ -1248,18 +1134,12 @@
     "projectId": 1,
     "title": "Keyword Search",
     "description": "Keyword Search occurs in issue search. The filter, keyword, and result list do not match the expected search condition.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T21:43",
-    "reopenCount": 0,
-    "reporterId": 10,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "MAJOR",
     "status": "NEW",
     "reportedDate": "2026-05-20T21:43",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 9,
+    "categoryId": 6,
     "reporterId": 10,
     "comments": [
       {
@@ -1283,19 +1163,12 @@
     "projectId": 1,
     "title": "Priority Filter",
     "description": "Priority Filter occurs in issue search. The filter, keyword, and result list do not match the expected search condition.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T21:56",
-    "reopenCount": 0,
-    "reporterId": 11,
-    "assigneeId": 6,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "CRITICAL",
     "status": "ASSIGNED",
     "reportedDate": "2026-05-20T21:56",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 9,
+    "categoryId": 6,
     "reporterId": 11,
     "assigneeId": 6,
     "comments": [
@@ -1330,13 +1203,9 @@
     "priority": "MAJOR",
     "status": "FIXED",
     "reportedDate": "2026-05-20T22:09",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 9,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 6,
     "reporterId": 21,
     "assigneeId": 7,
     "fixerId": 7,
@@ -1379,13 +1248,9 @@
     "priority": "MINOR",
     "status": "CLOSED",
     "reportedDate": "2026-05-20T22:22",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 9,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 6,
     "reporterId": 22,
     "assigneeId": 8,
     "fixerId": 8,
@@ -1442,13 +1307,9 @@
     "priority": "MAJOR",
     "status": "RESOLVED",
     "reportedDate": "2026-05-20T22:35",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 9,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 6,
     "reporterId": 23,
     "assigneeId": 9,
     "fixerId": 9,
@@ -1495,18 +1356,12 @@
     "projectId": 1,
     "title": "Assign Delay",
     "description": "Assign Delay occurs in issue workflow. Assign, status, resolve, and reopen handling do not follow the expected flow.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T22:48",
-    "reopenCount": 0,
-    "reporterId": 10,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "MAJOR",
     "status": "NEW",
     "reportedDate": "2026-05-20T22:48",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 10,
+    "categoryId": 7,
     "reporterId": 10,
     "comments": [
       {
@@ -1530,19 +1385,12 @@
     "projectId": 1,
     "title": "Status Fixed",
     "description": "Status Fixed occurs in issue workflow. Assign, status, resolve, and reopen handling do not follow the expected flow.",
-<<<<<<< HEAD
-    "reportedDate": "2026-05-20T23:01",
-    "reopenCount": 0,
-    "reporterId": 11,
-    "assigneeId": 13,
-=======
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "priority": "CRITICAL",
     "status": "ASSIGNED",
     "reportedDate": "2026-05-20T23:01",
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 10,
+    "categoryId": 7,
     "reporterId": 11,
     "assigneeId": 13,
     "comments": [
@@ -1577,13 +1425,9 @@
     "priority": "MAJOR",
     "status": "FIXED",
     "reportedDate": "2026-05-20T23:14",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 10,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 7,
     "reporterId": 21,
     "assigneeId": 14,
     "fixerId": 14,
@@ -1626,13 +1470,9 @@
     "priority": "CRITICAL",
     "status": "REOPENED",
     "reportedDate": "2026-05-20T23:27",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 10,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 7,
     "reporterId": 22,
     "assigneeId": 15,
     "fixerId": 15,
@@ -1689,13 +1529,9 @@
     "priority": "MAJOR",
     "status": "CLOSED",
     "reportedDate": "2026-05-20T23:40",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 10,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 7,
     "reporterId": 23,
     "assigneeId": 16,
     "fixerId": 16,
@@ -1752,13 +1588,9 @@
     "priority": "CRITICAL",
     "status": "REOPENED",
     "reportedDate": "2026-05-20T23:53",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
     "categoryId": 1,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "reporterId": 10,
     "assigneeId": 19,
     "fixerId": 19,
@@ -1815,13 +1647,9 @@
     "priority": "MAJOR",
     "status": "FIXED",
     "reportedDate": "2026-05-21T00:06",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 4,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 2,
     "reporterId": 11,
     "assigneeId": 20,
     "fixerId": 20,
@@ -1864,13 +1692,9 @@
     "priority": "MAJOR",
     "status": "CLOSED",
     "reportedDate": "2026-05-21T00:19",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 5,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 3,
     "reporterId": 21,
     "assigneeId": 6,
     "fixerId": 6,
@@ -1927,13 +1751,9 @@
     "priority": "MINOR",
     "status": "FIXED",
     "reportedDate": "2026-05-21T00:32",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 7,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 4,
     "reporterId": 22,
     "assigneeId": 7,
     "fixerId": 7,
@@ -1976,13 +1796,9 @@
     "priority": "MAJOR",
     "status": "CLOSED",
     "reportedDate": "2026-05-21T00:45",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 12,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 5,
     "reporterId": 23,
     "assigneeId": 8,
     "fixerId": 8,
@@ -2039,13 +1855,9 @@
     "priority": "MAJOR",
     "status": "CLOSED",
     "reportedDate": "2026-05-21T10:10",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
     "categoryId": 1,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "reporterId": 22,
     "assigneeId": 8,
     "fixerId": 8,
@@ -2095,13 +1907,9 @@
     "priority": "CRITICAL",
     "status": "CLOSED",
     "reportedDate": "2026-05-21T13:00",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 11,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 5,
     "reporterId": 23,
     "assigneeId": 9,
     "fixerId": 9,
@@ -2151,13 +1959,9 @@
     "priority": "MAJOR",
     "status": "CLOSED",
     "reportedDate": "2026-05-21T16:05",
-<<<<<<< HEAD
-    "reopenCount": 0,
-=======
     "reopenedDates": [],
     "reopenCount": 0,
-    "categoryId": 10,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+    "categoryId": 7,
     "reporterId": 10,
     "assigneeId": 13,
     "fixerId": 13,
@@ -2202,19 +2006,6 @@
   {
     "issueId": 1,
     "projectId": 2,
-<<<<<<< HEAD
-    "title": "dffd",
-    "description": "sd",
-    "reportedDate": "2026-05-27T17:13:19.465411200",
-    "assignedDate": "2026-05-31T13:51:58.927939200",
-    "fixedDate": "2026-05-31T13:52:32.589462800",
-    "reopenCount": 0,
-    "reporterId": 11,
-    "assigneeId": 6,
-    "fixerId": 6,
-    "priority": "CRITICAL",
-    "status": "FIXED",
-=======
     "title": "API Token Refresh",
     "description": "API token refresh fails after login authentication. Session token renewal returns an expired credential.",
     "priority": "MAJOR",
@@ -2230,21 +2021,11 @@
     "reporterId": 11,
     "assigneeId": 7,
     "fixerId": 7,
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
     "comments": [
       {
         "commentId": 1,
         "content": "Authentication API token refresh fails after login.",
         "authorId": 11,
-<<<<<<< HEAD
-        "writtenDate": "2026-05-27T17:13:19.465411200"
-      },
-      {
-        "commentId": 2,
-        "content": "dfsdf",
-        "authorId": 6,
-        "writtenDate": "2026-05-31T13:52:32.589462800"
-=======
         "commentStatus": "NEW",
         "writtenDate": "2026-05-22T09:10"
       },
@@ -2254,40 +2035,12 @@
         "authorId": 7,
         "commentStatus": "FIXED",
         "writtenDate": "2026-05-22T11:00"
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
       }
     ]
   },
   {
     "issueId": 2,
     "projectId": 2,
-<<<<<<< HEAD
-    "title": "test error",
-    "description": "there is a  test error",
-    "reportedDate": "2026-05-31T10:46:37.585120700",
-    "assignedDate": "2026-05-31T13:52:12.841479800",
-    "fixedDate": "2026-05-31T14:00:26.561712",
-    "resolvedDate": "2026-05-31T14:00:43.097219700",
-    "closedDate": "2026-05-31T14:00:55.947727600",
-    "reopenCount": 0,
-    "reporterId": 10,
-    "assigneeId": 9,
-    "fixerId": 9,
-    "priority": "MAJOR",
-    "status": "CLOSED",
-    "comments": [
-      {
-        "commentId": 1,
-        "content": "df",
-        "authorId": 10,
-        "writtenDate": "2026-05-31T14:00:43.097219700"
-      },
-      {
-        "commentId": 2,
-        "content": "dfdf",
-        "authorId": 2,
-        "writtenDate": "2026-05-31T14:00:55.947727600"
-=======
     "title": "API Login Redirect",
     "description": "Login redirect loops when API authentication receives a stale session token.",
     "priority": "CRITICAL",
@@ -2316,23 +2069,12 @@
         "authorId": 7,
         "commentStatus": "RESOLVED",
         "writtenDate": "2026-05-22T15:40"
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
       }
     ]
   },
   {
     "issueId": 3,
     "projectId": 2,
-<<<<<<< HEAD
-    "title": "dfd",
-    "description": "df",
-    "reportedDate": "2026-05-31T10:47:02.466805200",
-    "reopenCount": 0,
-    "reporterId": 10,
-    "priority": "TRIVIAL",
-    "status": "NEW",
-    "comments": []
-=======
     "title": "Session Cache Restore",
     "description": "Session cache restore loses authentication data after API retry.",
     "priority": "MAJOR",
@@ -2364,26 +2106,10 @@
         "writtenDate": "2026-05-23T12:10"
       }
     ]
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
   },
   {
     "issueId": 4,
     "projectId": 2,
-<<<<<<< HEAD
-    "title": "dfdf",
-    "description": "dfdf",
-    "reportedDate": "2026-05-31T10:56:08.728857600",
-    "reopenCount": 0,
-    "reporterId": 10,
-    "priority": "MAJOR",
-    "status": "NEW",
-    "comments": [
-      {
-        "commentId": 1,
-        "content": "df",
-        "authorId": 10,
-        "writtenDate": "2026-05-31T10:56:08.728857600"
-=======
     "title": "Dashboard Button Layout",
     "description": "Dashboard button layout overlaps on the statistics screen when the window is narrow.",
     "priority": "MAJOR",
@@ -2588,7 +2314,28 @@
         "authorId": 11,
         "commentStatus": "NEW",
         "writtenDate": "2026-05-26T16:10"
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
+      }
+    ]
+  },
+  {
+    "issueId": 44,
+    "projectId": 1,
+    "title": "dfdf",
+    "description": "df",
+    "priority": "MAJOR",
+    "status": "NEW",
+    "reportedDate": "2026-06-01T12:11:16.436855200",
+    "reopenedDates": [],
+    "reopenCount": 0,
+    "categoryId": 0,
+    "reporterId": 2,
+    "comments": [
+      {
+        "commentId": 1,
+        "content": "df",
+        "authorId": 2,
+        "commentStatus": "GENERAL",
+        "writtenDate": "2026-06-01T12:11:16.438093100"
       }
     ]
   }

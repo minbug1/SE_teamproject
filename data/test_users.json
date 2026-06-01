@@ -101,7 +101,7 @@
     "userId": 20,
     "loginId": "dev10",
     "password": "1234",
-    "accountStatus": "ACTIVE",
+    "accountStatus": "REJECTED",
     "role": "DEVELOPER"
   },
   {
@@ -122,7 +122,7 @@
     "userId": 23,
     "loginId": "tester5",
     "password": "1234",
-    "accountStatus": "ACTIVE",
+    "accountStatus": "DISABLED",
     "role": "TESTER"
   },
   {

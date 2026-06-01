@@ -225,6 +225,96 @@ public class IssueController {
         return issue;
     }
 
+    // assign recommendation
+    public List<DeveloperRecommendation> recommendAssignees(Project project, long issueId, User pl) {
+        validateProject(project);
+        validateUser(pl, "PL must not be null.");
+        validateRole(pl, UserRole.PL, "Only PL can get recommendations.");
+        validateProjectMember(project, pl, "This user is not a PL member of the project.");
+
+        Issue targetIssue = getProjectIssueOrNull(project, issueId);
+
+        if (targetIssue == null ||
+            (targetIssue.getStatus() != IssueStatus.NEW &&
+            targetIssue.getStatus() != IssueStatus.REOPENED)) {
+            return new ArrayList<>();
+        }
+
+        List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
+        classifyTargetIssueIfNeeded(project, targetIssue, projectIssues);
+
+        List<User> developers = new ArrayList<>();
+        for (User member : project.getMembers()) {
+            if (member != null && member.isDev()) {
+                developers.add(member);
+            }
+        }
+
+        RecommendEngine recommendEngine = new RecommendEngine();
+        return recommendEngine.recommendDevelopers(targetIssue, projectIssues, developers);
+    }
+
+    private void classifyTargetIssueIfNeeded(Project project, Issue targetIssue, List<Issue> projectIssues) {
+        if (categoryRepository == null || targetIssue == null || targetIssue.getCategoryId() > 0) {
+            return;
+        }
+        if (!hasCategorizedIssue(projectIssues)) {
+            return;
+        }
+
+        List<Category> savedCategories = categoryRepository.findByProjectId(project.getProjectId());
+        if (savedCategories == null || savedCategories.isEmpty()) {
+            return;
+        }
+
+        CategoryEngine categoryEngine = new CategoryEngine();
+        int categoryId = categoryEngine.categorizeSingleIssue(targetIssue, savedCategories, projectIssues);
+        if (categoryId <= 0) {
+            return;
+        }
+
+        targetIssue.setCategoryId(categoryId);
+        for (Issue issue : projectIssues) {
+            if (issue != null && issue.getIssueId() == targetIssue.getIssueId()) {
+                issue.setCategoryId(categoryId);
+                break;
+            }
+        }
+
+        issueRepository.update(targetIssue);
+        addIssueToSavedCategory(savedCategories, categoryId, targetIssue);
+        categoryRepository.saveAll(project.getProjectId(), savedCategories);
+    }
+
+    private void addIssueToSavedCategory(List<Category> categories, int categoryId, Issue issueToAdd) {
+        for (Category category : categories) {
+            if (category == null || category.getCategoryId() != categoryId) {
+                continue;
+            }
+
+            boolean alreadyExists = category.getIssues().stream()
+                    .anyMatch(issue -> issue != null && issue.getIssueId() == issueToAdd.getIssueId());
+            if (!alreadyExists) {
+                category.getIssues().add(issueToAdd);
+            }
+            return;
+        }
+    }
+
+    private boolean hasCategorizedIssue(List<Issue> issues) {
+        if (issues == null || issues.isEmpty()) {
+            return false;
+        }
+
+        for (Issue issue : issues) {
+            if (issue != null && issue.getCategoryId() > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // helper
     private long generateIssueIdInProject(Project project) {
         long maxId = 0;

@@ -9,11 +9,8 @@ import its.controller.UserController;
 import its.model.AccountStatus;
 import its.model.Project;
 import its.model.User;
-<<<<<<< HEAD
 import its.model.Issue;
-=======
 import its.model.UserRole;
->>>>>>> 3b7cae910723e0a4b724f840ca524f41e266796a
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
