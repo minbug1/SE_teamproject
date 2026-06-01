@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import its.repository.CategoryRepository;
+
 /*
  * model for developer recommendation
  * 
@@ -20,9 +22,17 @@ public class RecommendEngine {
 
     private final TfIdf tfIdf = new TfIdf();
 
-    // constructor
-    public RecommendEngine() {
+    private final CategoryEngine categoryEngine;
+    private final CategoryRepository categoryRepository;
 
+    // constructor
+    public RecommendEngine(CategoryRepository categoryRepository) {
+        if (categoryRepository == null) {
+            throw new IllegalArgumentException("CategoryRepository must not be null.");
+        }
+
+        this.categoryRepository = categoryRepository;
+        this.categoryEngine = new CategoryEngine(categoryRepository);
     }
 
     // default top-k
@@ -38,14 +48,40 @@ public class RecommendEngine {
         if (targetIssue == null || Issues == null || developers == null || topK <= 0) {
             return new ArrayList<>();
         }
+    
+        int targetCategoryId = targetIssue.getCategoryId();
 
-        // uncategoriezed -> recommend block
-        if (isUncategorized(Issues)) {
-            return new ArrayList<>(); 
+        // target 미분류 시 즉각 분류
+        if (targetCategoryId <= 0) {
+            List<Category> savedCategories = categoryRepository.findByProjectId(targetIssue.getProjectId());
+
+            if (savedCategories == null || savedCategories.isEmpty()) {
+                return new ArrayList<>();
+            }
+
+            targetCategoryId = categoryEngine.categorizeSingleIssue(targetIssue, savedCategories);
+
+            if (targetCategoryId > 0) {
+                targetIssue.setCategoryId(targetCategoryId);
+            }
         }
 
-        // add target issue
-        List<Issue> issueList = new ArrayList<>(Issues);
+        // 즉각 분류 이후에도 categoryId가 0이면 추천 불가
+        if (targetCategoryId <= 0) {
+            return new ArrayList<>();
+        }
+
+        // 같은 category 이슈들만 사용
+        List<Issue> sameCategoryIssues = findIssuesByCategory(Issues, targetIssue, targetCategoryId);
+
+        if (sameCategoryIssues.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+
+        // TF-IDF
+        List<Issue> issueList = new ArrayList<>(sameCategoryIssues);
+
         if (!containsIssue(issueList, targetIssue.getIssueId())) {
             issueList.add(targetIssue);
         }
@@ -79,33 +115,30 @@ public class RecommendEngine {
             assignedCountByDeveloperId.put(id, 0);
         }
 
-        for (Issue pastIssue : Issues) {
+        countAssignedWorkload(Issues, assignedCountByDeveloperId);
+
+        for (Issue pastIssue : sameCategoryIssues) {
             if (pastIssue == null) {
                 continue;
             }
 
-            // count assigned workload
-            if (pastIssue.getStatus() == IssueStatus.ASSIGNED && pastIssue.getAssignee() != null) {
-                long currentAssigneeId = pastIssue.getAssignee().getUserId();
-                if (assignedCountByDeveloperId.containsKey(currentAssigneeId)) {
-                    assignedCountByDeveloperId.put(currentAssigneeId, assignedCountByDeveloperId.get(currentAssigneeId) + 1);
-                }
-            }
-
             // valid check
-            if (!isValidIssue(pastIssue, targetIssue)) {
+            if (!isValidIssue(pastIssue, targetIssue, targetCategoryId)) {
                 continue;
             }
 
             // find fixer
             User fixer = pastIssue.getFixer();
-            if (fixer == null || !developerById.containsKey(fixer.getUserId())){
+            if (fixer == null || !developerById.containsKey(fixer.getUserId())) {
                 continue;
             }
 
             // resolvedIssueCount
             long fixerId = fixer.getUserId();
-            resolvedIssueCountByDeveloperId.put(fixerId, resolvedIssueCountByDeveloperId.get(fixerId) + 1);
+            resolvedIssueCountByDeveloperId.put(
+                    fixerId,
+                    resolvedIssueCountByDeveloperId.get(fixerId) + 1
+            );
 
             // similarity
             Map<String, Double> pastVector = tfIdfVector.get(pastIssue.getIssueId());
@@ -116,8 +149,15 @@ public class RecommendEngine {
             }
 
             // similarity score
-            scoreByDeveloperId.put(fixerId, scoreByDeveloperId.get(fixerId) + similarity);
-            matchedIssueCountByDeveloperId.put(fixerId, matchedIssueCountByDeveloperId.get(fixerId) + 1);
+            scoreByDeveloperId.put(
+                    fixerId,
+                    scoreByDeveloperId.get(fixerId) + similarity
+            );
+
+            matchedIssueCountByDeveloperId.put(
+                    fixerId,
+                    matchedIssueCountByDeveloperId.get(fixerId) + 1
+            );
         }
 
         // recommend developer
@@ -147,29 +187,19 @@ public class RecommendEngine {
         return result;
     }
 
-    // is uncategorized
-    private boolean isUncategorized(List<Issue> issues) {
-        if (issues == null || issues.isEmpty()) {
-            return true;
-        }
-
-        for (Issue issue : issues) {
-            if (issue != null && issue.getCategoryId() > 0) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     // valid check
-    private boolean isValidIssue(Issue pastIssue, Issue targetIssue) {
+    private boolean isValidIssue(Issue pastIssue, Issue targetIssue, int targetCategoryId) {
         if (pastIssue == null || targetIssue == null) {
             return false;
         }
 
         // issue itself
         if (pastIssue.getIssueId() == targetIssue.getIssueId()) {
+            return false;
+        }
+
+        // 같은 category 내부만
+        if (pastIssue.getCategoryId() != targetCategoryId) {
             return false;
         }
 
@@ -182,6 +212,55 @@ public class RecommendEngine {
         boolean result = pastIssue.getStatus() == IssueStatus.RESOLVED || pastIssue.getStatus() == IssueStatus.CLOSED;
 
         return result;
+    }
+
+    // 같은 category 이슈 추출
+    private List<Issue> findIssuesByCategory(List<Issue> issues, Issue targetIssue, int categoryId) {
+        List<Issue> result = new ArrayList<>();
+
+        if (issues == null || issues.isEmpty() || targetIssue == null || categoryId <= 0) {
+            return result;
+        }
+
+        for (Issue issue : issues) {
+            if (issue == null) {
+                continue;
+            }
+
+            // 자기 자신 제외
+            if (issue.getIssueId() == targetIssue.getIssueId()) {
+                continue;
+            }
+
+            if (issue.getCategoryId() == categoryId) {
+                result.add(issue);
+            }
+        }
+
+        return result;
+    }
+
+    private void countAssignedWorkload(List<Issue> issues, Map<Long, Integer> assignedCountByDeveloperId) {
+        if (issues == null || assignedCountByDeveloperId == null) {
+            return;
+        }
+
+        for (Issue issue : issues) {
+            if (issue == null) {
+                continue;
+            }
+
+            if (issue.getStatus() == IssueStatus.ASSIGNED && issue.getAssignee() != null) {
+                long assigneeId = issue.getAssignee().getUserId();
+
+                if (assignedCountByDeveloperId.containsKey(assigneeId)) {
+                    assignedCountByDeveloperId.put(
+                            assigneeId,
+                            assignedCountByDeveloperId.get(assigneeId) + 1
+                    );
+                }
+            }
+        }
     }
 
     // contain tnf

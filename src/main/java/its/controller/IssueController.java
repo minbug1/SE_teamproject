@@ -250,7 +250,7 @@ public class IssueController {
             }
         }
 
-        RecommendEngine recommendEngine = new RecommendEngine();
+        RecommendEngine recommendEngine = new RecommendEngine(categoryRepository);
         return recommendEngine.recommendDevelopers(targetIssue, projectIssues, developers);
     }
 
@@ -267,8 +267,8 @@ public class IssueController {
             return;
         }
 
-        CategoryEngine categoryEngine = new CategoryEngine();
-        int categoryId = categoryEngine.categorizeSingleIssue(targetIssue, savedCategories, projectIssues);
+        CategoryEngine categoryEngine = new CategoryEngine(categoryRepository);
+        int categoryId = categoryEngine.categorizeSingleIssue(targetIssue, savedCategories);
         if (categoryId <= 0) {
             return;
         }
