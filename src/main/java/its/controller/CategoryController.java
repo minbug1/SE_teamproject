@@ -34,7 +34,7 @@ public class CategoryController {
         }
         this.issueRepository = issueRepository;
         this.categoryRepository = categoryRepository;
-        this.categoryEngine = new CategoryEngine();
+        this.categoryEngine = new CategoryEngine(categoryRepository);
     }
 
     // create categories
@@ -166,6 +166,7 @@ public class CategoryController {
                 nextCategoryId,
                 extractThreshold(savedCategories),
                 new ArrayList<>(),
+                new java.util.HashMap<>(),
                 new java.util.HashMap<>()
         );
         category.setCategoryName(trimmedName);

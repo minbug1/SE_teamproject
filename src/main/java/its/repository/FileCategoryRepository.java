@@ -154,6 +154,7 @@ public class FileCategoryRepository implements CategoryRepository {
         private double threshold;
         private List<Long> issueIds = new ArrayList<>();
         private Map<String, Double> representVector = new HashMap<>();
+        private Map<String, Double> idfVector = new HashMap<>();
 
         private Category toCategory(long projectId, Map<Long, Issue> issueMap) {
             List<Issue> restoredIssues = new ArrayList<>();
@@ -172,7 +173,8 @@ public class FileCategoryRepository implements CategoryRepository {
                     this.categoryId,
                     this.threshold,
                     restoredIssues,
-                    this.representVector != null ? this.representVector : new HashMap<>()
+                    this.representVector != null ? this.representVector : new HashMap<>(),
+                    this.idfVector != null ? this.idfVector : new HashMap<>()
             );
             
             category.setCategoryName(this.categoryName);
@@ -195,6 +197,10 @@ public class FileCategoryRepository implements CategoryRepository {
 
             if (category.getRepresentVector() != null) {
                 record.representVector = new HashMap<>(category.getRepresentVector());
+            }
+
+            if (category.getIdf() != null) {
+                record.idfVector = new HashMap<>(category.getIdf());
             }
 
             return record;

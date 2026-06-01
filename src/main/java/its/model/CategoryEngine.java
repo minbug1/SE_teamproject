@@ -1,5 +1,7 @@
 package its.model;
 
+import its.repository.CategoryRepository;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,13 +16,17 @@ import java.util.Set;
  * @author hanung
  */
 public class CategoryEngine {
+    final double MIN_INSTANT_CATEGORY_SIMILARITY = 0.125;
 
     private final TfIdf tfIdf = new TfIdf();
     private Set<String> vocabulary = new HashSet<>();
 
-    // constructor
-    public CategoryEngine() {}
+    private final CategoryRepository categoryRepository;
 
+    // constructor
+    public CategoryEngine(CategoryRepository categoryRepository) {
+        this.categoryRepository = categoryRepository;
+    }
     // full training
     public List<Category> createCategoriesByThreshold(List<Issue> Issues, double threshold) {
         List<Category> categories = new ArrayList<>();
@@ -45,6 +51,8 @@ public class CategoryEngine {
         // TF-IDF
         Map<Long, Map<String, Double>> tfIdfVectors = tfIdf.calculateTfIdfByIssue(Issues);
         this.vocabulary = tfIdf.getVocabulary();
+
+        Map<String, Double> idfSnapshot = new HashMap<>(tfIdf.getIdf());
 
         int nextCategoryId = 1;
 
@@ -90,7 +98,8 @@ public class CategoryEngine {
                         nextCategoryId,
                         threshold,
                         categoryIssues,
-                        meanVector
+                        meanVector,
+                        idfSnapshot
                 );
 
                 categories.add(newCategory);
@@ -102,92 +111,66 @@ public class CategoryEngine {
     }
 
     // instant classification
-    public int categorizeSingleIssue(Issue newIssue, List<Category> savedCategories, List<Issue> Issues) {
-        if (newIssue == null || savedCategories == null || savedCategories.isEmpty()) {
-            return 0; 
+    public int categorizeSingleIssue(Issue newIssue, List<Category> savedCategories) {
+        if (newIssue == null) {
+            return 0;
         }
 
-        // no idf -> build
-        if (tfIdf.getIdf() == null || tfIdf.getIdf().isEmpty()) {
-            if (Issues != null && !Issues.isEmpty()) {
-                double threshold = savedCategories.get(0).getThreshold();
-                
-                buildCategories(newIssue.getProjectId(), Issues, threshold);
+        if ((savedCategories == null || savedCategories.isEmpty()) && categoryRepository != null) {
+            savedCategories = categoryRepository.findByProjectId(newIssue.getProjectId());
+        }
+
+        if (savedCategories == null || savedCategories.isEmpty()) {
+            return 0;
+        }
+
+        Set<String> storedVocabulary = new HashSet<>();
+        Map<String, Double> storedIdf = new HashMap<>();
+
+        for (Category category : savedCategories) {
+            if (category == null) {
+                continue;
+            }
+
+            if (category.getRepresentVector() != null) {
+                storedVocabulary.addAll(category.getRepresentVector().keySet());
+            }
+
+            if (category.getIdf() != null) {
+                storedVocabulary.addAll(category.getIdf().keySet());
+                storedIdf.putAll(category.getIdf());
             }
         }
 
-        // use category keyset
-        if (this.vocabulary.isEmpty()) {
-            for (Category category : savedCategories) {
-                if (category != null && category.getRepresentVector() != null) {
-                    this.vocabulary.addAll(category.getRepresentVector().keySet());
-                }
-            }
+        if (storedVocabulary.isEmpty()) {
+            return 0;
         }
-        
-        // new issue vector
-        Map<String, Double> newIssueVector = calculateSingleIssueTfIdf(newIssue, this.vocabulary);
+
+        this.vocabulary = storedVocabulary;
+
+        Map<String, Double> newIssueVector = calculateSingleIssueTfIdf(newIssue, storedVocabulary, storedIdf);
 
         int bestCategoryId = 0;
         double maxSimilarity = -1.0;
-        Category bestCategory = null;
-        double threshold = savedCategories.get(0).getThreshold();
 
         for (Category category : savedCategories) {
+            if (category == null || category.getRepresentVector() == null) {
+                continue;
+            }
+
             double similarity = tfIdf.cosineSimilarity(newIssueVector, category.getRepresentVector());
 
             if (similarity > maxSimilarity) {
                 maxSimilarity = similarity;
                 bestCategoryId = category.getCategoryId();
-                bestCategory = category; 
             }
         }
 
-        if (bestCategory != null && maxSimilarity >= threshold) {
-            return bestCategoryId;
+        if (maxSimilarity < MIN_INSTANT_CATEGORY_SIMILARITY) {
+            return 0;
         }
 
-        return 0; 
-    }
-
-    // rebuild category
-    public List<Category> buildCategories(long projectId, List<Issue> Issues, double threshold) {
-        List<Category> builtCategories = new ArrayList<>();
-        if (Issues == null || Issues.isEmpty()) {
-            return builtCategories;
-        }
-
-        Map<Long, Map<String, Double>> tfIdfVectors = tfIdf.calculateTfIdfByIssue(Issues);
-        this.vocabulary = tfIdf.getVocabulary();
-
-        // grouping
-        Map<Integer, List<Issue>> issuesByCategory = new HashMap<>();
-        for (Issue issue : Issues) {
-            if (issue == null || issue.getCategoryId() <= 0) {
-                continue;
-            }
-            issuesByCategory.computeIfAbsent(issue.getCategoryId(), k -> new ArrayList<>()).add(issue);
-        }
-
-        // build category
-        for (Map.Entry<Integer, List<Issue>> entry : issuesByCategory.entrySet()) {
-            int categoryId = entry.getKey();
-            List<Issue> categoryIssues = entry.getValue();
-
-            Map<String, Double> meanVector = calculateMean(categoryIssues, tfIdfVectors);
-
-            Category newCategorySnapshot = new Category(
-                    projectId,
-                    categoryId,
-                    threshold,
-                    categoryIssues,
-                    meanVector
-            );
-
-            builtCategories.add(newCategorySnapshot);
-        }
-
-        return builtCategories;
+        return bestCategoryId; 
     }
 
     // calculate mean
@@ -215,9 +198,9 @@ public class CategoryEngine {
     }
 
     // calculate single issue TF-IDF
-    public Map<String, Double> calculateSingleIssueTfIdf(Issue issue, Set<String> vocabulary) {
+    public Map<String, Double> calculateSingleIssueTfIdf(Issue issue, Set<String> vocabulary, Map<String, Double> storedIdfMap) {
         Map<String, Double> singleVector = new HashMap<>();
-        if (issue == null) return singleVector;
+        if (issue == null || vocabulary == null || vocabulary.isEmpty()) return singleVector;
 
         Map<String, Integer> issueWordCounts = tfIdf.countWordsByIssue(issue);
         tfIdf.cutWords(issueWordCounts, 3);
@@ -229,7 +212,9 @@ public class CategoryEngine {
             }
         }
         
-        Map<String, Double> storedIdfMap = tfIdf.getIdf();
+        if (storedIdfMap == null) {
+            storedIdfMap = new HashMap<>();
+        }
 
         for (String word : vocabulary) {
             if (totalWeightCount > 0 && issueWordCounts.containsKey(word)) {
@@ -277,12 +262,21 @@ public class CategoryEngine {
         Map<String, Double> newMeanVector = calculateMean(mergedIssues, tfIdfVectors);
 
         // build category
+        Map<String, Double> idfSnapshot = new HashMap<>();
+        if (categoryA.getIdf() != null) {
+            idfSnapshot.putAll(categoryA.getIdf());
+        }
+        if (categoryB.getIdf() != null) {
+            idfSnapshot.putAll(categoryB.getIdf());
+        }
+
         return new Category(
                 categoryA.getProjectId(),
                 categoryIdA,
                 categoryA.getThreshold(),
                 mergedIssues,
-                newMeanVector
+                newMeanVector,
+                idfSnapshot
         );
     }
 
@@ -340,12 +334,18 @@ public class CategoryEngine {
         Map<String, Double> separatingMean = calculateMean(separatingIssues != null ? separatingIssues : new ArrayList<>(), tfIdfVectors);
 
         // build category
+        Map<String, Double> idfSnapshot = new HashMap<>();
+        if (targetCategory.getIdf() != null) {
+            idfSnapshot.putAll(targetCategory.getIdf());
+        }
+
         Category updatedOriginalCategory = new Category(
                 targetCategory.getProjectId(),
                 targetCategoryId,
                 targetCategory.getThreshold(),
                 remainingIssues,
-                remainingMean
+                remainingMean,
+                idfSnapshot
         );
 
         Category newCategory = new Category(
@@ -353,7 +353,8 @@ public class CategoryEngine {
                 newCategoryId,
                 targetCategory.getThreshold(),
                 separatingIssues,
-                separatingMean
+                separatingMean,
+                idfSnapshot
         );
 
         partitionedResult.add(updatedOriginalCategory);

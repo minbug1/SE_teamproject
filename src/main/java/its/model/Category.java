@@ -23,14 +23,17 @@ public class Category {
     private List<Issue> issues = new ArrayList<>();
     // category vocabulary vector
     private Map<String, Double> representVector = new HashMap<>();
+    // idf vector
+    private Map<String, Double> idfVector = new HashMap<>();
 
     // constructor
-    public Category(long projectId, int categoryId, double cosineThreshold, List<Issue> issues, Map<String, Double> representVector) {
+    public Category(long projectId, int categoryId, double cosineThreshold, List<Issue> issues, Map<String, Double> representVector, Map<String, Double> idfVector) {
         this.projectId = projectId;
         this.categoryId = categoryId;
         this.threshold = cosineThreshold;
         this.issues = issues != null ? issues : new ArrayList<>();
         this.representVector = representVector != null ? representVector : new HashMap<>();
+        this.idfVector = idfVector != null ? idfVector : new HashMap<>();
     }
 
     public String getCategoryName() {
@@ -75,6 +78,10 @@ public class Category {
 
     public Map<String, Double> getRepresentVector() {
         return representVector;
+    }
+
+    public Map<String, Double> getIdf() {
+        return idfVector;
     }
 
     public void setCategoryName(String categoryName) {
