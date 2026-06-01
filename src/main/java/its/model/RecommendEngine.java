@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import its.repository.CategoryRepository;
-
 /*
  * model for developer recommendation
  * 
@@ -22,18 +20,8 @@ public class RecommendEngine {
 
     private final TfIdf tfIdf = new TfIdf();
 
-    private final CategoryEngine categoryEngine;
-    private final CategoryRepository categoryRepository;
-
     // constructor
-    public RecommendEngine(CategoryRepository categoryRepository) {
-        if (categoryRepository == null) {
-            throw new IllegalArgumentException("CategoryRepository must not be null.");
-        }
-
-        this.categoryRepository = categoryRepository;
-        this.categoryEngine = new CategoryEngine(categoryRepository);
-    }
+    public RecommendEngine() {}
 
     // default top-k
     public List<DeveloperRecommendation> recommendDevelopers(
@@ -43,45 +31,25 @@ public class RecommendEngine {
 
     // manual top-k
     public List<DeveloperRecommendation> recommendDevelopers(
-            Issue targetIssue, List<Issue> Issues, List<User> developers, int topK) {
+            Issue targetIssue, List<Issue> issues, List<User> developers, int topK) {
         
-        if (targetIssue == null || Issues == null || developers == null || topK <= 0) {
+        if (targetIssue == null || issues == null || developers == null || topK <= 0) {
             return new ArrayList<>();
         }
-    
+
         int targetCategoryId = targetIssue.getCategoryId();
-
-        // target 미분류 시 즉각 분류
-        if (targetCategoryId <= 0) {
-            List<Category> savedCategories = categoryRepository.findByProjectId(targetIssue.getProjectId());
-
-            if (savedCategories == null || savedCategories.isEmpty()) {
+            if (targetCategoryId <= 0) {
                 return new ArrayList<>();
             }
-
-            targetCategoryId = categoryEngine.categorizeSingleIssue(targetIssue, savedCategories);
-
-            if (targetCategoryId > 0) {
-                targetIssue.setCategoryId(targetCategoryId);
-            }
-        }
-
-        // 즉각 분류 이후에도 categoryId가 0이면 추천 불가
-        if (targetCategoryId <= 0) {
-            return new ArrayList<>();
-        }
-
-        // 같은 category 이슈들만 사용
-        List<Issue> sameCategoryIssues = findIssuesByCategory(Issues, targetIssue, targetCategoryId);
-
+    
+        // 같은 category 이슈 추출
+        List<Issue> sameCategoryIssues = findIssuesByCategory(issues, targetIssue, targetCategoryId);
         if (sameCategoryIssues.isEmpty()) {
             return new ArrayList<>();
         }
 
-
         // TF-IDF
         List<Issue> issueList = new ArrayList<>(sameCategoryIssues);
-
         if (!containsIssue(issueList, targetIssue.getIssueId())) {
             issueList.add(targetIssue);
         }
@@ -89,11 +57,8 @@ public class RecommendEngine {
         Map<Long, Map<String, Double>> tfIdfVector = tfIdf.calculateTfIdfByIssue(issueList);
         Map<String, Double> targetVector = tfIdfVector.get(targetIssue.getIssueId());
 
-        // no similarity
         if (targetVector == null || targetVector.isEmpty()) {
-            List<DeveloperRecommendation> result = buildZeroScoreRecommendations(developers, topK);
-
-            return result;
+            return buildZeroScoreRecommendations(developers, topK);
         }
 
         // dev data
@@ -115,7 +80,7 @@ public class RecommendEngine {
             assignedCountByDeveloperId.put(id, 0);
         }
 
-        countAssignedWorkload(Issues, assignedCountByDeveloperId);
+        countAssignedWorkload(issues, assignedCountByDeveloperId);
 
         for (Issue pastIssue : sameCategoryIssues) {
             if (pastIssue == null) {
