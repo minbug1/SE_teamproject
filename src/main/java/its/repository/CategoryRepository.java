@@ -11,9 +11,11 @@ import java.util.List;
  */
 public interface CategoryRepository {
 
-    void saveAll(long projectId, List<Category> categories);
+    void saveAll(int projectId, List<Category> categories);
 
-    List<Category> findByProjectId(long projectId);
+    List<Category> findCategoriesByProjectId(int projectId);
 
-    void clearByProjectId(long projectId);
+    Category findCategoryById(int categoryId);
+
+    void clearByProjectId(int projectId);
 }

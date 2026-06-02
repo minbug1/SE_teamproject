@@ -244,6 +244,17 @@ public class IssueController {
 
         classifyTargetIssueIfNeeded(project, targetIssue, projectIssues);
 
+        // no category, no recommendation
+        if (targetIssue.getCategoryId() <= 0) {
+            return new ArrayList<>();
+        }
+
+        Category targetCategory = categoryRepository.findCategoryById(targetIssue.getCategoryId());
+
+        if (targetCategory == null || targetCategory.getIdf() == null || targetCategory.getIdf().isEmpty()) {
+            return new ArrayList<>();
+        }
+
         List<User> developers = new ArrayList<>();
         for (User member : project.getMembers()) {
             if (member != null && member.isDev()) {
@@ -252,7 +263,7 @@ public class IssueController {
         }
 
         RecommendEngine recommendEngine = new RecommendEngine();
-        return recommendEngine.recommendDevelopers(targetIssue, projectIssues, developers);
+        return recommendEngine.recommendDevelopers(targetIssue, projectIssues, developers, targetCategory);
     }
 
     private void classifyTargetIssueIfNeeded(Project project, Issue targetIssue, List<Issue> projectIssues) {
@@ -260,7 +271,7 @@ public class IssueController {
             return;
         }
 
-        List<Category> savedCategories = categoryRepository.findByProjectId(project.getProjectId());
+        List<Category> savedCategories = categoryRepository.findCategoriesByProjectId(project.getProjectId());
         if (savedCategories == null || savedCategories.isEmpty()) {
             return;
         }

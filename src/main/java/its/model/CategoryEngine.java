@@ -40,7 +40,7 @@ public class CategoryEngine {
         }
 
         // extract project id
-        long projectId = 0;
+        int projectId = 0;
         for (Issue issue : Issues) {
             if (issue != null) {
                 projectId = issue.getProjectId();
@@ -117,7 +117,7 @@ public class CategoryEngine {
         }
 
         if ((savedCategories == null || savedCategories.isEmpty()) && categoryRepository != null) {
-            savedCategories = categoryRepository.findByProjectId(newIssue.getProjectId());
+            savedCategories = categoryRepository.findCategoriesByProjectId(newIssue.getProjectId());
         }
 
         if (savedCategories == null || savedCategories.isEmpty()) {
@@ -148,7 +148,7 @@ public class CategoryEngine {
 
         this.vocabulary = storedVocabulary;
 
-        Map<String, Double> newIssueVector = calculateSingleIssueTfIdf(newIssue, storedVocabulary, storedIdf);
+        Map<String, Double> newIssueVector = tfIdf.calculateTfIdfByIssue(newIssue, storedVocabulary, storedIdf);
 
         int bestCategoryId = 0;
         double maxSimilarity = -1.0;
@@ -195,37 +195,6 @@ public class CategoryEngine {
             mean.put(word, sum / categoryIssues.size());
         }
         return mean;
-    }
-
-    // calculate single issue TF-IDF
-    public Map<String, Double> calculateSingleIssueTfIdf(Issue issue, Set<String> vocabulary, Map<String, Double> storedIdfMap) {
-        Map<String, Double> singleVector = new HashMap<>();
-        if (issue == null || vocabulary == null || vocabulary.isEmpty()) return singleVector;
-
-        Map<String, Integer> issueWordCounts = tfIdf.countWordsByIssue(issue);
-        tfIdf.cutWords(issueWordCounts, 3);
-
-        int totalWeightCount = 0;
-        for (Integer count : issueWordCounts.values()) {
-            if (count != null) {
-                totalWeightCount += count.intValue();
-            }
-        }
-        
-        if (storedIdfMap == null) {
-            storedIdfMap = new HashMap<>();
-        }
-
-        for (String word : vocabulary) {
-            if (totalWeightCount > 0 && issueWordCounts.containsKey(word)) {
-                double tf = (double) issueWordCounts.get(word) / totalWeightCount;
-                double idfValue = storedIdfMap.getOrDefault(word, 1.0);
-                singleVector.put(word, tf * idfValue); 
-            } else {
-                singleVector.put(word, 0.0);
-            }
-        }
-        return singleVector;
     }
 
     // merge
