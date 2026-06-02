@@ -59,10 +59,6 @@ public class RecommendEngine {
 
         Set<String> vocabulary = new HashSet<>();
 
-        if (targetCategory.getRepresentVector() != null) {
-            vocabulary.addAll(targetCategory.getRepresentVector().keySet());
-        }
-
         if (targetCategory.getIdf() != null) {
             vocabulary.addAll(targetCategory.getIdf().keySet());
         }
