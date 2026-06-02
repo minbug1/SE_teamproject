@@ -241,6 +241,7 @@ public class IssueController {
         }
 
         List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
+
         classifyTargetIssueIfNeeded(project, targetIssue, projectIssues);
 
         List<User> developers = new ArrayList<>();
@@ -250,15 +251,12 @@ public class IssueController {
             }
         }
 
-        RecommendEngine recommendEngine = new RecommendEngine(categoryRepository);
+        RecommendEngine recommendEngine = new RecommendEngine();
         return recommendEngine.recommendDevelopers(targetIssue, projectIssues, developers);
     }
 
     private void classifyTargetIssueIfNeeded(Project project, Issue targetIssue, List<Issue> projectIssues) {
         if (categoryRepository == null || targetIssue == null || targetIssue.getCategoryId() > 0) {
-            return;
-        }
-        if (!hasCategorizedIssue(projectIssues)) {
             return;
         }
 
@@ -269,15 +267,19 @@ public class IssueController {
 
         CategoryEngine categoryEngine = new CategoryEngine(categoryRepository);
         int categoryId = categoryEngine.categorizeSingleIssue(targetIssue, savedCategories);
+
         if (categoryId <= 0) {
             return;
         }
 
         targetIssue.setCategoryId(categoryId);
-        for (Issue issue : projectIssues) {
-            if (issue != null && issue.getIssueId() == targetIssue.getIssueId()) {
-                issue.setCategoryId(categoryId);
-                break;
+
+        if (projectIssues != null) {
+            for (Issue issue : projectIssues) {
+                if (issue != null && issue.getIssueId() == targetIssue.getIssueId()) {
+                    issue.setCategoryId(categoryId);
+                    break;
+                }
             }
         }
 
@@ -299,20 +301,6 @@ public class IssueController {
             }
             return;
         }
-    }
-
-    private boolean hasCategorizedIssue(List<Issue> issues) {
-        if (issues == null || issues.isEmpty()) {
-            return false;
-        }
-
-        for (Issue issue : issues) {
-            if (issue != null && issue.getCategoryId() > 0) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     // helper
