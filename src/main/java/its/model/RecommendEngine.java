@@ -3,8 +3,10 @@ package its.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /*
  * model for developer recommendation
@@ -24,14 +26,12 @@ public class RecommendEngine {
     public RecommendEngine() {}
 
     // default top-k
-    public List<DeveloperRecommendation> recommendDevelopers(
-            Issue targetIssue, List<Issue> Issues, List<User> developers) {
-        return recommendDevelopers(targetIssue, Issues, developers, DEFAULT_TOP_N);
+    public List<DeveloperRecommendation> recommendDevelopers(Issue targetIssue, List<Issue> Issues, List<User> developers, Category targetCategory) {
+        return recommendDevelopers(targetIssue, Issues, developers, targetCategory, DEFAULT_TOP_N);
     }
 
     // manual top-k
-    public List<DeveloperRecommendation> recommendDevelopers(
-            Issue targetIssue, List<Issue> issues, List<User> developers, int topK) {
+    public List<DeveloperRecommendation> recommendDevelopers(Issue targetIssue, List<Issue> issues, List<User> developers, Category targetCategory, int topK) {
         
         if (targetIssue == null || issues == null || developers == null || topK <= 0) {
             return new ArrayList<>();
@@ -41,6 +41,15 @@ public class RecommendEngine {
             if (targetCategoryId <= 0) {
                 return new ArrayList<>();
             }
+
+        if (targetCategory.getCategoryId() != targetCategoryId) {
+            return new ArrayList<>();
+        }
+
+        Map<String, Double> storedIdf = targetCategory.getIdf();
+        if (storedIdf == null || storedIdf.isEmpty()) {
+            return new ArrayList<>();
+        }
     
         // 같은 category 이슈 추출
         List<Issue> sameCategoryIssues = findIssuesByCategory(issues, targetIssue, targetCategoryId);
@@ -48,14 +57,19 @@ public class RecommendEngine {
             return new ArrayList<>();
         }
 
-        // TF-IDF
-        List<Issue> issueList = new ArrayList<>(sameCategoryIssues);
-        if (!containsIssue(issueList, targetIssue.getIssueId())) {
-            issueList.add(targetIssue);
+        Set<String> vocabulary = new HashSet<>();
+
+        if (targetCategory.getRepresentVector() != null) {
+            vocabulary.addAll(targetCategory.getRepresentVector().keySet());
         }
 
-        Map<Long, Map<String, Double>> tfIdfVector = tfIdf.calculateTfIdfByIssue(issueList);
-        Map<String, Double> targetVector = tfIdfVector.get(targetIssue.getIssueId());
+        if (targetCategory.getIdf() != null) {
+            vocabulary.addAll(targetCategory.getIdf().keySet());
+        }
+
+        Map<String, Double> targetVector =
+                tfIdf.calculateTfIdfByIssue(targetIssue, vocabulary, storedIdf);
+
 
         if (targetVector == null || targetVector.isEmpty()) {
             return buildZeroScoreRecommendations(developers, topK);
@@ -106,7 +120,9 @@ public class RecommendEngine {
             );
 
             // similarity
-            Map<String, Double> pastVector = tfIdfVector.get(pastIssue.getIssueId());
+            Map<String, Double> pastVector =
+                    tfIdf.calculateTfIdfByIssue(pastIssue, vocabulary, storedIdf);
+
             double similarity = tfIdf.cosineSimilarity(targetVector, pastVector);
 
             if (similarity <= 0.0) {
@@ -226,21 +242,6 @@ public class RecommendEngine {
                 }
             }
         }
-    }
-
-    // contain tnf
-    private boolean containsIssue(List<Issue> issues, long issueId) {
-        if (issues == null) {
-            return false;
-        }
-
-        for (Issue issue : issues) {
-            if (issue != null && issue.getIssueId() == issueId) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     // only dev

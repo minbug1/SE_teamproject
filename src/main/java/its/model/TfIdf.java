@@ -48,83 +48,51 @@ public class TfIdf {
         }
     }
 
-    // TF-IDF
+    // TF-IDFs
     public Map<Long, Map<String, Double>> calculateTfIdfByIssue(List<Issue> issues) {
-        // build vocabulary
-        this.vocabulary.clear();
+        Map<Long, Map<String, Double>> result = new HashMap<>();
+
+        if (issues == null || issues.isEmpty()) {
+            return result;
+        }
+
         buildVocabulary(issues);
-
-        // {issueId1:{"word1": tf-idf, "word1": tf-idf, ...}, issueId2:{"word1":tf-idf, ...}, ...}
-        Map<Long, Map<String, Double>> tfIdfByIssue = new HashMap<>();
-
-        // TF, IDF
-        Map<Long, Map<String, Double>> tfByIssue = calculateTfByIssue(issues);
-        Map<String, Double> idfByDocument = calculateIdfByDocument(issues);
-
-        // TF * IDF
-        for (Map.Entry<Long, Map<String, Double>> issueEntry : tfByIssue.entrySet()) {
-            long issueId = issueEntry.getKey();
-            Map<String, Double> tfVector = issueEntry.getValue();
-
-            Map<String, Double> tfIdfVector = new HashMap<>();
-            
-            // vocabulary dimension
-            for (String word : vocabulary) {
-                double tfValue = tfVector.getOrDefault(word, 0.0);
-                double idfValue = idfByDocument.getOrDefault(word, 1.0);
-
-                tfIdfVector.put(word, tfValue * idfValue);
-            }
-
-            tfIdfByIssue.put(issueId, tfIdfVector);
-        }
-
-        return tfIdfByIssue;
-    }
-
-    // TF
-    public Map<Long, Map<String, Double>> calculateTfByIssue(List<Issue> issues) {
-        // {issueId1: {"word1": tf, ...}, {issueId2: {"word2": tf, ...}, ...}
-        Map<Long, Map<String, Double>> tfByIssue = new HashMap<>();
-
-        if (issues == null) {
-            return tfByIssue;
-        }
+        calculateIdfByDocument(issues);
 
         for (Issue issue : issues) {
             if (issue == null) {
                 continue;
             }
 
-            // count
-            Map<String, Integer> issueWordCounts = countWordsByIssue(issue);
+            Map<String, Double> tfIdfVector =
+                    calculateTfIdfByIssue(issue, this.vocabulary, this.idf);
 
-            // cut
-            cutWords(issueWordCounts, MIN_WORD_COUNT);
-
-            // total
-            int totalWeightCount = 0;
-            for (int count : issueWordCounts.values()) {
-                totalWeightCount += count;
-            }
-
-            // calculate TF with mapping onto vocabulary
-            Map<String, Double> tfVector = new HashMap<>();
-            for (String word : vocabulary) {
-                if (totalWeightCount > 0 && issueWordCounts.containsKey(word)) {
-                    int count = issueWordCounts.get(word);
-                    // tf value
-                    tfVector.put(word, (double) count / totalWeightCount);
-                } else {
-                    // 0 value for sparse vector (vocabulary)
-                    tfVector.put(word, 0.0);
-                }
-            }
-
-            tfByIssue.put(issue.getIssueId(), tfVector);
+            result.put(issue.getIssueId(), tfIdfVector);
         }
 
-        return tfByIssue;
+        return result;
+    }
+
+    // TFs
+    public Map<Long, Map<String, Double>> calculateTfByIssues(List<Issue> issues) {
+        Map<Long, Map<String, Double>> result = new HashMap<>();
+
+        if (issues == null || issues.isEmpty()) {
+            return result;
+        }
+
+        buildVocabulary(issues);
+
+        for (Issue issue : issues) {
+            if (issue == null) {
+                continue;
+            }
+
+            Map<String, Double> tfVector = calculateTfByIssue(issue, this.vocabulary);
+            result.put(issue.getIssueId(), tfVector);
+        }
+
+        return result;
     }
 
     // IDF
@@ -178,6 +146,70 @@ public class TfIdf {
         return idfByDocument;
     }
     
+    // TF-IDF
+    public Map<String, Double> calculateTfIdfByIssue(
+            Issue issue, Set<String> vocabulary, Map<String, Double> idfMap) {
+
+        Map<String, Double> tfIdfVector = new HashMap<>();
+
+        if (issue == null || vocabulary == null || vocabulary.isEmpty()) {
+            return tfIdfVector;
+        }
+
+        if (idfMap == null) {
+            idfMap = new HashMap<>();
+        }
+
+        Map<String, Double> tfVector = calculateTfByIssue(issue, vocabulary);
+
+        for (String word : vocabulary) {
+            if (word == null) {
+                continue;
+            }
+
+            double tf = tfVector.getOrDefault(word, 0.0);
+            double idf = idfMap.getOrDefault(word, 1.0);
+
+            tfIdfVector.put(word, tf * idf);
+        }
+
+        return tfIdfVector;
+    }
+
+    // TF
+    public Map<String, Double> calculateTfByIssue(Issue issue, Set<String> vocabulary) {
+        Map<String, Double> tfVector = new HashMap<>();
+
+        if (issue == null || vocabulary == null || vocabulary.isEmpty()) {
+            return tfVector;
+        }
+
+        Map<String, Integer> wordCounts = countWordsByIssue(issue);
+        cutWords(wordCounts, 3);
+
+        int totalWeightCount = 0;
+        for (Integer count : wordCounts.values()) {
+            if (count != null) {
+                totalWeightCount += count;
+            }
+        }
+
+        for (String word : vocabulary) {
+            if (word == null) {
+                continue;
+            }
+
+            double tf = 0.0;
+            if (totalWeightCount > 0 && wordCounts.containsKey(word)) {
+                tf = (double) wordCounts.get(word) / totalWeightCount;
+            }
+
+            tfVector.put(word, tf);
+        }
+
+        return tfVector;
+    }
+
     // count for tf
     public Map<String, Integer> countWordsByIssue(Issue issue) {
         // {"word1":count, "word2":count, ...}

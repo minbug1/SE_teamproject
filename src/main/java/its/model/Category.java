@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class Category {
 
-    private long projectId;
+    private int projectId;
     private int categoryId;
     private String categoryName;
     // threshold
@@ -27,7 +27,7 @@ public class Category {
     private Map<String, Double> idfVector = new HashMap<>();
 
     // constructor
-    public Category(long projectId, int categoryId, double cosineThreshold, List<Issue> issues, Map<String, Double> representVector, Map<String, Double> idfVector) {
+    public Category(int projectId, int categoryId, double cosineThreshold, List<Issue> issues, Map<String, Double> representVector, Map<String, Double> idfVector) {
         this.projectId = projectId;
         this.categoryId = categoryId;
         this.threshold = cosineThreshold;
@@ -64,7 +64,7 @@ public class Category {
         return categoryId;
     }
     
-    public long getProjectId() {
+    public int getProjectId() {
         return projectId;
     }
     

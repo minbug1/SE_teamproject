@@ -15,8 +15,10 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /*
  * Repository implementation for CategoryRepository
@@ -66,7 +68,7 @@ public class FileCategoryRepository implements CategoryRepository {
     }
 
     @Override
-    public void saveAll(long projectId, List<Category> categories) {
+    public void saveAll(int projectId, List<Category> categories) {
         if (categories == null) {
             throw new IllegalArgumentException("Categories list must not be null.");
         }
@@ -90,7 +92,7 @@ public class FileCategoryRepository implements CategoryRepository {
     }
 
     @Override
-    public List<Category> findByProjectId(long projectId) {
+    public List<Category> findCategoriesByProjectId(int projectId) {
         File file = getFileForProject(projectId);
 
         if (!file.exists() || file.length() == 0) {
@@ -128,7 +130,55 @@ public class FileCategoryRepository implements CategoryRepository {
     }
 
     @Override
-    public void clearByProjectId(long projectId) {
+    public Category findCategoryById(int categoryId) {
+        List<Issue> allIssues = issueRepository.findAll();
+        Map<Long, Issue> issueMap = new HashMap<>();
+        for (Issue issue : allIssues) {
+            if (issue != null) {
+                issueMap.put(issue.getIssueId(), issue);
+            }
+        }
+
+        Set<Integer> projectIds = new HashSet<>();
+        for (Issue issue : allIssues) {
+            if (issue != null) {
+                projectIds.add(issue.getProjectId());
+            }
+        }
+
+        for (int projectId : projectIds) {
+            File file = getFileForProject(projectId);
+
+            if (!file.exists() || file.length() == 0) {
+                continue;
+            }
+
+            try (FileReader reader = new FileReader(file)) {
+                Type listType = new TypeToken<List<CategoryRecord>>() {}.getType();
+                List<CategoryRecord> records = gson.fromJson(reader, listType);
+
+                if (records == null) {
+                    continue;
+                }
+
+                for (CategoryRecord record : records) {
+                    if (record != null && record.getCategoryId() == categoryId) { 
+                        return record.toCategory(projectId, issueMap);
+                    }
+                }
+
+            } catch (JsonSyntaxException e) {
+                throw new RuntimeException("Failed to parse category data file. The JSON format is invalid.", e);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to read category data file for project " + projectId, e);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public void clearByProjectId(int projectId) {
         File file = getFileForProject(projectId);
         if (file.exists()) {
             file.delete();
@@ -156,7 +206,11 @@ public class FileCategoryRepository implements CategoryRepository {
         private Map<String, Double> representVector = new HashMap<>();
         private Map<String, Double> idfVector = new HashMap<>();
 
-        private Category toCategory(long projectId, Map<Long, Issue> issueMap) {
+        public int getCategoryId() {
+            return categoryId;
+        }
+
+        private Category toCategory(int projectId, Map<Long, Issue> issueMap) {
             List<Issue> restoredIssues = new ArrayList<>();
             
             if (issueIds != null) {

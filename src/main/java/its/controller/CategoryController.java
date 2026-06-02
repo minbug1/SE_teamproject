@@ -84,7 +84,7 @@ public class CategoryController {
     public List<Category> findCategories(Project project, User pl) {
         validatePL(project, pl);
 
-        return categoryRepository.findByProjectId(project.getProjectId());
+        return categoryRepository.findCategoriesByProjectId(project.getProjectId());
     }
 
     public List<Category> saveCategories(Project project, List<Category> categories, User pl) {
@@ -146,7 +146,7 @@ public class CategoryController {
             throw new IllegalArgumentException("Invalid category name.");
         }
 
-        List<Category> savedCategories = categoryRepository.findByProjectId(project.getProjectId());
+        List<Category> savedCategories = categoryRepository.findCategoriesByProjectId(project.getProjectId());
         String trimmedName = categoryName.trim();
         for (Category category : savedCategories) {
             if (category != null && trimmedName.equalsIgnoreCase(category.getCategoryName())) {
@@ -197,7 +197,7 @@ public class CategoryController {
             throw new IllegalArgumentException("Cannot merge same category.");
         }
 
-        List<Category> savedCategories = categoryRepository.findByProjectId(project.getProjectId());
+        List<Category> savedCategories = categoryRepository.findCategoriesByProjectId(project.getProjectId());
         if (savedCategories == null || savedCategories.isEmpty()) {
             return new ArrayList<>();
         }
@@ -280,7 +280,7 @@ public class CategoryController {
             throw new IllegalArgumentException("Issue IDs empty.");
         }
 
-        List<Category> savedCategories = categoryRepository.findByProjectId(project.getProjectId());
+        List<Category> savedCategories = categoryRepository.findCategoriesByProjectId(project.getProjectId());
         Category targetCategory = findCategoryById(savedCategories, targetCategoryId);
         if (targetCategory == null) {
             throw new IllegalArgumentException("Target category does not exist.");
@@ -408,7 +408,7 @@ public class CategoryController {
             throw new IllegalArgumentException("Invalid category name.");
         }
 
-        List<Category> savedCategories = categoryRepository.findByProjectId(project.getProjectId());
+        List<Category> savedCategories = categoryRepository.findCategoriesByProjectId(project.getProjectId());
         Category targetCategory = findCategoryById(savedCategories, categoryId);
         
         // target validation
@@ -433,7 +433,7 @@ public class CategoryController {
     }
 
     // helper methods
-    private void saveAndSync(long projectId, List<Category> categories, List<Issue> issues) {
+    private void saveAndSync(int projectId, List<Category> categories, List<Issue> issues) {
         if (categories != null && !categories.isEmpty()) {
             categoryRepository.saveAll(projectId, categories);
         }
