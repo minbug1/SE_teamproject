@@ -1,7 +1,7 @@
 package its.model;
 
 /*
- * DTO model for developer recommendation
+ * model for developer recommendation
  * 
  * @author hanung
  */
@@ -13,12 +13,7 @@ public class DeveloperRecommendation implements Comparable<DeveloperRecommendati
     private final int matchedIssueCount;
     private final int resolvedIssueCount;
 
-    public DeveloperRecommendation(
-            User developer,
-            double score,
-            int matchedIssueCount,
-            int totalSolvedIssueCount
-    ) {
+    public DeveloperRecommendation(User developer, double score, int matchedIssueCount, int totalSolvedIssueCount) {
         this.developer = developer;
         this.score = score;
         this.matchedIssueCount = matchedIssueCount;
