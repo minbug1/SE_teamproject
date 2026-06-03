@@ -221,7 +221,7 @@ class StatisticsControllerTest {
         makeIssue(2, LocalDateTime.now(), Priority.MAJOR, IssueStatus.RESOLVED, dev1);
         makeIssue(3, LocalDateTime.now(), Priority.MAJOR, IssueStatus.CLOSED,   dev1);
         makeIssue(4, LocalDateTime.now(), Priority.MAJOR, IssueStatus.FIXED,    dev2);
-        makeIssue(5, LocalDateTime.now(), Priority.MAJOR, IssueStatus.NEW,      dev1); // 移댁슫???쒖쇅
+        makeIssue(5, LocalDateTime.now(), Priority.MAJOR, IssueStatus.NEW,      dev1); 
 
         Map<User, Long> result = statisticsController.getResolvedCountByDeveloper(PROJECT_ID);
 
@@ -231,7 +231,7 @@ class StatisticsControllerTest {
 
     @Test
     void getResolvedCountByDeveloperShouldIgnoreIssuesWithNoFixer() {
-        makeIssue(1, LocalDateTime.now(), Priority.MAJOR, IssueStatus.RESOLVED, null); // fixer ?놁쓬
+        makeIssue(1, LocalDateTime.now(), Priority.MAJOR, IssueStatus.RESOLVED, null);
 
         Map<User, Long> result = statisticsController.getResolvedCountByDeveloper(PROJECT_ID);
 

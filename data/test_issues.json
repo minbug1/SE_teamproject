@@ -2318,27 +2318,5 @@
         "writtenDate": "2026-05-26T16:10"
       }
     ]
-  },
-  {
-    "issueId": 44,
-    "projectId": 1,
-    "title": "dfdf",
-    "description": "df",
-    "priority": "MAJOR",
-    "status": "NEW",
-    "reportedDate": "2026-06-01T12:11:16.436855200",
-    "reopenedDates": [],
-    "reopenCount": 0,
-    "categoryId": 0,
-    "reporterId": 2,
-    "comments": [
-      {
-        "commentId": 1,
-        "content": "df",
-        "authorId": 2,
-        "commentStatus": "GENERAL",
-        "writtenDate": "2026-06-01T12:11:16.438093100"
-      }
-    ]
   }
 ]

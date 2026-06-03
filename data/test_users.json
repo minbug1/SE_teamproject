@@ -131,5 +131,12 @@
     "password": "1234",
     "accountStatus": "ACTIVE",
     "role": "UNASSIGNED"
+  },
+  {
+    "userId": 25,
+    "loginId": "tester11",
+    "password": "1234",
+    "accountStatus": "PENDING",
+    "role": "UNASSIGNED"
   }
 ]
