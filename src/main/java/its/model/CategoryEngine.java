@@ -11,7 +11,7 @@ import java.util.Set;
 
 /*
  * model for categorize
- * 
+ * full, single, merge, partition, calculate represent vector, reset
  * 
  * @author hanung
  */
@@ -49,7 +49,7 @@ public class CategoryEngine {
         }
 
         // TF-IDF
-        Map<Long, Map<String, Double>> tfIdfVectors = tfIdf.calculateTfIdfByIssue(Issues);
+        Map<Long, Map<String, Double>> tfIdfVectors = tfIdf.calculateTfIdfByIssues(Issues);
         this.vocabulary = tfIdf.getVocabulary();
 
         Map<String, Double> idfSnapshot = new HashMap<>(tfIdf.getIdf());

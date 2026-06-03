@@ -5,7 +5,7 @@ import java.util.Objects;
 
 /*
  * model for user
- * 
+ * getter, setter, verify
  *
  * @author hanung
  */

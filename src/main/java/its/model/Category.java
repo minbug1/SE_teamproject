@@ -7,7 +7,7 @@ import java.util.Map;
 
 /*
  * model for Category
- *
+ * getter, setter
  * 
  * @author hanung
  */

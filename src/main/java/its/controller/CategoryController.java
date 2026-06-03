@@ -16,9 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
+/*
  * controller for category management
- *
+ * create, preview, find, reset, merge, partition, naming
+ * 
  * @author hanung
  */
 public class CategoryController {
@@ -54,6 +55,7 @@ public class CategoryController {
         return categories;
     }
 
+    // preview
     public List<Category> previewCategories(Project project, double threshold, User pl) {
         validatePL(project, pl);
         validateThreshold(threshold);
@@ -139,6 +141,7 @@ public class CategoryController {
         return categories;
     }
 
+    // 임시 구현
     public Category createCategory(Project project, String categoryName, User pl) {
         validatePL(project, pl);
 
@@ -205,7 +208,7 @@ public class CategoryController {
         List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
 
         // calculate vector and merge
-        Map<Long, Map<String, Double>> tfIdfVectors = categoryEngine.getTfIdf().calculateTfIdfByIssue(projectIssues);
+        Map<Long, Map<String, Double>> tfIdfVectors = categoryEngine.getTfIdf().calculateTfIdfByIssues(projectIssues);
         Category mergedCategory = categoryEngine.mergeCategories(categoryIdA, categoryIdB, savedCategories, tfIdfVectors);
 
         if (mergedCategory == null) {
@@ -232,8 +235,8 @@ public class CategoryController {
         return result;
     }
 
-    public List<Category> previewMergeCategories(Project project, List<Category> categories,
-                                                 int categoryIdA, int categoryIdB, User pl) {
+    // preview
+    public List<Category> previewMergeCategories(Project project, List<Category> categories, int categoryIdA, int categoryIdB, User pl) {
         validatePL(project, pl);
         validateCategoryId(categoryIdA);
         validateCategoryId(categoryIdB);
@@ -247,7 +250,7 @@ public class CategoryController {
         Category targetCategory = findCategoryById(categories, categoryIdA);
         String targetName = targetCategory != null ? targetCategory.getCategoryName() : null;
         List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
-        Map<Long, Map<String, Double>> tfIdfVectors = categoryEngine.getTfIdf().calculateTfIdfByIssue(projectIssues);
+        Map<Long, Map<String, Double>> tfIdfVectors = categoryEngine.getTfIdf().calculateTfIdfByIssues(projectIssues);
         Category mergedCategory = categoryEngine.mergeCategories(categoryIdA, categoryIdB, categories, tfIdfVectors);
 
         if (mergedCategory == null) {
@@ -311,7 +314,7 @@ public class CategoryController {
         }
 
         List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
-        Map<Long, Map<String, Double>> tfIdfVectors = categoryEngine.getTfIdf().calculateTfIdfByIssue(projectIssues);
+        Map<Long, Map<String, Double>> tfIdfVectors = categoryEngine.getTfIdf().calculateTfIdfByIssues(projectIssues);
 
         // split mapping
         List<Category> partitioned = categoryEngine.partitionCategoryA(targetCategoryId, remainingIssues, separatingIssues, savedCategories, tfIdfVectors);
@@ -335,8 +338,8 @@ public class CategoryController {
         return result;
     }
 
-    public List<Category> previewPartitionCategory(Project project, List<Category> categories,
-                                                   int targetCategoryId, List<Long> separatingIssueIds, User pl) {
+    // preview
+    public List<Category> previewPartitionCategory(Project project, List<Category> categories, int targetCategoryId, List<Long> separatingIssueIds, User pl) {
         validatePL(project, pl);
         validateCategoryId(targetCategoryId);
         if (separatingIssueIds == null || separatingIssueIds.isEmpty()) {
@@ -375,7 +378,7 @@ public class CategoryController {
         }
 
         List<Issue> projectIssues = issueRepository.findByProjectId(project.getProjectId());
-        Map<Long, Map<String, Double>> tfIdfVectors = categoryEngine.getTfIdf().calculateTfIdfByIssue(projectIssues);
+        Map<Long, Map<String, Double>> tfIdfVectors = categoryEngine.getTfIdf().calculateTfIdfByIssues(projectIssues);
         List<Category> partitioned = categoryEngine.partitionCategoryA(
                 targetCategoryId, remainingIssues, separatingIssues, categories, tfIdfVectors);
         if (!partitioned.isEmpty()) {
@@ -399,7 +402,7 @@ public class CategoryController {
         return result;
     }
     
-    // update category name
+    // naming
     public Category updateCategoryName(Project project, int categoryId, String newName, User pl) {
         validatePL(project, pl);
         validateCategoryId(categoryId);

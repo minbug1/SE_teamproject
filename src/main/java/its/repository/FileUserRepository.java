@@ -82,11 +82,11 @@ public class FileUserRepository implements UserRepository {
 
         for (User existingUser : users) {
             if (existingUser.getUserId() == user.getUserId()) {
-                throw new IllegalArgumentException("Pre existing user with the same ID.");
+                throw new IllegalArgumentException("User ID already exists.");
             }
 
             if (Objects.equals(existingUser.getLoginId(), user.getLoginId())) {
-                throw new IllegalArgumentException("Pre existing user with the same login ID.");
+                throw new IllegalArgumentException("Login ID already exists.");
             }
         }
 
@@ -110,7 +110,7 @@ public class FileUserRepository implements UserRepository {
                 for (User otherUser : users) {
                     if (otherUser.getUserId() != user.getUserId()
                             && Objects.equals(otherUser.getLoginId(), user.getLoginId())) {
-                        throw new IllegalArgumentException("Pre existing user with the same login ID.");
+                        throw new IllegalArgumentException("Login ID already exists.");
                     }
                 }
 
@@ -121,7 +121,7 @@ public class FileUserRepository implements UserRepository {
         }
 
         if (!updated) {
-            throw new IllegalArgumentException("There is no user with the specified ID.");
+            throw new IllegalArgumentException("User does not exist.");
         }
 
         writeAll(users);
@@ -130,7 +130,7 @@ public class FileUserRepository implements UserRepository {
     @Override
     public void deleteByUserId(long userId) {
         if (userId <= 0) {
-            throw new IllegalArgumentException("ID must be a positive number.");
+            throw new IllegalArgumentException("User ID must be a positive number.");
         }
 
         List<User> users = findAll();
@@ -146,7 +146,7 @@ public class FileUserRepository implements UserRepository {
         }
 
         if (!deleted) {
-            throw new IllegalArgumentException("There is no user with the specified ID.");
+            throw new IllegalArgumentException("User does not exist.");
         }
 
         writeAll(remainingUsers);
@@ -292,7 +292,7 @@ public class FileUserRepository implements UserRepository {
         }
 
         if (user.getUserId() <= 0) {
-            throw new IllegalArgumentException("Invalid user ID.");
+            throw new IllegalArgumentException("User ID must be positive.");
         }
 
         if (user.getLoginId() == null || user.getLoginId().trim().isEmpty()) {

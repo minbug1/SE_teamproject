@@ -9,7 +9,7 @@ import java.util.Set;
 
 /*
  * model for TF-IDF
- * 
+ * vocabulary, TF-IDFs, TFs, IDF, TF-IDF, TF, helper
  *
  * @author hanung
  */
@@ -49,7 +49,7 @@ public class TfIdf {
     }
 
     // TF-IDFs
-    public Map<Long, Map<String, Double>> calculateTfIdfByIssue(List<Issue> issues) {
+    public Map<Long, Map<String, Double>> calculateTfIdfByIssues(List<Issue> issues) {
         Map<Long, Map<String, Double>> result = new HashMap<>();
 
         if (issues == null || issues.isEmpty()) {
@@ -345,13 +345,22 @@ public class TfIdf {
 
     // cosine similarity
     public double cosineSimilarity(Map<String, Double> vectorA, Map<String, Double> vectorB) {
-        if (vectorA == null || vectorB == null || vectorA.isEmpty() || vectorB.isEmpty()) return 0.0;
+        if (vectorA == null || vectorB == null || vectorA.isEmpty() || vectorB.isEmpty()){
+            return 0.0;
+        }
+
+        Set<String> vocabulary = new HashSet<>();
+        vocabulary.addAll(vectorA.keySet());
+        vocabulary.addAll(vectorB.keySet());
 
         double dotProduct = 0.0;
         double normA = 0.0;
         double normB = 0.0;
 
-        for (String word : this.vocabulary) {
+        for (String word : vocabulary) {
+            if (word == null) {
+                continue;
+            }
             double valA = vectorA.getOrDefault(word, 0.0);
             double valB = vectorB.getOrDefault(word, 0.0);
 
@@ -360,7 +369,10 @@ public class TfIdf {
             normB += valB * valB;
         }
 
-        if (normA == 0.0 || normB == 0.0) return 0.0;
+        if (normA == 0.0 || normB == 0.0) {
+            return 0.0;
+        }
+
         return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 }
