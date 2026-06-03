@@ -148,6 +148,29 @@ class TfIdfTest {
     }
 
     @Test
+    void calculateTfIdfByIssue() {
+        Set<String> vocabulary = new HashSet<>();
+        vocabulary.add("login");
+        vocabulary.add("error");
+        vocabulary.add("can");
+        vocabulary.add("t");
+
+        Map<String, Double> idf = new HashMap<>();
+        idf.put("login", 2.0);
+        idf.put("error", 3.0);
+        idf.put("can", 4.0);
+        idf.put("t", 5.0);
+
+        Map<String, Double> tfIdfVector =
+                tfIdf.calculateTfIdfByIssue(issueWithOneComment, vocabulary, idf);
+
+        assertEquals((6.0 / 9.0) * 2.0, tfIdfVector.get("login"), 0.000001);
+        assertEquals((3.0 / 9.0) * 3.0, tfIdfVector.get("error"), 0.000001);
+        assertEquals(0.0, tfIdfVector.get("can"), 0.000001);
+        assertEquals(0.0, tfIdfVector.get("t"), 0.000001);
+    }
+
+    @Test
     void calculateTfIdfByIssues() {
         Map<Long, Map<String, Double>> result = tfIdf.calculateTfIdfByIssues(issues);
 

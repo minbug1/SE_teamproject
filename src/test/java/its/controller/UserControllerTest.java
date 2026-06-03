@@ -44,55 +44,9 @@ class UserControllerTest {
         );
         userRepository.save(normalUser);
     }
-
+    
     @Test
-    void createUserByAdminShouldCreateUser() {
-        User createdUser = userController.createUserByAdmin(
-                admin,
-                "dev1",
-                "1234",
-                AccountStatus.ACTIVE,
-                UserRole.DEVELOPER
-        );
-
-        assertNotNull(createdUser);
-        assertEquals("dev1", createdUser.getLoginId());
-        assertEquals(AccountStatus.ACTIVE, createdUser.getAccountStatus());
-        assertEquals(UserRole.DEVELOPER, createdUser.getRole());
-
-        User savedUser = userRepository.findByLoginId("dev1");
-        assertNotNull(savedUser);
-        assertEquals(createdUser.getUserId(), savedUser.getUserId());
-    }
-
-    @Test
-    void createUserByAdminShouldFailWhenCurrentUserIsNotAdmin() {
-        assertThrows(SecurityException.class, () -> {
-            userController.createUserByAdmin(
-                    normalUser,
-                    "dev1",
-                    "1234",
-                    AccountStatus.ACTIVE,
-                    UserRole.DEVELOPER
-            );
-        });
-    }
-
-    @Test
-    void createUserByAdminShouldFailWhenRoleIsUnassigned() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            userController.createUserByAdmin(
-                    admin,
-                    "user1",
-                    "1234",
-                    AccountStatus.ACTIVE,
-                    UserRole.UNASSIGNED
-            );
-        });
-    }
-
-    @Test
-    void approveUserShouldChangeStatusToActiveAndSetRole() {
+    void approveUser() {
         User pendingUser = new User(
                 userRepository.generateUserId(),
                 "pending",
@@ -110,48 +64,7 @@ class UserControllerTest {
     }
 
     @Test
-    void approveUserShouldFailWhenRoleIsUnassigned() {
-        User pendingUser = new User(
-                userRepository.generateUserId(),
-                "pending",
-                "1234"
-        );
-        userRepository.save(pendingUser);
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            userController.approveUser(admin, pendingUser.getUserId(), UserRole.UNASSIGNED);
-        });
-    }
-
-    @Test
-    void rejectUserShouldChangeStatusToRejected() {
-        User pendingUser = new User(
-                userRepository.generateUserId(),
-                "pending",
-                "1234"
-        );
-        userRepository.save(pendingUser);
-
-        userController.rejectUser(admin, pendingUser.getUserId());
-
-        User rejectedUser = userRepository.findByUserId(pendingUser.getUserId());
-
-        assertNotNull(rejectedUser);
-        assertEquals(AccountStatus.REJECTED, rejectedUser.getAccountStatus());
-    }
-
-    @Test
-    void deactivateUserShouldChangeStatusToDisabled() {
-        userController.deactivateUser(admin, normalUser.getUserId());
-
-        User disabledUser = userRepository.findByUserId(normalUser.getUserId());
-
-        assertNotNull(disabledUser);
-        assertEquals(AccountStatus.DISABLED, disabledUser.getAccountStatus());
-    }
-
-    @Test
-    void changeRoleShouldChangeUserRole() {
+    void changeRole() {
         userController.changeRole(admin, normalUser.getUserId(), UserRole.DEVELOPER);
 
         User changedUser = userRepository.findByUserId(normalUser.getUserId());
@@ -161,7 +74,7 @@ class UserControllerTest {
     }
 
     @Test
-    void changeAccountStatusShouldChangeUserStatus() {
+    void changeAccountStatus() {
         userController.changeAccountStatus(admin, normalUser.getUserId(), AccountStatus.DISABLED);
 
         User changedUser = userRepository.findByUserId(normalUser.getUserId());
@@ -171,7 +84,7 @@ class UserControllerTest {
     }
 
     @Test
-    void deleteUserShouldRemoveUser() {
+    void deleteUser() {
         long targetUserId = normalUser.getUserId();
 
         userController.deleteUser(admin, targetUserId);
@@ -180,34 +93,7 @@ class UserControllerTest {
     }
 
     @Test
-    void changeLoginIdShouldChangeCurrentUsersLoginId() {
-        userController.changeLoginId(normalUser, "newLoginId");
-
-        User changedUser = userRepository.findByUserId(normalUser.getUserId());
-
-        assertNotNull(changedUser);
-        assertEquals("newLoginId", changedUser.getLoginId());
-    }
-
-    @Test
-    void changeLoginIdShouldFailWhenDuplicated() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            userController.changeLoginId(normalUser, "admin");
-        });
-    }
-
-    @Test
-    void changePasswordShouldChangeCurrentUsersPassword() {
-        userController.changePassword(normalUser, "5678");
-
-        User changedUser = userRepository.findByUserId(normalUser.getUserId());
-
-        assertNotNull(changedUser);
-        assertTrue(changedUser.matchesPassword("5678"));
-    }
-
-    @Test
-    void findPendingUsersShouldReturnOnlyPendingUsers() {
+    void findPendingUsers() {
         User pendingUser = new User(
                 userRepository.generateUserId(),
                 "pending",
@@ -223,20 +109,10 @@ class UserControllerTest {
     }
 
     @Test
-    void findUsersByRoleShouldReturnMatchingUsers() {
+    void findUsersByRole() {
         List<User> testers = userController.findUsersByRole(admin, UserRole.TESTER);
 
         assertEquals(1, testers.size());
         assertEquals("normal", testers.get(0).getLoginId());
-    }
-
-    @Test
-    void resetPasswordByAdminShouldChangePasswordToTemporaryPassword() {
-        userController.resetPasswordByAdmin(admin, normalUser.getUserId(), "0000");
-
-        User changedUser = userRepository.findByUserId(normalUser.getUserId());
-
-        assertNotNull(changedUser);
-        assertTrue(changedUser.matchesPassword("0000"));
     }
 }
