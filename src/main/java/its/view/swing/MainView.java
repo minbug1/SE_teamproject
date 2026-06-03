@@ -420,5 +420,22 @@ public class MainView extends JFrame {
         public String toString() {
             return status == null ? "All Status" : status.name();
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof StatusFilterItem)) {
+                return false;
+            }
+            StatusFilterItem other = (StatusFilterItem) obj;
+            return status == other.status;
+        }
+
+        @Override
+        public int hashCode() {
+            return status == null ? 0 : status.hashCode();
+        }
     }
 }
