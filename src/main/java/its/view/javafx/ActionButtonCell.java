@@ -56,7 +56,7 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
         if (currentUser != null && currentUser.isPL()) {
             if (status == IssueStatus.NEW || status == IssueStatus.REOPENED)
                 addItem(menu, "담당자 지정", () -> changeAssignee(row));
-            addItem(menu, "우선순위 변경", () -> changePriority(row));   // ← 추가
+            addItem(menu, "우선순위 변경", () -> changePriority(row));
             if (status == IssueStatus.RESOLVED)
                 addItem(menu, "이슈 닫기", () -> updateStatus(row, IssueStatus.CLOSED));
         }
@@ -185,20 +185,39 @@ public class ActionButtonCell extends TableCell<MainView.IssueRow, Void> {
         splitPane.setDividerPositions(0.32);
         splitPane.setPrefSize(620, 280);
 
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("담당자 지정");
-        dialog.getDialogPane().setContent(splitPane);
-        dialog.getDialogPane().setPrefSize(640, 340);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        Dialog<ButtonType> assignDialog = new Dialog<>();
+        assignDialog.setTitle("담당자 지정");
+        assignDialog.getDialogPane().setContent(splitPane);
+        assignDialog.getDialogPane().setPrefSize(640, 340);
+        assignDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        dialog.showAndWait().ifPresent(bt -> {
+        assignDialog.showAndWait().ifPresent(bt -> {
             if (bt != ButtonType.OK) return;
             User assignee = assigneeCombo.getSelectionModel().getSelectedItem();
             if (assignee == null) return;
-            try {
-                issueController.assignIssue(row.project, row.issueId, assignee, currentUser, null);
-                refresh();
-            } catch (Exception ex) { showError(ex.getMessage()); }
+
+            // ── 담당자 확정 후 코멘트 입력 ──────────
+            TextArea commentArea = new TextArea();
+            commentArea.setPromptText("코멘트 입력 (선택)");
+            commentArea.setWrapText(true);
+            commentArea.setPrefRowCount(4);
+            commentArea.setPrefWidth(300);
+
+            Dialog<ButtonType> commentDialog = new Dialog<>();
+            commentDialog.setTitle("코멘트 입력");
+            commentDialog.setHeaderText(assignee.getLoginId() + " 님을 담당자로 지정합니다.");
+            commentDialog.getDialogPane().setContent(commentArea);
+            commentDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+            commentDialog.showAndWait().ifPresent(cbt -> {
+                if (cbt != ButtonType.OK) return;  // 취소 시 담당자 지정도 취소
+                String comment = commentArea.getText().trim().isEmpty()
+                        ? null : commentArea.getText().trim();
+                try {
+                    issueController.assignIssue(row.project, row.issueId, assignee, currentUser, comment);
+                    refresh();
+                } catch (Exception ex) { showError(ex.getMessage()); }
+            });
         });
     }
 

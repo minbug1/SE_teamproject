@@ -41,6 +41,7 @@ public class MainView {
     private ObservableList<IssueRow> allRows;
     private FilteredList<IssueRow> filteredRows;
     private ComboBox<ProjectItem> projectFilterBox;
+    private ComboBox<StatusFilterItem> statusFilterBox;   // 추가
 
     public MainView(IssueController issueController, ProjectController projectController,
                     AuthController authController, UserController userController,
@@ -77,9 +78,14 @@ public class MainView {
         title.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
         projectFilterBox = new ComboBox<>();
-        projectFilterBox.setOnAction(e -> applyProjectFilter());
+        projectFilterBox.setOnAction(e -> applyFilters());
 
-        HBox centerBox = new HBox(8, new Label("Project"), projectFilterBox);
+        statusFilterBox = new ComboBox<>();                // 추가
+        statusFilterBox.setOnAction(e -> applyFilters());  // 추가
+
+        HBox centerBox = new HBox(8,
+                new Label("Project"), projectFilterBox,
+                new Label("Status"), statusFilterBox);     // Status 필터 추가
         centerBox.setAlignment(Pos.CENTER);
 
         Button reportBtn = new Button("+ Report Issue");
@@ -152,6 +158,7 @@ public class MainView {
         loadProjects();
         loadIssues();
         refreshProjectFilter();
+        refreshStatusFilter();   // 추가
 
         VBox panel = new VBox(table);
         VBox.setVgrow(table, javafx.scene.layout.Priority.ALWAYS);
@@ -166,7 +173,8 @@ public class MainView {
             project.getIssues().clear();
             for (long issueId : project.getIssueIds()) {
                 allIssues.stream()
-                        .filter(i -> i.getIssueId() == issueId && i.getProjectId() == project.getProjectId())
+                        .filter(i -> i.getIssueId() == issueId
+                                && i.getProjectId() == project.getProjectId())
                         .findFirst()
                         .ifPresent(project::addIssue);
             }
@@ -187,14 +195,27 @@ public class MainView {
         projectFilterBox.getSelectionModel().selectFirst();
     }
 
-    private void applyProjectFilter() {
-        ProjectItem selected = projectFilterBox.getSelectionModel().getSelectedItem();
-        if (selected == null || selected.isAll()) {
-            filteredRows.setPredicate(row -> true);
-        } else {
-            long projectId = selected.project.getProjectId();
-            filteredRows.setPredicate(row -> row.projectId == projectId);
-        }
+    // ── 상태 필터 초기화 ──────────────────────────
+    private void refreshStatusFilter() {
+        statusFilterBox.getItems().clear();
+        statusFilterBox.getItems().add(StatusFilterItem.all());
+        for (IssueStatus s : IssueStatus.values())
+            statusFilterBox.getItems().add(StatusFilterItem.of(s));
+        statusFilterBox.getSelectionModel().selectFirst();
+    }
+
+    // ── 프로젝트 + 상태 동시 필터 ────────────────
+    private void applyFilters() {
+        ProjectItem selectedProject = projectFilterBox.getSelectionModel().getSelectedItem();
+        StatusFilterItem selectedStatus = statusFilterBox.getSelectionModel().getSelectedItem();
+
+        filteredRows.setPredicate(row -> {
+            boolean projectMatch = selectedProject == null || selectedProject.isAll()
+                    || row.projectId == selectedProject.project.getProjectId();
+            boolean statusMatch = selectedStatus == null || selectedStatus.isAll()
+                    || row.status == selectedStatus.status;
+            return projectMatch && statusMatch;
+        });
     }
 
     private void onReportIssue() {
@@ -215,7 +236,8 @@ public class MainView {
                     "Select a project before viewing statistics.").showAndWait();
             return;
         }
-        new StatisticsView(stage, statisticsController, categoryController, selected.project, currentUser).show();
+        new StatisticsView(stage, statisticsController, categoryController,
+                selected.project, currentUser).show();
     }
 
     private void onLogout() {
@@ -223,7 +245,8 @@ public class MainView {
         confirm.initOwner(stage);
         confirm.showAndWait().ifPresent(bt -> {
             if (bt == ButtonType.YES) new LoginView(authController, issueController,
-                        userController, projectController, statisticsController, categoryController).show(stage);
+                    userController, projectController,
+                    statisticsController, categoryController).show(stage);
         });
     }
 
@@ -231,7 +254,8 @@ public class MainView {
         loadProjects();
         loadIssues();
         refreshProjectFilter();
-        applyProjectFilter();
+        refreshStatusFilter();
+        applyFilters();
     }
 
     // ── 내부 데이터 모델 ──────────────────────────
@@ -268,5 +292,15 @@ public class MainView {
         static ProjectItem of(Project p) { return new ProjectItem(p); }
         boolean isAll() { return project == null; }
         @Override public String toString() { return isAll() ? "All Projects" : project.getName(); }
+    }
+
+    // ── 상태 필터 아이템 ──────────────────────────
+    static class StatusFilterItem {
+        final IssueStatus status;
+        StatusFilterItem(IssueStatus s) { this.status = s; }
+        static StatusFilterItem all() { return new StatusFilterItem(null); }
+        static StatusFilterItem of(IssueStatus s) { return new StatusFilterItem(s); }
+        boolean isAll() { return status == null; }
+        @Override public String toString() { return isAll() ? "All Status" : status.name(); }
     }
 }

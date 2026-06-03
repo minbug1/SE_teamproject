@@ -10,6 +10,7 @@ import java.util.Set;
 
 /*
  * model for developer recommendation
+ * recommend, helper
  * 
  * @author hanung
  */
@@ -37,6 +38,10 @@ public class RecommendEngine {
             return new ArrayList<>();
         }
 
+        if (targetCategory == null) {
+            return new ArrayList<>();
+        }
+
         int targetCategoryId = targetIssue.getCategoryId();
             if (targetCategoryId <= 0) {
                 return new ArrayList<>();
@@ -46,11 +51,6 @@ public class RecommendEngine {
             return new ArrayList<>();
         }
 
-        Map<String, Double> storedIdf = targetCategory.getIdf();
-        if (storedIdf == null || storedIdf.isEmpty()) {
-            return new ArrayList<>();
-        }
-    
         // 같은 category 이슈 추출
         List<Issue> sameCategoryIssues = findIssuesByCategory(issues, targetIssue, targetCategoryId);
         if (sameCategoryIssues.isEmpty()) {
@@ -59,12 +59,17 @@ public class RecommendEngine {
 
         Set<String> vocabulary = new HashSet<>();
 
+        if (targetCategory.getRepresentVector() != null) {
+            vocabulary.addAll(targetCategory.getRepresentVector().keySet());
+        }
+
         if (targetCategory.getIdf() != null) {
             vocabulary.addAll(targetCategory.getIdf().keySet());
         }
 
-        Map<String, Double> targetVector =
-                tfIdf.calculateTfIdfByIssue(targetIssue, vocabulary, storedIdf);
+        Map<String, Double> storedIdf = targetCategory.getIdf();
+
+        Map<String, Double> targetVector = tfIdf.calculateTfIdfByIssue(targetIssue, vocabulary, storedIdf);
 
 
         if (targetVector == null || targetVector.isEmpty()) {
@@ -116,8 +121,7 @@ public class RecommendEngine {
             );
 
             // similarity
-            Map<String, Double> pastVector =
-                    tfIdf.calculateTfIdfByIssue(pastIssue, vocabulary, storedIdf);
+            Map<String, Double> pastVector = tfIdf.calculateTfIdfByIssue(pastIssue, vocabulary, storedIdf);
 
             double similarity = tfIdf.cosineSimilarity(targetVector, pastVector);
 

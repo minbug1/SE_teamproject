@@ -2,6 +2,7 @@ package its.model;
 
 /*
  * model for developer recommendation
+ * getter, compare, string
  * 
  * @author hanung
  */
@@ -33,7 +34,7 @@ public class DeveloperRecommendation implements Comparable<DeveloperRecommendati
             return scoreCompare;
         }
 
-        // assigned issues
+        // matched issues
         int matchedCompare = Integer.compare(other.getMatchedIssueCount(), this.matchedIssueCount);
         if (matchedCompare != 0) {
             return matchedCompare;

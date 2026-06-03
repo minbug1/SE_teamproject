@@ -71,7 +71,7 @@ public class AuthController {
         }
 
         if (!user.isActive()) {
-            if (user.isPending())  throw new IllegalStateException("Account is pending admin approval.");
+            if (user.isPending()) throw new IllegalStateException("Account is pending admin approval.");
             if (user.isRejected()) throw new IllegalStateException("Account has been rejected.");
             if (user.isDisabled()) throw new IllegalStateException("Account is disabled.");
             throw new IllegalStateException("Account is not active.");
