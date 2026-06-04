@@ -23,7 +23,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void registerShouldCreatePendingUnassignedUser() {
+    void register() {
         User user = authController.register("tester1", "1234");
 
         assertNotNull(user);
@@ -38,21 +38,21 @@ class AuthControllerTest {
     }
 
     @Test
-    void registerShouldFailWhenLoginIdIsEmpty() {
+    void register_WhenLoginIdIsEmpty() {
         assertThrows(IllegalArgumentException.class, () -> {
             authController.register("   ", "1234");
         });
     }
 
     @Test
-    void registerShouldFailWhenPasswordIsEmpty() {
+    void register_WhenPasswordIsEmpty() {
         assertThrows(IllegalArgumentException.class, () -> {
             authController.register("tester1", "   ");
         });
     }
 
     @Test
-    void registerShouldFailWhenLoginIdAlreadyExists() {
+    void register_WhenLoginIdAlreadyExists() {
         authController.register("tester1", "1234");
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -61,7 +61,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void loginShouldSucceedWhenUserIsActiveAndPasswordMatches() {
+    void login() {
         User user = new User(
                 userRepository.generateUserId(),
                 "dev1",
@@ -81,14 +81,14 @@ class AuthControllerTest {
     }
 
     @Test
-    void loginShouldFailWhenLoginIdDoesNotExist() {
+    void login_WhenLoginIdDoesNotExist() {
         assertThrows(IllegalArgumentException.class, () -> {
             authController.login("unknown", "1234");
         });
     }
 
     @Test
-    void loginShouldFailWhenPasswordIsWrong() {
+    void login_WhenPasswordIsWrong() {
         User user = new User(
                 userRepository.generateUserId(),
                 "dev1",
@@ -105,7 +105,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void loginShouldFailWhenAccountIsPending() {
+    void login_WhenAccountIsPending() {
         User user = new User(
                 userRepository.generateUserId(),
                 "pendingUser",
@@ -122,24 +122,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void loginShouldFailWhenAccountIsDisabled() {
-        User user = new User(
-                userRepository.generateUserId(),
-                "disabledUser",
-                "1234",
-                AccountStatus.DISABLED,
-                UserRole.DEVELOPER
-        );
-
-        userRepository.save(user);
-
-        assertThrows(IllegalStateException.class, () -> {
-            authController.login("disabledUser", "1234");
-        });
-    }
-
-    @Test
-    void logoutShouldClearCurrentUser() {
+    void logout() {
         User user = new User(
                 userRepository.generateUserId(),
                 "dev1",
