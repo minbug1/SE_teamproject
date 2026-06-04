@@ -42,7 +42,7 @@ class ProjectControllerTest {
         assertTrue(project.getProjectId() > 0);
         assertNotNull(projectRepository.findById(project.getProjectId()));
     }
-
+    
     @Test
     void createProjectShouldFailWhenNotAdmin() {
         assertThrows(SecurityException.class, () ->
